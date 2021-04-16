@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o"
+  "CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o"
   "CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o"
   "CMakeFiles/algeng_wce_solver.dir/main.cpp.o"
   "algeng_wce_solver"

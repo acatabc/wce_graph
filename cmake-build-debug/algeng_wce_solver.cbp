@@ -82,10 +82,16 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/home/acat/CLionProjects/algeng_wce_solver/lib/graph.cpp">
+		<Unit filename="/home/acat/CLionProjects/algeng_wce_solver/include/personal_settings.h">
 			<Option target="algeng_wce_solver"/>
 		</Unit>
-		<Unit filename="/home/acat/CLionProjects/algeng_wce_solver/lib/graph.h">
+		<Unit filename="/home/acat/CLionProjects/algeng_wce_solver/include/utils.h">
+			<Option target="algeng_wce_solver"/>
+		</Unit>
+		<Unit filename="/home/acat/CLionProjects/algeng_wce_solver/lib/WCE_Graph.cpp">
+			<Option target="algeng_wce_solver"/>
+		</Unit>
+		<Unit filename="/home/acat/CLionProjects/algeng_wce_solver/lib/WCE_Graph.h">
 			<Option target="algeng_wce_solver"/>
 		</Unit>
 		<Unit filename="/home/acat/CLionProjects/algeng_wce_solver/lib/parser.cpp">

@@ -89,18 +89,18 @@ CMakeFiles/algeng_wce_solver.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/algeng_wce_solver.dir/main.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/CLionProjects/algeng_wce_solver/main.cpp -o CMakeFiles/algeng_wce_solver.dir/main.cpp.s
 
-CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o: CMakeFiles/algeng_wce_solver.dir/flags.make
-CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o: ../lib/graph.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o -c /home/acat/CLionProjects/algeng_wce_solver/lib/graph.cpp
+CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o: CMakeFiles/algeng_wce_solver.dir/flags.make
+CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o: ../lib/WCE_Graph.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o -c /home/acat/CLionProjects/algeng_wce_solver/lib/WCE_Graph.cpp
 
-CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/acat/CLionProjects/algeng_wce_solver/lib/graph.cpp > CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.i
+CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/acat/CLionProjects/algeng_wce_solver/lib/WCE_Graph.cpp > CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.i
 
-CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/CLionProjects/algeng_wce_solver/lib/graph.cpp -o CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.s
+CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/CLionProjects/algeng_wce_solver/lib/WCE_Graph.cpp -o CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.s
 
 CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o: CMakeFiles/algeng_wce_solver.dir/flags.make
 CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o: ../lib/parser.cpp
@@ -118,14 +118,14 @@ CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.s: cmake_force
 # Object files for target algeng_wce_solver
 algeng_wce_solver_OBJECTS = \
 "CMakeFiles/algeng_wce_solver.dir/main.cpp.o" \
-"CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o" \
+"CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o" \
 "CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o"
 
 # External object files for target algeng_wce_solver
 algeng_wce_solver_EXTERNAL_OBJECTS =
 
 algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/main.cpp.o
-algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o
+algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o
 algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o
 algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/build.make
 algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/link.txt
