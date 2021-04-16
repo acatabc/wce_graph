@@ -3,4 +3,4 @@ project(algeng_wce_solver)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(algeng_wce_solver main.cpp lib/graph.cpp lib/graph.h lib/parser.cpp)
+add_executable(algeng_wce_solver main.cpp lib/WCE_Graph.cpp lib/WCE_Graph.h lib/parser.cpp)
