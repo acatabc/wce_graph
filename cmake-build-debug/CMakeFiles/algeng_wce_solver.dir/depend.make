@@ -4,7 +4,6 @@
 CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o: ../lib/WCE_Graph.cpp
 CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o: ../lib/WCE_Graph.h
 
-CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o: ../include/personal_settings.h
 CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o: ../lib/WCE_Graph.h
 CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o: ../lib/parser.cpp
 

@@ -3,13 +3,13 @@
 //
 #include <iostream>
 #include "WCE_Graph.h"
-#include "../include/personal_settings.h"
 
 WCE_Graph *parse_and_build_graph(){
 #ifdef DEBUG
     //file test_data.txt > stdin
-    std::cout <<PATH_TO_TEST_DATA"/test_data.txt" << std::endl;
-    freopen(PATH_TO_TEST_DATA"/test_data.txt", "r", stdin);
+    //I dont like the file path thing but ok...
+    std::cout <<"../test_data/test_data.txt" << std::endl;
+    freopen("../test_data/test_data.txt", "r", stdin);
 #endif
     //JUST TRYING SOME STUFF FOR SETUP
     std::string line;
