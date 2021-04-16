@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/algeng_wce_solver.dir/main.cpp.o -o algeng_wce_solver 
