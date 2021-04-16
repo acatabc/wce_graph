@@ -4,6 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "/home/acat/CLionProjects/algeng_wce_solver/lib/graph.cpp" "/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o"
+  "/home/acat/CLionProjects/algeng_wce_solver/lib/parser.cpp" "/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o"
   "/home/acat/CLionProjects/algeng_wce_solver/main.cpp" "/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles/algeng_wce_solver.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")

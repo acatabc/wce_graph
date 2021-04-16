@@ -142,6 +142,60 @@ algeng_wce_solver/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/algeng_wce_solver.dir/build.make CMakeFiles/algeng_wce_solver.dir/build
 .PHONY : algeng_wce_solver/fast
 
+lib/graph.o: lib/graph.cpp.o
+
+.PHONY : lib/graph.o
+
+# target to build an object file
+lib/graph.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/algeng_wce_solver.dir/build.make CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.o
+.PHONY : lib/graph.cpp.o
+
+lib/graph.i: lib/graph.cpp.i
+
+.PHONY : lib/graph.i
+
+# target to preprocess a source file
+lib/graph.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/algeng_wce_solver.dir/build.make CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.i
+.PHONY : lib/graph.cpp.i
+
+lib/graph.s: lib/graph.cpp.s
+
+.PHONY : lib/graph.s
+
+# target to generate assembly for a file
+lib/graph.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/algeng_wce_solver.dir/build.make CMakeFiles/algeng_wce_solver.dir/lib/graph.cpp.s
+.PHONY : lib/graph.cpp.s
+
+lib/parser.o: lib/parser.cpp.o
+
+.PHONY : lib/parser.o
+
+# target to build an object file
+lib/parser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/algeng_wce_solver.dir/build.make CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o
+.PHONY : lib/parser.cpp.o
+
+lib/parser.i: lib/parser.cpp.i
+
+.PHONY : lib/parser.i
+
+# target to preprocess a source file
+lib/parser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/algeng_wce_solver.dir/build.make CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.i
+.PHONY : lib/parser.cpp.i
+
+lib/parser.s: lib/parser.cpp.s
+
+.PHONY : lib/parser.s
+
+# target to generate assembly for a file
+lib/parser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/algeng_wce_solver.dir/build.make CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.s
+.PHONY : lib/parser.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -178,6 +232,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... algeng_wce_solver"
+	@echo "... lib/graph.o"
+	@echo "... lib/graph.i"
+	@echo "... lib/graph.s"
+	@echo "... lib/parser.o"
+	@echo "... lib/parser.i"
+	@echo "... lib/parser.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
