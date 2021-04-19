@@ -109,8 +109,7 @@ std::tuple<int, int, int> WCE_Graph::find_first_p3() {
             if (this->adj_matrix[i][j] > 0) {
                 for (int k = j + 1; k < this->num_vertices; ++k) {
                     if (this->adj_matrix[i][k] > 0 && this->adj_matrix[j][k] < 0) {
-                        j++;
-                        return std::make_tuple(i, k, j - 1);
+                        return std::make_tuple(i, k, j);
                     }
                 }
             }
@@ -121,16 +120,27 @@ std::tuple<int, int, int> WCE_Graph::find_first_p3() {
 
 
 std::tuple<int, int, int> WCE_Graph::find_next_p3() {
-    static int i, j = 0;
-    std::cout <<"startwerte "<< i << " " << j << std::endl;
+    static int i, j, k= 0;
+    static int old_k = 0;
+//    std::cout <<"startwerte "<< i << " " << j << std::endl;
     for(; i < this->num_vertices; ++i){
         for(;j < this->num_vertices; ++j){
       //      std::cout << i << " "<< j << std::endl;
             if(this->adj_matrix[i][j] > 0){
-                for(int k = j+1; k < this->num_vertices; ++k ){
+
+                for(; ; ){
+//                    std::cout << k << std::endl;
+                    if(k == 0)
+                        k = j+1;
+                    else {
+                        k++;
+                    }
+                    if(k >= this->num_vertices) {
+                        k = 0;
+                        break;
+                    }
                     if(this->adj_matrix[i][k] > 0 && this->adj_matrix[j][k] < 0){
-                        j++;
-                        return std::make_tuple(i ,k, j-1);
+                        return std::make_tuple(i ,k, j);
                     }
                 }
             }
