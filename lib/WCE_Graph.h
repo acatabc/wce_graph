@@ -12,12 +12,16 @@ class WCE_Graph {
 private:
     int **adj_matrix;
     int num_vertices;
+
+    //helper variables
+    int p3_i, p3_j = 0;
 public:
     WCE_Graph(int);
     void add_edge(int,int,int);
     void delete_edge(int, int);
-    void find_p3();
+    int branch(int k );
     std::tuple<int, int, int> find_next_p3();
+    std::tuple<int, int, int> find_first_p3();
     void solve();
     virtual ~WCE_Graph();
 

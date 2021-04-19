@@ -13,5 +13,8 @@ int main() {
         if(std::get<0>(p) == -1)
             break;
     }while(1);
+
+    std::cout << "++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    g->solve();
     return 0;
 }
