@@ -35,6 +35,9 @@ void WCE_Graph::add_edge(int v, int w, int weight) {
 void WCE_Graph::delete_edge(int v, int w) {
     this->adj_matrix[v][w] *= -1;
     this->adj_matrix[w][v] *= -1;
+#ifdef DEBUG
+    std::cout << "deleting " << v << " " << w << std::endl;
+#endif
 }
 
 int WCE_Graph::branch(int k){
@@ -51,6 +54,8 @@ int WCE_Graph::branch(int k){
 
     int weight = this->adj_matrix[v][w];
     this->delete_edge(v, w);
+
+    this->print_all_p3();
     int ret_val = this->branch(k-weight);
     if(ret_val == CLUSTER_GRAPH){
         std::cout << v << " " << w <<std::endl;
@@ -135,4 +140,17 @@ std::tuple<int, int, int> WCE_Graph::find_next_p3() {
     i = 0;
     j = 0;
     return std::make_tuple(-1,-1, -1);
+}
+
+void WCE_Graph::print_all_p3(){
+    this->print(std::cout);
+    std::cout << "++++++++++++++++++++++++" << std::endl;
+    do{
+        auto p = this->find_next_p3();
+        std::cout << "(" << std::get<0>(p) <<", " << std::get<1>(p) << ", " << std::get<2>(p) << ")" << std::endl;
+        if(std::get<0>(p) == -1)
+            break;
+    }while(1);
+
+    std::cout << "++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
 }

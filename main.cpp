@@ -6,6 +6,7 @@ int main() {
     std::cout << "Debug Option yeah" << std::endl;
 #endif
     WCE_Graph *g = parse_and_build_graph();
+#ifdef DEBUG
     g->print(std::cout);
     do{
         auto p = g->find_next_p3();
@@ -15,6 +16,7 @@ int main() {
     }while(1);
 
     std::cout << "++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+#endif
     g->solve();
     return 0;
 }

@@ -26,6 +26,7 @@ public:
     virtual ~WCE_Graph();
 
     void print(std::ostream &os);
+    void print_all_p3();
 };
 
 
