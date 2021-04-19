@@ -8,7 +8,6 @@
 #define NONE -1
 #define CLUSTER_GRAPH -2
 #define RETURN_GRAPH -3
-#define NAN
 
 WCE_Graph::WCE_Graph(int n): num_vertices(n){
     this->adj_matrix = new int*[n];
@@ -55,7 +54,6 @@ int WCE_Graph::branch(int k){
     int weight = this->adj_matrix[v][w];
     this->delete_edge(v, w);
 
-    this->print_all_p3();
     int ret_val = this->branch(k-weight);
     if(ret_val == CLUSTER_GRAPH){
         std::cout << v << " " << w <<std::endl;
