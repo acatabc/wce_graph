@@ -62,10 +62,10 @@ RM = /home/acat/Dokumente/clion-2020.3.2/bin/cmake/linux/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/acat/CLionProjects/algeng_wce_solver
+CMAKE_SOURCE_DIR = /home/acat/Dokumente/AlgEng/algeng_wce_solver
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug
+CMAKE_BINARY_DIR = /home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/algeng_wce_solver.dir/depend.make
@@ -78,42 +78,42 @@ include CMakeFiles/algeng_wce_solver.dir/flags.make
 
 CMakeFiles/algeng_wce_solver.dir/main.cpp.o: CMakeFiles/algeng_wce_solver.dir/flags.make
 CMakeFiles/algeng_wce_solver.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/algeng_wce_solver.dir/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/algeng_wce_solver.dir/main.cpp.o -c /home/acat/CLionProjects/algeng_wce_solver/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/algeng_wce_solver.dir/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/algeng_wce_solver.dir/main.cpp.o -c /home/acat/Dokumente/AlgEng/algeng_wce_solver/main.cpp
 
 CMakeFiles/algeng_wce_solver.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/algeng_wce_solver.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/acat/CLionProjects/algeng_wce_solver/main.cpp > CMakeFiles/algeng_wce_solver.dir/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/acat/Dokumente/AlgEng/algeng_wce_solver/main.cpp > CMakeFiles/algeng_wce_solver.dir/main.cpp.i
 
 CMakeFiles/algeng_wce_solver.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/algeng_wce_solver.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/CLionProjects/algeng_wce_solver/main.cpp -o CMakeFiles/algeng_wce_solver.dir/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/Dokumente/AlgEng/algeng_wce_solver/main.cpp -o CMakeFiles/algeng_wce_solver.dir/main.cpp.s
 
 CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o: CMakeFiles/algeng_wce_solver.dir/flags.make
 CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o: ../lib/WCE_Graph.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o -c /home/acat/CLionProjects/algeng_wce_solver/lib/WCE_Graph.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o -c /home/acat/Dokumente/AlgEng/algeng_wce_solver/lib/WCE_Graph.cpp
 
 CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/acat/CLionProjects/algeng_wce_solver/lib/WCE_Graph.cpp > CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/acat/Dokumente/AlgEng/algeng_wce_solver/lib/WCE_Graph.cpp > CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.i
 
 CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/CLionProjects/algeng_wce_solver/lib/WCE_Graph.cpp -o CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/Dokumente/AlgEng/algeng_wce_solver/lib/WCE_Graph.cpp -o CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.s
 
 CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o: CMakeFiles/algeng_wce_solver.dir/flags.make
 CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o: ../lib/parser.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o -c /home/acat/CLionProjects/algeng_wce_solver/lib/parser.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o -c /home/acat/Dokumente/AlgEng/algeng_wce_solver/lib/parser.cpp
 
 CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/acat/CLionProjects/algeng_wce_solver/lib/parser.cpp > CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/acat/Dokumente/AlgEng/algeng_wce_solver/lib/parser.cpp > CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.i
 
 CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/CLionProjects/algeng_wce_solver/lib/parser.cpp -o CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/acat/Dokumente/AlgEng/algeng_wce_solver/lib/parser.cpp -o CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.s
 
 # Object files for target algeng_wce_solver
 algeng_wce_solver_OBJECTS = \
@@ -129,7 +129,7 @@ algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o
 algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o
 algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/build.make
 algeng_wce_solver: CMakeFiles/algeng_wce_solver.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable algeng_wce_solver"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable algeng_wce_solver"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/algeng_wce_solver.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -142,6 +142,6 @@ CMakeFiles/algeng_wce_solver.dir/clean:
 .PHONY : CMakeFiles/algeng_wce_solver.dir/clean
 
 CMakeFiles/algeng_wce_solver.dir/depend:
-	cd /home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/acat/CLionProjects/algeng_wce_solver /home/acat/CLionProjects/algeng_wce_solver /home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug /home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug /home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles/algeng_wce_solver.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/acat/Dokumente/AlgEng/algeng_wce_solver /home/acat/Dokumente/AlgEng/algeng_wce_solver /home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug /home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug /home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug/CMakeFiles/algeng_wce_solver.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/algeng_wce_solver.dir/depend
 

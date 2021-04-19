@@ -1,3 +1,3 @@
-/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/acat/CLionProjects/algeng_wce_solver/cmake-build-debug/CMakeFiles/algeng_wce_solver.dir
+/home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/acat/Dokumente/AlgEng/algeng_wce_solver/cmake-build-debug/CMakeFiles/algeng_wce_solver.dir
