@@ -35,7 +35,7 @@ void WCE_Graph::delete_edge(int v, int w) {
     this->adj_matrix[v][w] *= -1;
     this->adj_matrix[w][v] *= -1;
 #ifdef DEBUG
-    std::cout << "deleting " << v << " " << w << std::endl;
+    //std::cout << "deleting " << v << " " << w << std::endl;
 #endif
 }
 
@@ -56,7 +56,7 @@ int WCE_Graph::branch(int k){
 
     int ret_val = this->branch(k-weight);
     if(ret_val == CLUSTER_GRAPH){
-        std::cout << v << " " << w <<std::endl;
+        std::cout << v+1 << " " << w+1 <<std::endl;
         return CLUSTER_GRAPH;
     }
     this->delete_edge(v, w);
@@ -65,7 +65,7 @@ int WCE_Graph::branch(int k){
     this->delete_edge(v,u);
     ret_val = branch(k -weight);
     if(ret_val == CLUSTER_GRAPH){
-        std::cout << v << " " << u <<std::endl;
+        std::cout << v+1 << " " << u+1 <<std::endl;
         return CLUSTER_GRAPH;
     }
     this->delete_edge(v,u);
@@ -74,7 +74,7 @@ int WCE_Graph::branch(int k){
     this->delete_edge(w,u);
     ret_val = branch(k +weight);
     if(ret_val == CLUSTER_GRAPH){
-        std::cout << w << " " << u <<std::endl;
+        std::cout << w+1 << " " << u+1 <<std::endl;
         return CLUSTER_GRAPH;
     }
     this->delete_edge(w,u);
@@ -86,8 +86,10 @@ int WCE_Graph::branch(int k){
 }
 
 void WCE_Graph::solve() {
-    int k = 7;
-    this->branch(k);
+    int k = 0;
+    while (this->branch(k) == NONE){
+        k++;
+    }
 }
 
 void WCE_Graph::print(std::ostream& os) {
@@ -120,7 +122,7 @@ std::tuple<int, int, int> WCE_Graph::find_first_p3() {
 
 std::tuple<int, int, int> WCE_Graph::find_next_p3() {
     static int i, j = 0;
-    //std::cout <<"startwerte "<< i << " " << j << std::endl;
+    std::cout <<"startwerte "<< i << " " << j << std::endl;
     for(; i < this->num_vertices; ++i){
         for(;j < this->num_vertices; ++j){
       //      std::cout << i << " "<< j << std::endl;
@@ -145,7 +147,7 @@ void WCE_Graph::print_all_p3(){
     std::cout << "++++++++++++++++++++++++" << std::endl;
     do{
         auto p = this->find_next_p3();
-        std::cout << "(" << std::get<0>(p) <<", " << std::get<1>(p) << ", " << std::get<2>(p) << ")" << std::endl;
+        std::cout << "(" << std::get<0>(p) + 1 <<", " << std::get<1>(p) + 1 << ", " << std::get<2>(p) +1 << ")"<< std::endl;
         if(std::get<0>(p) == -1)
             break;
     }while(1);
