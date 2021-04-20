@@ -3,10 +3,13 @@
 #include "include/utils.h"
 int main() {
 
-    WCE_Graph *g = parse_and_build_graph();
+    WCE_Graph *g = parse_and_build_graph("../test_data/test_data.txt");
+    Solver *s = new Solver(g);
+    g->printGraph(std::cout);
+
 #ifdef DEBUG
-    g->print_all_p3();
+    s->print_all_p3();
 #endif
-    g->solve();
+    s->solve();
     return 0;
 }
