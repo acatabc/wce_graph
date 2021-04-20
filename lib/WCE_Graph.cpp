@@ -30,6 +30,7 @@ void WCE_Graph::add_edge(int v, int w, int weight) {
 }
 
 void WCE_Graph::modify_edge(int v, int w) {
+    //std::cout << "modify (" << v+1 << " ," << w+1 << ") with weight " << adj_matrix[v][w] <<"\n";
     this->adj_matrix[v][w] *= -1;
     this->adj_matrix[w][v] *= -1;
 #ifdef DEBUG

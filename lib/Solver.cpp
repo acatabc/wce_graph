@@ -15,11 +15,11 @@ void Solver::solve() {
     printDebug("Solving...");
 
     int k = 0;
-    printDebug(std::to_string(k) + "\n");
     while (this->branch(k) == NONE){
-        printDebug(std::to_string(k) + "\n");
         k++;
     }
+
+    printDebug("final k:" + std::to_string(k) + "\n");
 }
 
 int Solver::branch(int k){
@@ -29,12 +29,14 @@ int Solver::branch(int k){
 
     auto p = this->find_first_p3();
 
-    if(std::get<0>(p) == -1){
-        return CLUSTER_GRAPH;
-    }
+
     int v = std::get<0>(p);
     int w = std::get<1>(p);
     int u = std::get<2>(p);
+
+    if(std::get<0>(p) == -1){
+        return CLUSTER_GRAPH;
+    }
 
     if(this->branchEdge(u,v,k) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(v,w,k) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
@@ -44,7 +46,7 @@ int Solver::branch(int k){
 }
 
 int Solver::branchEdge(int u, int v, int k){
-    int weight = g->get_weight(u,v);
+    int weight = abs(g->get_weight(u,v));
     g->modify_edge(u, v);
     if(this->branch(k-weight) == CLUSTER_GRAPH){
         std::cout << u+1 << " " << v+1 <<std::endl;
