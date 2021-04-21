@@ -20,19 +20,9 @@ public:
     void modify_edge(int, int);
     void set_weight(int , int , int );
     int get_weight(int,int);
-    int branch(int  );
-    std::tuple<int, int, int> find_next_p3();
-    std::tuple<int, int, int> find_first_p3();
-    std::list<std::tuple<int,int,int>>get_all_p3();
-    void solve();
     virtual ~WCE_Graph();
 
     void print(std::ostream &os);
-    void print_all_p3();
-
-    std::tuple<int, int, int> get_max_cost_p3_experimental(int *);
-
-    std::tuple<int, int, int> get_max_cost_p3(int *costs);
 };
 
 
