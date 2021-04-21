@@ -3,12 +3,12 @@
 #include "include/utils.h"
 int main() {
 
-    WCE_Graph *g = parse_and_build_graph("../test_data/a001.dimacs");
+    WCE_Graph *g = parse_and_build_graph();
     Solver *s = new Solver(g);
 
 
 #ifdef DEBUG
-    g->printGraph(std::cout);
+    g->print(std::cout);
     s->print_all_p3();
 #endif
     s->solve();

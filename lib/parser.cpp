@@ -2,14 +2,15 @@
 // Created by acat on 16.04.21.
 //
 #include <iostream>
+#include <tuple>
 #include "WCE_Graph.h"
 
-WCE_Graph *parse_and_build_graph(const char* filename){
+WCE_Graph *parse_and_build_graph(){
 #ifdef DEBUG
     //file test_data.txt > stdin
     //I dont like the file path thing but ok...
     //std::cout <<"../test_data/test_data.txt" << std::endl;
-    freopen(filename, "r", stdin);
+    freopen("../test_data/a001.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
@@ -20,7 +21,11 @@ WCE_Graph *parse_and_build_graph(const char* filename){
         v -= 1;
         w -= 1;
         if(!std::cin.fail())
-            g->add_edge(v,w, weight);
+            g->set_weight(v,w, weight);
     }
     return g;
+}
+
+void print_tuple(std::tuple<int,int,int> a){
+    std::cout << std::get<0>(a) +1<< " " << std::get<1>(a) +1<< " " << std::get<2>(a) +1<< std::endl;
 }
