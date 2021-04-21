@@ -4,9 +4,13 @@
 int main() {
 
     WCE_Graph *g = parse_and_build_graph();
+    Solver *s = new Solver(g);
+
+
 #ifdef DEBUG
-    g->print_all_p3();
+    g->print(std::cout);
+    s->print_all_p3();
 #endif
-    g->solve();
+    s->solve();
     return 0;
 }
