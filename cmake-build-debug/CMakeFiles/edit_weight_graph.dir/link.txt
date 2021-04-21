@@ -1,0 +1,1 @@
+/bin/g++ -g -DDEBUG CMakeFiles/edit_weight_graph.dir/main_2.cpp.o -o edit_weight_graph 

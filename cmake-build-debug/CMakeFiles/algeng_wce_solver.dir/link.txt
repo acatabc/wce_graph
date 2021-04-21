@@ -1,0 +1,1 @@
+/bin/g++ -g -DDEBUG CMakeFiles/algeng_wce_solver.dir/main.cpp.o CMakeFiles/algeng_wce_solver.dir/lib/WCE_Graph.cpp.o CMakeFiles/algeng_wce_solver.dir/lib/Solver.cpp.o CMakeFiles/algeng_wce_solver.dir/lib/parser.cpp.o -o algeng_wce_solver 

@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zia/studies/algeng_wce_solver/include/cluster_graph.h
+vector
+-
+fstream
+-
+iostream
+-
+sstream
+-
+set
+-
+
+/home/zia/studies/algeng_wce_solver/main_2.cpp
+include/cluster_graph.h
+/home/zia/studies/algeng_wce_solver/include/cluster_graph.h
+
