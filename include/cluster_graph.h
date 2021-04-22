@@ -10,6 +10,7 @@
 #include <iostream>
 #include <sstream>
 #include <set>
+#include <sstream>
 
 using namespace std;
 
@@ -81,7 +82,6 @@ private:
 
     node *all_nodes;
     set<p3> *all_p3;
-
 
     bool are_nodes_connected(int node_index_1, int node_index_2)
     {
@@ -207,13 +207,14 @@ public:
 
     void load_graph(string file_name)     // file_name is "" if asked to read from cin
     {
-        ifstream fin;
+        istream *input_stream = NULL;
+        ifstream fin(file_name);
         if (file_name != "")
-        {
-            fin.open(file_name);
-            fin >> n;
-        } else
-            cin >> n;
+            input_stream = dynamic_cast<istream *>(&fin);
+        else
+            input_stream = dynamic_cast<istream *>(&cin);
+
+        *input_stream >> n;
 
         p3::set_n(n);
         if (all_nodes != NULL) delete all_nodes;     // delete old nodes;
@@ -225,10 +226,9 @@ public:
         int u, v, w;
         for (int i = 0; i < ((n - 1) * n) / 2;)
         {
-            if (file_name != "" && fin.eof()) exit(-1);
+            if (input_stream != &cin && input_stream->eof()) exit(-1);      // if reading from file check eof
 
-            if (file_name != "") getline(fin, line);
-            else getline(cin, line);
+            getline(*input_stream, line);
 
             if (line != "")
             {
@@ -247,7 +247,11 @@ public:
             }
         }
 
-        if (file_name != "") fin.close();
+        if (file_name != "")
+        {
+            fin.close();
+            input_stream = NULL;
+        }
 
         node *v_node;
         set<node::node_weight_pair>::iterator it1, it2;
