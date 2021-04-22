@@ -1,4 +1,0 @@
-/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/bin/make -DCMAKE_C_COMPILER=/bin/gcc -DCMAKE_CXX_COMPILER=/bin/g++ -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - Unix Makefiles" /home/zia/studies/algeng_wce_solver
--- Configuring done
--- Generating done
--- Build files have been written to: /home/zia/studies/algeng_wce_solver/cmake-build-debug

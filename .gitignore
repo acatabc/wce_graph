@@ -1,2 +1,6 @@
 ./cmake-build-*/*
-./wce-students/*
+./wce-students/
+cmake-build-release/
+cmake-build-*/*
+/wce-students/
+.DS_Store
