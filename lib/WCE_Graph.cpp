@@ -59,6 +59,14 @@ int WCE_Graph::get_weight(int v, int w){
     return this->adj_matrix[v][w];
 }
 
+int WCE_Graph::get_p3_cost(int u, int v, int w){
+    int cost = 0;
+    if(this->get_weight(u,v) != DO_NOT_DELETE && this->get_weight(u,v) != DO_NOT_ADD) cost += abs(get_weight(u,v));
+    if(this->get_weight(v,w) != DO_NOT_DELETE && this->get_weight(v,w) != DO_NOT_ADD) cost += abs(get_weight(v,w));
+    if(this->get_weight(u,w) != DO_NOT_DELETE && this->get_weight(u,w) != DO_NOT_ADD) cost += abs(get_weight(u,w));
+    return cost;
+}
+
 
 void WCE_Graph::print(std::ostream& os) {
 

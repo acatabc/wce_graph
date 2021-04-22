@@ -21,6 +21,7 @@ public:
     void modify_edge(int, int);
     void set_weight(int , int , int );
     int get_weight(int,int);
+    int get_p3_cost(int u, int v, int w);
     virtual ~WCE_Graph();
 
     void print(std::ostream &os);

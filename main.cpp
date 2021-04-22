@@ -8,9 +8,10 @@ int main() {
 
 
 #ifdef DEBUG
-    g->print(std::cout);
-    s->print_all_p3();
+//    g->print(std::cout);
+//    s->print_all_p3();
 #endif
-    s->solve();
+    s->solve2();
+
     return 0;
 }

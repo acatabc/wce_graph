@@ -10,7 +10,7 @@ WCE_Graph *parse_and_build_graph(){
     //file test_data.txt > stdin
     //I dont like the file path thing but ok...
     //std::cout <<"../test_data/test_data.txt" << std::endl;
-    freopen("../test_data/a001.dimacs", "r", stdin);
+    freopen("../test_data/r007.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
