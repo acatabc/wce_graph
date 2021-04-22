@@ -13,7 +13,7 @@
 #define NONE -1
 #define CLUSTER_GRAPH -2
 #define DO_NOT_DELETE INT32_MAX
-#define DO_NOT_ADD 0
+#define DO_NOT_ADD INT32_MIN
 
 WCE_Graph::WCE_Graph(int n): num_vertices(n){
     this->adj_matrix = new int*[n];
@@ -38,6 +38,11 @@ void WCE_Graph::add_edge(int v, int w) {
 }
 
 void WCE_Graph::modify_edge(int v, int w) {
+    this->adj_matrix[v][w] *= -1;
+    this->adj_matrix[w][v] *= -1;
+}
+
+void WCE_Graph::delete_edge(int v, int w) {
     this->adj_matrix[v][w] = DO_NOT_ADD;
     this->adj_matrix[w][v] = DO_NOT_ADD;
 #ifdef DEBUG

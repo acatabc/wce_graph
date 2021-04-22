@@ -17,6 +17,7 @@ public:
     WCE_Graph(int);
     int num_vertices;
     void add_edge(int,int);
+    void delete_edge(int, int);
     void modify_edge(int, int);
     void set_weight(int , int , int );
     int get_weight(int,int);

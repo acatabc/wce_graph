@@ -16,8 +16,9 @@ public:
     virtual ~Solver();
 
     void solve();
-    int branch(int k);
-    int branchEdge(int u, int v, int k);
+    int branch(int k, int layer);
+    int branchEdge(int u, int v, int k, int layer);
+    int branchEdgeAllowLoop(int u, int v, int k, int layer);
     std::tuple<int, int, int> find_next_p3();
     std::tuple<int, int, int> find_first_p3();
 
@@ -25,7 +26,7 @@ public:
     void printDebug(std::string);
 
     std::list<std::tuple<int, int, int>> get_all_p3();
-    std::tuple<int, int, int> get_max_cost_p3(int *max_cost);
+    std::tuple<int, int, int> get_max_cost_p3();
 
     std::tuple<int, int, int> get_max_cost_p3_experimental(int *p3_weight);
 };
