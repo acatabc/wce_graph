@@ -134,7 +134,7 @@ std::tuple<int, int, int> Solver::find_first_p3() {
             //      std::cout << i << " "<< j << std::endl;
             if ( this->g->get_weight(i,j) > 0) {
                 for (int k = j + 1; k < this->g->num_vertices; ++k) {
-                    if (this->g->get_weight(i,k) > 0 && (this->g->get_weight(j,k) <= 0)  && this->g->get_weight(i,k) != DO_NOT_DELETE) {
+                    if (this->g->get_weight(i,k) > 0 && (this->g->get_weight(j,k) <= 0)) {
                         return std::make_tuple(i, k, j);
                     }
                 }
@@ -153,7 +153,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3(int *max_cost){
         for(int j = 0; j < this->g->num_vertices; ++j){
             if(this->g->get_weight(i,j) > 0){
                 for(int k = j+1; k < this->g->num_vertices; ++k){
-                    if(this->g->get_weight(i,k) > 0 && this->g->get_weight(j,k) <= 0 && this->g->get_weight(i,k) != DO_NOT_DELETE){
+                    if(this->g->get_weight(i,k) > 0 && this->g->get_weight(j,k) <= 0){
   /*                      int current_cost = 0;
                         int weight_i_k = abs(g->get_weight(i,k));
                         int weight_i_j = abs(g->get_weight(i,j));
@@ -197,7 +197,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_experimental(int *p3_weight){
             if(g->get_weight(i,j) > 0){
                 for(int k = i+1; k < g->num_vertices; ++k){
                     counter++;
-                    if(g->get_weight(k,j) > 0 && g->get_weight(i,k) <= 0 && g->get_weight(k,j) != DO_NOT_DELETE){
+                    if(g->get_weight(k,j) > 0 && g->get_weight(i,k) <= 0){
                         int costs = abs(g->get_weight(i,k)) + abs(g->get_weight(i,j)) + abs(g->get_weight(k,j))/3;
                         if(costs > *p3_weight){
                             *p3_weight = costs;
