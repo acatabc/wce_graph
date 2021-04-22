@@ -10,6 +10,7 @@ int main(int argc, char** args) {
 
     for (int k = 1; true; k++)
     {
+        cg.rec_steps = 0;
         int ret = cg.solve(k);
         if (ret != -1)
         {
@@ -19,12 +20,13 @@ int main(int argc, char** args) {
             {
                 for (int j = i + 1; j < cg.n; j++)
                     if (cg.all_edge_statuses[i][j] != 2)
-                        cout << i + 1 << ", " << j + 1 << endl;
+                        cout << i + 1 << " " << j + 1 << endl;
             }
 //            cout << "-------------------------------------------------\n";
             break;
         }
     }
+    std::cout << "#recursive steps: " << cg.rec_steps << std::endl;
 
     return 0;
 }

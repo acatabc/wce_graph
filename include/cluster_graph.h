@@ -16,6 +16,8 @@ using namespace std;
 // converts a graph into a cluster graph with given value of cost if possible
 class cluster_graph
 {
+public:
+    unsigned int rec_steps = 0;
 private:
     class node
     {
@@ -274,6 +276,7 @@ public:
     // O(3^k*n*log(n) + n^3), k is budget, n is no. of nodes.
     int solve(int budget)
     {
+        rec_steps++;
         if (budget < 0) return -1;
 
         int _u_index, _v_index, _w_index;       // for calculation
