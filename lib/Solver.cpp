@@ -164,6 +164,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3(int *max_cost){
                         current_cost += weight_i_k;
 */
                         int current_cost = abs(g->get_weight(i,k)) + abs(g->get_weight(i,j)) + abs(g->get_weight(j,k));
+                        current_cost /= 3;
                         if(current_cost > *max_cost) {
                             *max_cost = current_cost;
                             first_tuple_val = i;
@@ -196,7 +197,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_experimental(int *p3_weight){
                 for(int k = i+1; k < g->num_vertices; ++k){
                     counter++;
                     if(g->get_weight(k,j) > 0 && g->get_weight(i,k) <= 0 && g->get_weight(k,j) != DO_NOT_DELETE){
-                        int costs = abs(g->get_weight(i,k)) + abs(g->get_weight(i,j)) + abs(g->get_weight(k,j));
+                        int costs = abs(g->get_weight(i,k)) + abs(g->get_weight(i,j)) + abs(g->get_weight(k,j))/3;
                         if(costs > *p3_weight){
                             *p3_weight = costs;
                             first_p3_vertex = j;
