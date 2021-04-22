@@ -20,16 +20,18 @@ void Solver::solve() {
     int k = 0;
     while (this->branch(k) == NONE){
         k++;
+        rec_steps = 0;
     }
+    std::cout << "#recursive steps: " << rec_steps << std::endl;
 
     printDebug("final k:" + std::to_string(k) + "\n");
 }
 
 int Solver::branch(int k){
+    rec_steps++;
     if(k < 0){
         return NONE;
     }
-
     int p3_weight;
     auto p = this->get_max_cost_p3(&p3_weight);
 
@@ -45,7 +47,6 @@ int Solver::branch(int k){
     if(this->branchEdge(u,v,k) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(v,w,k) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(w,u,k) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
-
     return NONE;
 }
 
@@ -142,19 +143,29 @@ std::tuple<int, int, int> Solver::find_first_p3() {
     return std::make_tuple(-1,-1, -1);
 }
 
-std::tuple<int, int, int> Solver::get_max_cost_p3(int *costs){
+std::tuple<int, int, int> Solver::get_max_cost_p3(int *max_cost){
     int first_tuple_val = -1;
     int second_tuple_val = -1;
     int third_tuple_val = -1;
-    *costs = INT32_MIN;
+    *max_cost = INT32_MIN;
     for(int i = 0; i < this->g->num_vertices; ++i){
         for(int j = 0; j < this->g->num_vertices; ++j){
             if(this->g->get_weight(i,j) > 0){
                 for(int k = j+1; k < this->g->num_vertices; ++k){
                     if(this->g->get_weight(i,k) > 0 && this->g->get_weight(j,k) <= 0 && this->g->get_weight(i,k) != DO_NOT_DELETE){
-                        int current_cost = abs(g->get_weight(i,j)) + abs(g->get_weight(i,k)) + abs(g->get_weight(j,k));
-                        if(current_cost > *costs) {
-                            *costs = current_cost;
+  /*                      int current_cost = 0;
+                        int weight_i_k = abs(g->get_weight(i,k));
+                        int weight_i_j = abs(g->get_weight(i,j));
+                        int weight_j_k = abs(g->get_weight(j,k));
+                        if(weight_i_j != DO_NOT_DELETE)
+                            current_cost += weight_i_j;
+                        if(weight_j_k != DO_NOT_DELETE)
+                            current_cost += weight_j_k;
+                        current_cost += weight_i_k;
+*/
+                        int current_cost = abs(g->get_weight(i,k)) + abs(g->get_weight(i,j)) + abs(g->get_weight(j,k));
+                        if(current_cost > *max_cost) {
+                            *max_cost = current_cost;
                             first_tuple_val = i;
                             second_tuple_val = j;
                             third_tuple_val = k;

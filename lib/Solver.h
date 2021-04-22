@@ -10,6 +10,7 @@
 class Solver {
 private:
     WCE_Graph *g;
+    unsigned int rec_steps = 0;
 public:
     Solver(WCE_Graph *);
     virtual ~Solver();
@@ -24,7 +25,7 @@ public:
     void printDebug(std::string);
 
     std::list<std::tuple<int, int, int>> get_all_p3();
-    std::tuple<int, int, int> get_max_cost_p3(int *costs);
+    std::tuple<int, int, int> get_max_cost_p3(int *max_cost);
 
     std::tuple<int, int, int> get_max_cost_p3_experimental(int *p3_weight);
 };
