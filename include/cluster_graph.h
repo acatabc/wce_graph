@@ -82,6 +82,8 @@ private:
 
     node *all_nodes;
     set<p3> *all_p3;
+    node *all_nodes_reset;
+    set<p3> *all_p3_reset;
 
     bool are_nodes_connected(int node_index_1, int node_index_2)
     {
@@ -194,6 +196,7 @@ private:
         }
     }
 
+
 public:
     enum edge_status
     {
@@ -203,7 +206,8 @@ public:
     int n;
     edge_status **all_edge_statuses;
 
-    cluster_graph() : n(-1), all_nodes(NULL), all_p3(NULL), all_edge_statuses(NULL) {}
+    cluster_graph() : n(-1), all_nodes(NULL), all_nodes_reset(NULL), all_p3(NULL), all_p3_reset(NULL),
+                      all_edge_statuses(NULL) {}
 
     void load_graph(string file_name)     // file_name is "" if asked to read from cin
     {
@@ -217,9 +221,9 @@ public:
         *input_stream >> n;
 
         p3::set_n(n);
-        if (all_nodes != NULL) delete all_nodes;     // delete old nodes;
+        if (all_nodes != NULL) delete[] all_nodes;     // delete old nodes;
         all_nodes = new node[n];
-        if (all_p3 != NULL) delete all_p3;
+        if (all_p3 != NULL) delete[] all_p3;
         all_p3 = new set<p3>[n];
 
         string line;
@@ -268,16 +272,30 @@ public:
             }
         }
 
-        all_edge_statuses = new edge_status *[n];
-        for (int i = 0; i < n; i++)
-            all_edge_statuses[i] = new edge_status[n];
+        if (all_edge_statuses == NULL)
+        {
+            all_edge_statuses = new edge_status *[n];
+            for (int i = 0; i < n; i++)
+                all_edge_statuses[i] = new edge_status[n];
+        }
 
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
                 all_edge_statuses[i][j] = UNCHANGED;
+
+        if (all_nodes_reset != NULL) delete[] all_nodes_reset;      // deleting old backup
+        all_nodes_reset = new node[n];
+        if (all_p3_reset != NULL) delete[] all_p3_reset;
+        all_p3_reset = new set<p3>[n];
+
+        for (int i = 0; i < n; i++)
+        {
+            all_nodes_reset[i] = all_nodes[i];
+            all_p3_reset[i] = all_p3[i];
+        }
     }
 
-    // O(3^k*n*log(n) + n^3), k is budget, n is no. of nodes.
+    // O(3^k*n*log(n)), k is budget, n is no. of nodes.
     int solve(int budget)
     {
         rec_steps++;
@@ -359,6 +377,19 @@ public:
         }
         rec_steps--;
         return -1;
+    }
+
+    void reset_graph()
+    {
+        rec_steps = 0;
+        for (int i = 0; i < n; i++)
+        {
+            all_nodes[i] = all_nodes_reset[i];
+            all_p3[i] = all_p3_reset[i];
+
+            for (int j = 0; j < n; j++)
+                all_edge_statuses[i][j] = UNCHANGED;
+        }
     }
 };
 
