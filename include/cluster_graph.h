@@ -357,6 +357,7 @@ public:
             all_edge_statuses[u_index][w_index] = UNCHANGED;
             all_edge_statuses[w_index][u_index] = UNCHANGED;
         }
+        rec_steps--;
         return -1;
     }
 };

@@ -47,6 +47,7 @@ int Solver::branch(int k){
     if(this->branchEdge(u,v,k) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(v,w,k) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(w,u,k) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
+    rec_steps--;
     return NONE;
 }
 
