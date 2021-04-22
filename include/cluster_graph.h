@@ -145,7 +145,7 @@ private:
         }
     }
 
-    int connect_nodes(int u_index, int v_index)
+    void connect_nodes(int u_index, int v_index)
     {
         node *u_node = &all_nodes[u_index], *v_node = &all_nodes[v_index];
         set<node::node_weight_pair>::iterator v_node_weight_pair_iterator = u_node->disconnected_nodes.find(
@@ -287,8 +287,8 @@ public:
         int u_index, v_index = -1, w_index;     // for storing best p3 with max average weight
         double _max_budget_reduced;             // for calculation
         double max_budget_reduced = -1;         // for storing best p3's average weight
-        for (int i = 0; i < n; i++)
-        {            // search for p3 and solve for it
+        for (int i = 0; i < n; i++)             // search for p3 and solve for it
+        {
             _v_index = i;
             if (!all_p3[_v_index].empty())
                 for (set<p3>::iterator it = all_p3[_v_index].begin(); it != all_p3[_v_index].end(); it++)

@@ -26,7 +26,7 @@ int main(int argc, char** args) {
             break;
         }
     }
-    std::cout << "#recursive steps: " << cg.rec_steps << std::endl;
+    cout << "#recursive steps: " << cg.rec_steps << std::endl;
 
     return 0;
 }
