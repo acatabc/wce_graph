@@ -182,7 +182,8 @@ void Solver::update_p3_list(int u, int v){
     // remove all p3 that contain edge (u,v)
     for(iterator=p3_list.begin(); iterator != p3_list.end(); ++iterator){
         if((std::get<0>(*iterator) == u || std::get<1>(*iterator) == u || std::get<2>(*iterator) == u) && (std::get<0>(*iterator) == v || std::get<1>(*iterator) == v || std::get<2>(*iterator) == v)){
-            p3_list.erase(iterator);
+            iterator = p3_list.erase(iterator);
+            iterator--;
         }
     }
 
