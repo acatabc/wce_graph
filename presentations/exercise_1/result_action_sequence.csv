@@ -1,0 +1,11 @@
+file,vertices,edges,time,solsize,recsteps,finished,verified
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a001.dimacs,10,8,0,41,253,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a003.dimacs,10,7,0,142,1133,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a005.dimacs,10,14,0,229,10721,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a007.dimacs,10,3,0,0,1,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a009.dimacs,10,3,0,28,116,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a011.dimacs,20,8,0,24,143,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a013.dimacs,20,20,0.01,204,11174,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a015.dimacs,20,15,0,259,2664,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a017.dimacs,20,23,0.24,328,151631,1,correct
+/home/zia/studies/algeng_wce_solver/wce-students/3-actionseq/a019.dimacs,20,10,0,252,2497,1,correct

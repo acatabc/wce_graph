@@ -298,7 +298,6 @@ public:
     // O(3^k*n*log(n)), k is budget, n is no. of nodes.
     int solve(int budget)
     {
-        rec_steps++;
         if (budget < 0) return -1;
 
         int _u_index, _v_index, _w_index;       // for calculation
@@ -329,6 +328,7 @@ public:
         }
 
         if (v_index == -1) return budget;       // solved, solution is in all_edges_statuses
+        rec_steps++;
 
         if (all_edge_statuses[v_index][u_index] == UNCHANGED)
         {

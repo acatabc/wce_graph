@@ -29,7 +29,6 @@ void Solver::solve() {
 }
 
 int Solver::branch(int k, int layer){
-    rec_steps++;
     if(k < 0){
         return NONE;
     }
@@ -39,6 +38,7 @@ int Solver::branch(int k, int layer){
     if(std::get<0>(p3) == -1){
         return CLUSTER_GRAPH;
     }
+    rec_steps++;
 
     int v = std::get<0>(p3);
     int w = std::get<1>(p3);
@@ -48,7 +48,7 @@ int Solver::branch(int k, int layer){
     if(this->branchEdge(v,w,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(w,u,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
 
-//    rec_steps--;
+    rec_steps--;
     return NONE;
 }
 
