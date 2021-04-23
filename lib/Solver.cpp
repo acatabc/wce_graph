@@ -11,9 +11,10 @@
 #define DO_NOT_ADD INT32_MIN
 #define PRINTDEBUG true
 
-bool compare (std::tuple<int, int, int, int> first, std::tuple<int, int, int, int> second)
-{
-    return std::get<3>(first) > std::get<3>(second);
+
+
+void print_tuple4(std::tuple<int,int,int,int> a){
+    std::cout << std::get<0>(a)<< " " << std::get<1>(a) << " " << std::get<2>(a)<< std::get<3>(a)<< std::endl;
 }
 
 
@@ -21,25 +22,33 @@ void printList(std::list<std::tuple<int, int, int, int>> mylist){
 #ifdef DEBUG
     if(PRINTDEBUG == true){
         std::list<std::tuple<int, int, int, int>>::iterator it;
+        std::cout << "---------\n";
         std::cout << "mylist contains:\n";
         for(it=mylist.begin(); it!=mylist.end(); ++it){
-//            std::cout << "(" << std::get<0>(*it) << "," << std::get<1>(*it) <<"," << std::get<2>(*it) << ") cost " << std::get<3>(*it) << "\n";
-            std::cout << "(" << (std::get<0>(*it)+1) << "," << (std::get<1>(*it)+1) <<"," << (std::get<2>(*it)+1)  << ") cost " << std::get<3>(*it) << "\n";
+            std::cout << "(" << std::get<0>(*it) << "," << std::get<1>(*it) <<"," << std::get<2>(*it) << ") cost " << std::get<3>(*it) << "\n";
+//            std::cout << "(" << (std::get<0>(*it)+1) << "," << (std::get<1>(*it)+1) <<"," << (std::get<2>(*it)+1)  << ") cost " << std::get<3>(*it) << "\n";
         }
+        std::cout << "list end\n";
+        std::cout << "---------\n";
     }
 #endif
 }
+
+bool comparator_P3_costs (std::tuple<int, int, int, int> first, std::tuple<int, int, int, int> second)
+{
+    return std::get<3>(first) >= std::get<3>(second);
+}
+
 Solver::Solver(WCE_Graph *graph): g(graph){}
 
 Solver::~Solver() {}
-
 
 void Solver::solve() {
 
     printDebug("\n\n------DEFAULT SOLVER--------------------");
 
     int k = 0;
-    while (this->branch2(k, 0) == NONE){
+    while (this->branch(k, 0) == NONE){
         k++;
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
     }
@@ -95,24 +104,21 @@ int Solver::branchEdge(int u, int v, int k, int layer){
     return NONE;
 }
 
-
 void Solver::solve2() {
-
     printDebug("\n\n------NEW SOLVER--------------------");
 
-    add_all_p3();
-    p3_list.sort(compare);
+    add_all_p3_to_list();
+    p3_list.sort(comparator_P3_costs);
     printList(p3_list);
 
     int k = 0;
     while (this->branch2(k, 0) == NONE){
         k++;
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
+//        printList(p3_list);
     }
     std::cout << "#recursive steps: " << rec_steps << std::endl;
-
     printDebug("final k:" + std::to_string(k) + "\n");
-
 }
 
 int Solver::branch2(int k, int layer){
@@ -121,10 +127,14 @@ int Solver::branch2(int k, int layer){
         return NONE;
     }
 
-    if(p3_list.size() == 0) return CLUSTER_GRAPH;
+    if(p3_list.empty()) return CLUSTER_GRAPH;
 
     // get first p3 in list, i.e. p3 with highest cost
     auto p3 = p3_list.front();
+
+//    std::cout << "(" << (std::get<0>(p3)+1) << "," << (std::get<1>(p3)+1) <<"," << (std::get<2>(p3)+1)  << ") cost " << std::get<3>(p3) << "\n";
+//    std::cout << "(" << (std::get<0>(p3)) << "," << (std::get<1>(p3)) <<"," << (std::get<2>(p3))  << ") cost " << std::get<3>(p3) << "\n";
+
 
     int v = std::get<0>(p3);
     int w = std::get<1>(p3);
@@ -138,7 +148,6 @@ int Solver::branch2(int k, int layer){
     return NONE;
 }
 
-
 int Solver::branchEdge2(int u, int v, int k, int layer){
     printDebug("Layer " + std::to_string(layer) + " Edge " + std::to_string(u) + ", " + std::to_string(v));
     int weight = g->get_weight(u,v);
@@ -150,77 +159,84 @@ int Solver::branchEdge2(int u, int v, int k, int layer){
 
     if(k-abs(weight) < 0) return NONE;  // put this here to avoid unnecessary updating of p3_list
 
-    if(weight > 0) {
-        g->delete_edge(u, v);
-        update_p3_list(u,v,true);
-    }
-    if(weight < 0) {
-        g->add_edge(u, v);
-        update_p3_list(u,v,false);
-    }
+    if(weight > 0) g->delete_edge(u, v);
+    if(weight < 0) g->add_edge(u, v);
 
-    if(this->branch(k-abs(weight), layer) == CLUSTER_GRAPH){
+    update_p3_list(u,v);
+
+    if(this->branch2(k-abs(weight), layer) == CLUSTER_GRAPH){
         std::cout << u+1 << " " << v+1 <<std::endl;
         return CLUSTER_GRAPH;
     }
 
-    // reset weights
+    // reset weights and p3 list
     g->set_weight(u, v, weight);
+    update_p3_list(u,v);
 
-    // undo updating p3 list
-    if(weight > 0) {
-        update_p3_list(u,v,false);
-    }
-    if(weight < 0) {
-        update_p3_list(u,v,true);
-    }
     return NONE;
 }
 
-void Solver::update_p3_list(int u, int v, bool deleted){
-    std::list<std::tuple<int, int, int, int>>::iterator it;
+// removes and adds p3's in list when edge (u,v) was modified
+void Solver::update_p3_list(int u, int v){
 
     // remove all p3 that contain edge (u,v)
-    for(it=p3_list.begin(); it!=p3_list.end(); ++it){
-        if((std::get<0>(*it) == u || std::get<1>(*it) == u || std::get<2>(*it) == u) && (std::get<0>(*it) == v || std::get<1>(*it) == v || std::get<2>(*it) == v)){
-            p3_list.erase(it);
+    for(iterator=p3_list.begin(); iterator != p3_list.end(); ++iterator){
+        if((std::get<0>(*iterator) == u || std::get<1>(*iterator) == u || std::get<2>(*iterator) == u) && (std::get<0>(*iterator) == v || std::get<1>(*iterator) == v || std::get<2>(*iterator) == v)){
+            p3_list.erase(iterator);
         }
     }
 
+    int weight_uv = g->get_weight(u,v);
+
     // add all new p3, which are the result of modifying (u,v)
     // case 1: (u,v) was deleted
-    if(deleted){
+    if(weight_uv < 0){
         // we have a new p3, if u and v have the same neighbor
         for(int i = 0; i < g->num_vertices; i++){
             if(u == i || v == i) continue;
-            if(g->get_weight(u,i) > 0 && g->get_weight(v,i)>0) {
-                insert_p3_in_list(u,v,i,g->get_p3_cost(u,v,i));
+            int weight_ui = g->get_weight(u,i);
+            int weight_vi = g->get_weight(v,i);
+            if(weight_ui > 0 && weight_vi>0) {
+                int cost = 0;
+                if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD) cost += abs(weight_uv);
+                if(weight_ui != DO_NOT_DELETE && weight_ui != DO_NOT_ADD) cost += abs(weight_ui);
+                if(weight_vi != DO_NOT_DELETE && weight_vi != DO_NOT_ADD) cost += abs(weight_vi);
+                insert_p3_in_list(u,v,i,cost);
             }
         }
     }
     // case 2: (u,v) was added
-    else{
+    if(weight_uv > 0){
         // we have a new p3, if u has a neighbor which v does not have or reverse
         for(int i = 0; i < g->num_vertices; i++){
             if(u == i || v == i) continue;
-            if(g->get_weight(u,i) > 0 && g->get_weight(v,i)<0) insert_p3_in_list(u,v,i,g->get_p3_cost(u,v,i));
-            if(g->get_weight(u,i) < 0 && g->get_weight(v,i)>0) insert_p3_in_list(u,v,i,g->get_p3_cost(u,v,i));
+            int weight_ui = g->get_weight(u,i);
+            int weight_vi = g->get_weight(v,i);
+            if((weight_ui > 0 && weight_vi<0)||(weight_ui < 0 && weight_vi>0)) {
+                int cost = 0;
+                if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD) cost += abs(weight_uv);
+                if(weight_ui != DO_NOT_DELETE && weight_ui != DO_NOT_ADD) cost += abs(weight_ui);
+                if(weight_vi != DO_NOT_DELETE && weight_vi != DO_NOT_ADD) cost += abs(weight_vi);
+                insert_p3_in_list(u,v,i,cost);
+            }
         }
     }
-
-
 }
 
 void Solver::insert_p3_in_list(int u, int v, int w, int cost){
-    std::list<std::tuple<int, int, int, int>>::iterator it;
-    for(it=p3_list.begin(); it!=p3_list.end(); it++){
-        if(std::get<3>(*it) < cost) {
-            p3_list.insert(it,std::make_tuple(u,v,w,cost));
-            return;
+    for(iterator=p3_list.begin(); iterator != p3_list.end(); iterator++){
+        if(cost > std::get<3>(*iterator)) {
+            p3_list.insert(iterator, std::make_tuple(u, v, w, cost));
+            break;
         }
     }
+    // insert at the end of list
+    if(iterator == p3_list.end()) p3_list.insert(iterator, std::make_tuple(u, v, w, cost));
+
+    return;
 
 }
+
 
 
 int Solver::branchEdgeAllowLoop(int u, int v, int k, int layer){
@@ -252,8 +268,7 @@ std::tuple<int, int, int> Solver::find_first_p3() {
     return std::make_tuple(-1,-1, -1);
 }
 
-
-void Solver::add_all_p3(){
+void Solver::add_all_p3_to_list(){
     for(int i = 0; i < this->g->num_vertices; ++i){
         for(int j = 0; j < this->g->num_vertices; ++j){
             if(this->g->get_weight(i,j) > 0){

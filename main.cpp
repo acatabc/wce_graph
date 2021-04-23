@@ -8,7 +8,7 @@ int main() {
 
 
 #ifdef DEBUG
-//    g->print(std::cout);
+//    g->printGraph(std::cout);
 //    s->print_all_p3();
 #endif
     s->solve2();

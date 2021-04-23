@@ -24,7 +24,7 @@ public:
     int get_p3_cost(int u, int v, int w);
     virtual ~WCE_Graph();
 
-    void print(std::ostream &os);
+    void printGraph(std::ostream &os);
 };
 
 

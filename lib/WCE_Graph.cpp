@@ -68,9 +68,9 @@ int WCE_Graph::get_p3_cost(int u, int v, int w){
 }
 
 
-void WCE_Graph::print(std::ostream& os) {
+void WCE_Graph::printGraph(std::ostream& os) {
 
-    for(int i = 0; i <= this->num_vertices; ++i)
+    for(int i = -1; i <= this->num_vertices; ++i)
         if(i < 10)
             os << i <<std::setw(5)<< "|";
         else if(i < 100)
@@ -84,9 +84,9 @@ void WCE_Graph::print(std::ostream& os) {
     os << std::endl;
     for(int i = 0; i < this->num_vertices; ++i){
         if(i < 9) {
-            os << i + 1 << std::setw(5) << "|";
+            os << i << std::setw(5) << "|";
         }else{
-            os << i + 1 << std::setw(4) << "|";
+            os << i << std::setw(4) << "|";
         }
         for(int j = 0; j < this->num_vertices; ++j){
             int el = this->adj_matrix[i][j];
@@ -95,7 +95,9 @@ void WCE_Graph::print(std::ostream& os) {
             else if(el >= 10 && el < 100 || el < 0 && el > -10)
                 os << el << std::setw(4) << "|";
             else if(el == DO_NOT_DELETE)
-                os << "DND" << std::setw(3) << "|";
+                os << "+DND" << std::setw(2) << "|";
+            else if(el == DO_NOT_ADD)
+                os << "-DNA" << std::setw(2) << "|";
             else if (el >= 100 && el < 1000 || el <= -10 && el > -100)
                 os << el << std::setw(3) << "|";
             else

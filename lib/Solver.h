@@ -13,7 +13,8 @@ private:
     unsigned int rec_steps = 0;
 
     std::list<std::tuple<int, int, int, int>> p3_list;
-    void add_all_p3();
+    std::list<std::tuple<int, int, int, int>>::iterator iterator;
+    void add_all_p3_to_list();
 
 public:
     Solver(WCE_Graph *);
@@ -24,8 +25,9 @@ public:
     void solve2();
     int branch2(int k, int layer);
     int branchEdge2(int u, int v, int k, int layer);
-    void update_p3_list(int u, int v, bool deleted);
+    void update_p3_list(int u, int v);
     void insert_p3_in_list(int u, int v, int w, int cost);
+//    bool comparator_P3_costs(std::tuple<int, int, int, int> first, std::tuple<int, int, int, int> second);
 
     void solve();
     int branch(int k, int layer);
