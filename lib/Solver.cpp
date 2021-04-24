@@ -1,17 +1,7 @@
-//
-// Created by Julia Henkel on 20.04.21.
-//
 
-#include <tuple>
 #include "Solver.h"
+#include <tuple>
 #include "iostream"
-#define NONE -1
-#define CLUSTER_GRAPH -2
-#define DO_NOT_DELETE INT32_MAX
-#define DO_NOT_ADD INT32_MIN
-#define PRINTDEBUG true
-
-
 
 Solver::Solver(WCE_Graph *graph): g(graph){}
 

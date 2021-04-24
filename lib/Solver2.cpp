@@ -3,7 +3,6 @@
 #include <tuple>
 #include "iostream"
 
-
 Solver2::Solver2(WCE_Graph *graph): g(graph){}
 
 Solver2::~Solver2() {}
@@ -138,9 +137,7 @@ void Solver2::insert_p3(int u, int v, int w, int cost){
     }
     // insert at the end of list
     if(iterator == p3List.end()) p3List.insert(iterator, std::make_tuple(u, v, w, cost));
-
     return;
-
 }
 
 // finds all p3s and adds them to p3List

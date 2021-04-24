@@ -1,14 +1,9 @@
-//
-// Created by Julia Henkel on 20.04.21.
-//
 
 #ifndef ALGENG_WCE_SOLVER_SOLVER_H
 #define ALGENG_WCE_SOLVER_SOLVER_H
 
 #include "WCE_Graph.h"
-
 #include "../include/utils.h"
-//#include "../include/utilFunctions.h"
 
 class Solver {
 private:
@@ -22,15 +17,14 @@ public:
     void solve();
     int branch(int k, int layer);
     int branchEdge(int u, int v, int k, int layer);
-
     int branchEdgeAllowLoop(int u, int v, int k, int layer);
+
     std::tuple<int, int, int> find_next_p3();
     std::tuple<int, int, int> find_first_p3();
+    std::tuple<int, int, int> get_max_cost_p3();
 
     void print_all_p3();
-
     std::list<std::tuple<int, int, int>> get_all_p3();
-    std::tuple<int, int, int> get_max_cost_p3();
 
     std::tuple<int, int, int> get_max_cost_p3_experimental(int *p3_weight);
 };
