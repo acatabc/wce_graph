@@ -28,4 +28,6 @@ public:
 };
 
 
+WCE_Graph *parse_and_build_graph();
+
 #endif //ALGENG_WCE_SOLVER_WCE_GRAPH_H

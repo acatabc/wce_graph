@@ -7,8 +7,6 @@
 #include <tuple>
 #include <cmath>
 #include <iomanip>
-#include <vector>
-#include "./../include/utils.h"
 
 #define NONE -1
 #define CLUSTER_GRAPH -2

@@ -26,6 +26,3 @@ WCE_Graph *parse_and_build_graph(){
     return g;
 }
 
-void print_tuple(std::tuple<int,int,int> a){
-    std::cout << std::get<0>(a) +1<< " " << std::get<1>(a) +1<< " " << std::get<2>(a) +1<< std::endl;
-}
