@@ -169,11 +169,11 @@ Time dependence on the value of n(vertices) and k(optimal cost) is actually not 
 					yticklabel={$10^{\pgfmathprintnumber{\tick}}$},
 				},
 			]
-			\addplot[only marks,scatter src=explicit, scatter,mark=+,thick,discard if not={finished}{1}] table[col sep=comma,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {result_action_sequence.csv};
+			\addplot[only marks,scatter src=explicit, scatter,mark=+,thick,discard if not={finished}{1}] table[col sep=semicolon,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {action.csv};
 			\addlegendentry{action sequence}
-			\addplot[only marks,scatter src=explicit, scatter,mark=o,thick,discard if not={finished}{1}] table[col sep=comma,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {result_random.csv};
+			\addplot[only marks,scatter src=explicit, scatter,mark=o,thick,discard if not={finished}{1}] table[col sep=semicolon,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {random.csv};
 			\addlegendentry{random}
-			\addplot[only marks,scatter src=explicit, scatter,mark=square,thick,discard if not={finished}{1}] table[col sep=comma,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {result_real_world.csv};
+			\addplot[only marks,scatter src=explicit, scatter,mark=square,thick,discard if not={finished}{1}] table[col sep=semicolon,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {real.csv};
 			\addlegendentry{real world}
 		\end{axis}
 	\end{tikzpicture}
