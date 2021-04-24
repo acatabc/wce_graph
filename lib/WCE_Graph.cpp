@@ -1,19 +1,11 @@
-//
-// Created by acat on 16.04.21.
-//
 
 #include "WCE_Graph.h"
 #include <iostream>
 #include <tuple>
 #include <cmath>
 #include <iomanip>
-#include <vector>
-#include "./../include/utils.h"
+#include "../include/utils.h"
 
-#define NONE -1
-#define CLUSTER_GRAPH -2
-#define DO_NOT_DELETE INT32_MAX
-#define DO_NOT_ADD INT32_MIN
 
 WCE_Graph::WCE_Graph(int n): num_vertices(n){
     this->adj_matrix = new int*[n];
@@ -30,7 +22,6 @@ WCE_Graph::~WCE_Graph() {
     }
     delete[] adj_matrix;
 }
-
 
 void WCE_Graph::add_edge(int v, int w) {
     this->adj_matrix[v][w] = DO_NOT_DELETE;
@@ -69,6 +60,7 @@ int WCE_Graph::get_p3_cost(int u, int v, int w){
 
 
 void WCE_Graph::printGraph(std::ostream& os) {
+#ifdef DEBUG
 
     for(int i = -1; i <= this->num_vertices; ++i)
         if(i < 10)
@@ -106,4 +98,5 @@ void WCE_Graph::printGraph(std::ostream& os) {
         os << std::endl;
     }
     os <<"\n\n"<< std::endl;
+#endif
 }
