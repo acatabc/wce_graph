@@ -118,7 +118,7 @@ Psuedo code of our program is:
 \end{algorithm}
 
 \section{Data Structures}
-Graph is implemented as a adjancency matrix of size $n^3$, positive weights represents connection, negative weights represents no connection, DO\_NOT\_DELETE preprocessor directive is replaced with INT32\_MAX and represents weights of edge that has been added and should not be removed to avoid cycles in search space, similarly DO\_NOT\_ADD is replaced with INT32\_MIN and represents weight of edge that has been removed and should not be added.
+Graph is implemented as a $n \times n$ adjancency matrix of size , positive weights represents connection, negative weights represents no connection, DO\_NOT\_DELETE preprocessor directive is replaced with INT32\_MAX and represents weights of edge that has been added and should not be removed to avoid cycles in search space, similarly DO\_NOT\_ADD is replaced with INT32\_MIN and represents weight of edge that has been removed and should not be added.
 
 \section{Highlights}
 	\begin{itemize}
@@ -138,7 +138,7 @@ Time dependence on the value of n(vertices) and k(optimal cost) is actually not 
 %\clearpage
 \onecolumn
 
-\begin{figure}[H]
+\begin{figure}[h]
 	\centering
 	\def\maxValue{500} %
 	\def\minValue{0.1} % choose such that all values are displayed
