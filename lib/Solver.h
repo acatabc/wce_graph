@@ -5,30 +5,35 @@
 #ifndef ALGENG_WCE_SOLVER_SOLVER_H
 #define ALGENG_WCE_SOLVER_SOLVER_H
 
+#include <map>
+#include <vector>
 #include "WCE_Graph.h"
 
 class Solver {
 private:
-    WCE_Graph *g;
     unsigned int rec_steps = 0;
 public:
-    Solver(WCE_Graph *);
+    WCE_Graph *g;
+    std::vector<std::map<int, std::pair<int,int>, std::greater<>>> p3s;
+    Solver();
     virtual ~Solver();
+    WCE_Graph *parse_and_build_graph();
 
+    //solving
     void solve();
     int branch(int k, int layer);
     int branchEdge(int u, int v, int k, int layer);
-    int branchEdgeAllowLoop(int u, int v, int k, int layer);
-    std::tuple<int, int, int> find_next_p3();
-    std::tuple<int, int, int> find_first_p3();
 
-    void print_all_p3();
-    void printDebug(std::string);
-
-    std::list<std::tuple<int, int, int>> get_all_p3();
+    //method related to p3s
+    void get_all_p3();
+    std::tuple<int,int,int> get_rand_p3();
+    void update_p3s(int, int);
     std::tuple<int, int, int> get_max_cost_p3();
+    void add_p3(int,int,int);
+    void remove_p3(int u, int v, int w);
 
-    std::tuple<int, int, int> get_max_cost_p3_experimental(int *p3_weight);
+    //Debug utils
+    void printDebug(std::string);
 };
 
 

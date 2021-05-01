@@ -3,13 +3,19 @@
 #include "include/utils.h"
 int main() {
 
-    WCE_Graph *g = parse_and_build_graph();
-    Solver *s = new Solver(g);
+    Solver *s = new Solver();
 
 
 #ifdef DEBUG
-    g->print(std::cout);
-    s->print_all_p3();
+    s->g->print(std::cout);
+    s->get_all_p3();
+    int i = 0;
+    for(auto a : s->p3s){
+        for(auto b: a){
+            std::cout << b.first << " with " << i+1 <<" " << b.second.first+1 << " " << b.second.second +1<< std::endl;
+        }
+        ++i;
+    }
 #endif
     s->solve();
     return 0;
