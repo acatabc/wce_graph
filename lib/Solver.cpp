@@ -10,6 +10,8 @@
 #define DO_NOT_DELETE INT32_MAX
 #define DO_NOT_ADD INT32_MIN
 
+#define FORWARD 0
+#define BACKWARD 1
 
 #define PRINTDEBUG true
 WCE_Graph *Solver::parse_and_build_graph(){
@@ -41,7 +43,7 @@ Solver::~Solver() {}
 
 void Solver::solve() {
     int k = 0;
-    this->get_all_p3();
+    this->get_all_p3(); //n^3
     while (this->branch(k, 0) == NONE){
         k++;
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
@@ -56,7 +58,8 @@ int Solver::branch(int k, int layer){
         return NONE;
     }
 
-    auto p3 = this->get_rand_p3();
+    auto p3 = this->get_rand_p3(); //O(n) worst case
+//    auto p3 = this->get_max_p3(); //O(n)
 
     if(std::get<0>(p3) == -1){
         return CLUSTER_GRAPH;
@@ -86,7 +89,7 @@ int Solver::branchEdge(int u, int v, int k, int layer){
 
     if(weight > 0) g->delete_edge(u, v);
     if(weight < 0) g->add_edge(u, v);
-    update_p3s(u,v);
+    update_p3s(u,v, weight, FORWARD); //n*log(n^2)
 
     if(this->branch(k-abs(weight), layer) == CLUSTER_GRAPH){
         std::cout << u+1 << " " << v+1 <<std::endl;
@@ -94,7 +97,7 @@ int Solver::branchEdge(int u, int v, int k, int layer){
     }
 
     g->set_weight(u, v, weight);
-    update_p3s(u,v);
+    update_p3s(u,v, weight, BACKWARD); //n*log(n^2)
 
     return NONE;
 }
@@ -151,14 +154,50 @@ void Solver::get_all_p3() {
 //v --- u --- w
 void Solver::add_p3(int u, int v, int w) {
     int key = v*v + w*w;
+    int weight_uv = g->get_weight(u,v);
+    int weight_uw = g->get_weight(u,w);
+    int weight_vw = g->get_weight(v,w);
+    int weight = 0;
+    if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD){
+        weight += abs(weight_uv)*abs(weight_uv);
+    }
+    if(weight_uw != DO_NOT_DELETE && weight_uw != DO_NOT_ADD){
+        weight += abs(weight_uw)*abs(weight_uw);
+    }
+    if(weight_vw != DO_NOT_DELETE && weight_vw != DO_NOT_ADD){
+        weight += abs(weight_vw)*abs(weight_vw);
+    }
+    key += weight*weight;
+    auto it = p3s.at(u).find(key);
+    if(it != p3s.at(u).end()) {
+        std::cout << "bad" << std::endl;
+        EXIT_FAILURE;
+    }
     p3s.at(u).emplace(key, std::make_pair(v,w));
 }
 
-void Solver::remove_p3(int u, int v, int w){
-    p3s.at(u).erase(v*v+w*w);
+void Solver::remove_p3(int u, int v, int w, int old_weight, int flag){
+    int weight = 0;
+    int weight_uv = g->get_weight(u,v);
+    int weight_uw = g->get_weight(u,w);
+    int weight_vw = g->get_weight(v,w);
+    if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD){
+        weight += abs(weight_uv)*abs(weight_uv);
+    }
+    if(weight_uw != DO_NOT_DELETE && weight_uw != DO_NOT_ADD){
+        weight += abs(weight_uw)*abs(weight_uw);
+    }
+    if(weight_vw != DO_NOT_DELETE && weight_vw != DO_NOT_ADD){
+        weight += abs(weight_vw)*abs(weight_vw);
+    }
+    if(flag == BACKWARD)
+        weight -= abs(old_weight)*abs(old_weight);
+    else
+        weight += abs(old_weight)*abs(old_weight);
+    p3s.at(u).erase(weight*weight+v*v+w*w);
 }
 
-std::tuple<int, int, int> Solver::get_rand_p3() {
+std::tuple<int,int,int> Solver::get_rand_p3() {
     int u = rand() % p3s.size();
     auto p3_of_u = p3s.at(u);
     int counter = 0;
@@ -170,21 +209,41 @@ std::tuple<int, int, int> Solver::get_rand_p3() {
     if(counter >= p3s.size())
         return std::tuple<int, int, int>(-1, -1, -1);
     auto pair = *p3_of_u.begin();
-    return std::tuple<int, int, int>(u, pair.second.first, pair.second.second);
+    return std::tuple<int,int,int>(u, pair.second.first, pair.second.second);
 }
 
-void Solver::update_p3s(int u, int v) {
+std::tuple<int, int, int> Solver::get_max_p3() {
+    auto max_tuple = std::make_tuple(-1,-1,-1);
+    int max_weight = -1;
+    int u = 0;
+    for(auto a : p3s){
+        for( auto tup: a) {
+            int v = tup.second.first;
+            int w = tup.second.second;
+            int _max_weight = g->get_costs(u, v, w);
+            printDebug(std::to_string(v) + " " + std::to_string(w) + " " + std::to_string(u));
+            if (_max_weight > max_weight) {
+                max_tuple = std::make_tuple(u, v, w);
+            }
+            break;
+        }
+        u++;
+    }
+    return max_tuple;
+}
+
+void Solver::update_p3s(int u, int v, int old_weight, int flag) {
     //edge was removed
     if(g->get_weight(u,v) < 0){
         for(int i = 0; i < g->num_vertices; ++i){
             if(g->get_weight(u,i) > 0 && g->get_weight(v,i) < 0)
                 //remove
-                remove_p3(u,i,v);
+                remove_p3(u,i,v, old_weight, flag);
             else if(g->get_weight(u,i) > 0 && g->get_weight(v,i) > 0)
                 add_p3(i,v,u);
 
             if(g->get_weight(v,i) > 0 && g->get_weight(u,i) < 0)
-                remove_p3(v,i,u);
+                remove_p3(v,i,u, old_weight, flag);
         }
     } else if(g->get_weight(u,v) > 0){
         //edge was added
@@ -193,7 +252,7 @@ void Solver::update_p3s(int u, int v) {
                 //remove
                 add_p3(u,i,v);
             else if(g->get_weight(u,i) > 0 && g->get_weight(v,i) > 0)
-                remove_p3(i,v,u);
+                remove_p3(i,v,u, old_weight, flag);
 
             if(g->get_weight(v,i) > 0 && g->get_weight(u,i) < 0)
                 add_p3(v,i,u);
@@ -209,6 +268,7 @@ if(PRINTDEBUG == true){
 }
 #endif
 }
+
 
 
 

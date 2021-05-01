@@ -19,6 +19,7 @@ public:
     void add_edge(int,int);
     void delete_edge(int, int);
     void modify_edge(int, int);
+    int get_costs(int,int,int);
     void set_weight(int , int , int );
     int get_weight(int,int);
     virtual ~WCE_Graph();

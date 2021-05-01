@@ -27,10 +27,11 @@ public:
     //method related to p3s
     void get_all_p3();
     std::tuple<int,int,int> get_rand_p3();
-    void update_p3s(int, int);
+    std::tuple<int,int,int> get_max_p3();
+    void update_p3s(int, int, int, int);
     std::tuple<int, int, int> get_max_cost_p3();
     void add_p3(int,int,int);
-    void remove_p3(int u, int v, int w);
+    void remove_p3(int u, int v, int w, int weight, int flag);
 
     //Debug utils
     void printDebug(std::string);
