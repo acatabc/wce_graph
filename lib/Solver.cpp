@@ -19,7 +19,7 @@ WCE_Graph *Solver::parse_and_build_graph(){
     //file test_data.txt > stdin
     //I dont like the file path thing but ok...
     //std::cout <<"../test_data/test_data.txt" << std::endl;
-    freopen("../test_data/test_data.txt", "r", stdin);
+    freopen("../test_data/w003.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
@@ -69,7 +69,7 @@ int Solver::branch(int k, int layer){
     int v = std::get<0>(p3);
     int w = std::get<1>(p3);
     int u = std::get<2>(p3);
-
+    printDebug(std::to_string(layer) + ": " + std::to_string(v) + " "+ std::to_string(w) + " "+ std::to_string(u));
     if(this->branchEdge(u,v,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(v,w,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(w,u,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
@@ -222,9 +222,10 @@ std::tuple<int, int, int> Solver::get_max_p3() {
             int v = tup.second.first;
             int w = tup.second.second;
             int _max_weight = g->get_costs(u, v, w);
-            printDebug(std::to_string(v) + " " + std::to_string(w) + " " + std::to_string(u));
+            printDebug(std::to_string(v) + " " + std::to_string(w) + " " + std::to_string(u) + " "+ std::to_string(_max_weight));
             if (_max_weight > max_weight) {
                 max_tuple = std::make_tuple(u, v, w);
+                max_weight = _max_weight;
             }
             break;
         }
