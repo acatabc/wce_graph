@@ -58,8 +58,8 @@ int Solver::branch(int k, int layer){
         return NONE;
     }
 
-    auto p3 = this->get_rand_p3(); //O(n) worst case
-//    auto p3 = this->get_max_p3(); //O(n)
+//    auto p3 = this->get_rand_p3(); //O(n) worst case
+    auto p3 = this->get_max_p3(); //O(n)
 
     if(std::get<0>(p3) == -1){
         return CLUSTER_GRAPH;
@@ -153,27 +153,28 @@ void Solver::get_all_p3() {
 }
 //v --- u --- w
 void Solver::add_p3(int u, int v, int w) {
-    int key = v*v + w*w;
-    int weight_uv = g->get_weight(u,v);
-    int weight_uw = g->get_weight(u,w);
-    int weight_vw = g->get_weight(v,w);
-    int weight = 0;
-    if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD){
-        weight += abs(weight_uv)*abs(weight_uv);
-    }
-    if(weight_uw != DO_NOT_DELETE && weight_uw != DO_NOT_ADD){
-        weight += abs(weight_uw)*abs(weight_uw);
-    }
-    if(weight_vw != DO_NOT_DELETE && weight_vw != DO_NOT_ADD){
-        weight += abs(weight_vw)*abs(weight_vw);
-    }
-    key += weight*weight;
-    auto it = p3s.at(u).find(key);
-    if(it != p3s.at(u).end()) {
-        std::cout << "bad" << std::endl;
-        EXIT_FAILURE;
-    }
-    p3s.at(u).emplace(key, std::make_pair(v,w));
+//    int key = v*v + w*w;
+//    int weight_uv = g->get_weight(u,v);
+//    int weight_uw = g->get_weight(u,w);
+//    int weight_vw = g->get_weight(v,w);
+//    int weight = 0;
+//    if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD){
+//        weight += abs(weight_uv)*abs(weight_uv);
+//    }
+//    if(weight_uw != DO_NOT_DELETE && weight_uw != DO_NOT_ADD){
+//        weight += abs(weight_uw)*abs(weight_uw);
+//    }
+//    if(weight_vw != DO_NOT_DELETE && weight_vw != DO_NOT_ADD){
+//        weight += abs(weight_vw)*abs(weight_vw);
+//    }
+//    key += weight*weight;
+//    auto it = p3s.at(u).find(key);
+//    if(it != p3s.at(u).end()) {
+//        std::cout << "bad" << std::endl;
+//        EXIT_FAILURE;
+//    }
+//    p3s.at(u).emplace(key, std::make_pair(v,w));
+    p3s.at(u).emplace(std::make_tuple(u,v,w,g->get_costs(u,v,w)), std::make_pair(v,w));
 }
 
 void Solver::remove_p3(int u, int v, int w, int old_weight, int flag){
@@ -182,19 +183,19 @@ void Solver::remove_p3(int u, int v, int w, int old_weight, int flag){
     int weight_uw = g->get_weight(u,w);
     int weight_vw = g->get_weight(v,w);
     if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD){
-        weight += abs(weight_uv)*abs(weight_uv);
+        weight += abs(weight_uv);
     }
     if(weight_uw != DO_NOT_DELETE && weight_uw != DO_NOT_ADD){
-        weight += abs(weight_uw)*abs(weight_uw);
+        weight += abs(weight_uw);
     }
     if(weight_vw != DO_NOT_DELETE && weight_vw != DO_NOT_ADD){
-        weight += abs(weight_vw)*abs(weight_vw);
+        weight += abs(weight_vw);
     }
     if(flag == BACKWARD)
-        weight -= abs(old_weight)*abs(old_weight);
+        weight -= abs(old_weight);
     else
-        weight += abs(old_weight)*abs(old_weight);
-    p3s.at(u).erase(weight*weight+v*v+w*w);
+        weight += abs(old_weight);
+    p3s.at(u).erase(std::make_tuple(u,v,w,weight));
 }
 
 std::tuple<int,int,int> Solver::get_rand_p3() {
@@ -268,7 +269,3 @@ if(PRINTDEBUG == true){
 }
 #endif
 }
-
-
-
-
