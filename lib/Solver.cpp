@@ -19,7 +19,7 @@ WCE_Graph *Solver::parse_and_build_graph(){
     //file test_data.txt > stdin
     //I dont like the file path thing but ok...
     //std::cout <<"../test_data/test_data.txt" << std::endl;
-    freopen("../test_data/w003.dimacs", "r", stdin);
+    freopen("../test_data/r031.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
@@ -46,7 +46,7 @@ void Solver::solve() {
     this->get_all_p3(); //n^3
     while (this->branch(k, 0) == NONE){
         k++;
-        printDebug("\nSOLVE FOR k:" + std::to_string(k));
+//        printDebug("\nSOLVE FOR k:" + std::to_string(k));
     }
     std::cout << "#recursive steps: " << rec_steps << std::endl;
 
@@ -69,7 +69,7 @@ int Solver::branch(int k, int layer){
     int v = std::get<0>(p3);
     int w = std::get<1>(p3);
     int u = std::get<2>(p3);
-    printDebug(std::to_string(layer) + ": " + std::to_string(v) + " "+ std::to_string(w) + " "+ std::to_string(u));
+//    printDebug(std::to_string(layer) + ": " + std::to_string(v) + " "+ std::to_string(w) + " "+ std::to_string(u));
     if(this->branchEdge(u,v,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(v,w,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(w,u,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
@@ -78,11 +78,11 @@ int Solver::branch(int k, int layer){
 }
 
 int Solver::branchEdge(int u, int v, int k, int layer){
-    printDebug("Layer " + std::to_string(layer) + " Edge " + std::to_string(u) + ", " + std::to_string(v));
+//    printDebug("Layer " + std::to_string(layer) + " Edge " + std::to_string(u) + ", " + std::to_string(v));
     int weight = g->get_weight(u,v);
 
     if(weight == DO_NOT_DELETE || weight == DO_NOT_ADD) {
-        printDebug("Do not delete / add " + std::to_string(u) + ", " + std::to_string(v));
+//        printDebug("Do not delete / add " + std::to_string(u) + ", " + std::to_string(v));
         return NONE;
     }
 //    if((k- abs(weight)) < 0 ) return NONE;
@@ -174,7 +174,8 @@ void Solver::add_p3(int u, int v, int w) {
 //        EXIT_FAILURE;
 //    }
 //    p3s.at(u).emplace(key, std::make_pair(v,w));
-    p3s.at(u).emplace(std::make_tuple(u,v,w,g->get_costs(u,v,w)), std::make_pair(v,w));
+//    p3s.at(u).emplace(std::make_tuple(u,v,w,g->get_costs(u,v,w)), std::make_pair(v,w));
+    p3s.at(u).emplace(p3(u,v,w,g->get_costs(u,v,w)), std::make_pair(v,w));
 }
 
 void Solver::remove_p3(int u, int v, int w, int old_weight, int flag){
@@ -195,7 +196,8 @@ void Solver::remove_p3(int u, int v, int w, int old_weight, int flag){
         weight -= abs(old_weight);
     else
         weight += abs(old_weight);
-    p3s.at(u).erase(std::make_tuple(u,v,w,weight));
+//    p3s.at(u).erase(std::make_tuple(u,v,w,weight));
+    p3s.at(u).erase(p3(u,v,w,weight));
 }
 
 std::tuple<int,int,int> Solver::get_rand_p3() {
@@ -205,11 +207,13 @@ std::tuple<int,int,int> Solver::get_rand_p3() {
     while(p3_of_u.empty() && counter <= p3s.size()){
         u = (u+1) % p3s.size();
         p3_of_u = p3s.at(u);
+        printDebug("hello"+ std::to_string(counter));
         counter++;
     }
     if(counter >= p3s.size())
         return std::tuple<int, int, int>(-1, -1, -1);
     auto pair = *p3_of_u.begin();
+    printDebug(std::to_string(pair.second.first) + " "+ std::to_string(pair.second.second));
     return std::tuple<int,int,int>(u, pair.second.first, pair.second.second);
 }
 
@@ -217,12 +221,12 @@ std::tuple<int, int, int> Solver::get_max_p3() {
     auto max_tuple = std::make_tuple(-1,-1,-1);
     int max_weight = -1;
     int u = 0;
-    for(auto a : p3s){
-        for( auto tup: a) {
+    for(auto& a : p3s){
+        for(auto& tup: a) {
             int v = tup.second.first;
             int w = tup.second.second;
             int _max_weight = g->get_costs(u, v, w);
-            printDebug(std::to_string(v) + " " + std::to_string(w) + " " + std::to_string(u) + " "+ std::to_string(_max_weight));
+//            printDebug(std::to_string(v) + " " + std::to_string(w) + " " + std::to_string(u) + " "+ std::to_string(_max_weight));
             if (_max_weight > max_weight) {
                 max_tuple = std::make_tuple(u, v, w);
                 max_weight = _max_weight;
