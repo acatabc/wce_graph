@@ -85,9 +85,7 @@ int Solver::branchEdge(int u, int v, int k, int layer){
 //        printDebug("Do not delete / add " + std::to_string(u) + ", " + std::to_string(v));
         return NONE;
     }
-//    if((k- abs(weight)) < 0 ) return NONE;
-//if weight == 0
-    // delete edge branch if cluster
+
     if(weight > 0) g->delete_edge(u, v);
     if(weight < 0) g->add_edge(u, v);
     update_p3s(u,v, weight, FORWARD); //n*log(n^2)
