@@ -19,7 +19,7 @@ WCE_Graph *Solver::parse_and_build_graph(){
     //file test_data.txt > stdin
     //I dont like the file path thing but ok...
     //std::cout <<"../test_data/test_data.txt" << std::endl;
-    freopen("../test_data/r031.dimacs", "r", stdin);
+    freopen("../test_data/w003.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
@@ -86,7 +86,8 @@ int Solver::branchEdge(int u, int v, int k, int layer){
         return NONE;
     }
 //    if((k- abs(weight)) < 0 ) return NONE;
-
+//if weight == 0
+    // delete edge branch if cluster
     if(weight > 0) g->delete_edge(u, v);
     if(weight < 0) g->add_edge(u, v);
     update_p3s(u,v, weight, FORWARD); //n*log(n^2)
