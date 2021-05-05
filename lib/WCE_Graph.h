@@ -20,7 +20,7 @@ public:
     int get_weight(int,int);
     int get_p3_cost(int u, int v, int w);
     virtual ~WCE_Graph();
-
+    int get_costs(int u, int v, int w);
     void printGraph(std::ostream &os);
 };
 

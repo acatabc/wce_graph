@@ -100,3 +100,14 @@ void WCE_Graph::printGraph(std::ostream& os) {
     os <<"\n\n"<< std::endl;
 #endif
 }
+
+int WCE_Graph::get_costs(int u, int v, int w) {
+    int sum = 0;
+    if(this->adj_matrix[u][v] != DO_NOT_DELETE && this->adj_matrix[u][v] != DO_NOT_ADD)
+        sum += abs(adj_matrix[u][v]);
+    if(this->adj_matrix[u][w] != DO_NOT_DELETE && this->adj_matrix[u][w] != DO_NOT_ADD)
+        sum += abs(adj_matrix[u][w]);
+    if(this->adj_matrix[w][v] != DO_NOT_DELETE && this->adj_matrix[w][v] != DO_NOT_ADD)
+        sum += abs(adj_matrix[w][v]);
+    return sum;
+}
