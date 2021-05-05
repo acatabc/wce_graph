@@ -19,7 +19,7 @@ WCE_Graph *Solver2::parse_and_build_graph(){
     //file test_data.txt > stdin
     //I dont like the file path thing but ok...
     //std::cout <<"../test_data/test_data.txt" << std::endl;
-    freopen("../test_data/w003.dimacs", "r", stdin);
+    freopen("../test_data/a001.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
@@ -152,32 +152,13 @@ void Solver2::get_all_p3() {
 }
 //v --- u --- w
 void Solver2::add_p3(int u, int v, int w) {
-//    int key = v*v + w*w;
-//    int weight_uv = g->get_weight(u,v);
-//    int weight_uw = g->get_weight(u,w);
-//    int weight_vw = g->get_weight(v,w);
-//    int weight = 0;
-//    if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD){
-//        weight += abs(weight_uv)*abs(weight_uv);
-//    }
-//    if(weight_uw != DO_NOT_DELETE && weight_uw != DO_NOT_ADD){
-//        weight += abs(weight_uw)*abs(weight_uw);
-//    }
-//    if(weight_vw != DO_NOT_DELETE && weight_vw != DO_NOT_ADD){
-//        weight += abs(weight_vw)*abs(weight_vw);
-//    }
-//    key += weight*weight;
-//    auto it = p3s.at(u).find(key);
-//    if(it != p3s.at(u).end()) {
-//        std::cout << "bad" << std::endl;
-//        EXIT_FAILURE;
-//    }
-//    p3s.at(u).emplace(key, std::make_pair(v,w));
-//    p3s.at(u).emplace(std::make_tuple(u,v,w,g->get_costs(u,v,w)), std::make_pair(v,w));
     p3s.at(u).emplace(p3(u,v,w,g->get_costs(u,v,w)), std::make_pair(v,w));
 }
 
 void Solver2::remove_p3(int u, int v, int w, int old_weight, int flag){
+    //some magic happening here, to calculate the correct costs of a p3, because after changing an edge a different value for the cost is
+    //calculated. To delete an p3 from the p3s trees we need the cost when it was inserted as a p3, so we need the costs of the edge
+    //before the edge was deleted or inserted
     int weight = 0;
     int weight_uv = g->get_weight(u,v);
     int weight_uw = g->get_weight(u,w);
@@ -230,7 +211,7 @@ std::tuple<int, int, int> Solver2::get_max_p3() {
                 max_tuple = std::make_tuple(u, v, w);
                 max_weight = _max_weight;
             }
-            break;
+            break;  //so we just get the first value in the tree, the root. the root has the highest cost
         }
         u++;
     }
@@ -254,7 +235,6 @@ void Solver2::update_p3s(int u, int v, int old_weight, int flag) {
         //edge was added
         for(int i = 0; i < g->num_vertices; ++i){
             if(g->get_weight(u,i) > 0 && g->get_weight(v,i) < 0)
-                //remove
                 add_p3(u,i,v);
             else if(g->get_weight(u,i) > 0 && g->get_weight(v,i) > 0)
                 remove_p3(i,v,u, old_weight, flag);
