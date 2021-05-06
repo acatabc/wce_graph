@@ -37,7 +37,7 @@ public:
 
     //vector of trees of p3s (yes it says map of p3s but a map is using RB-trees internally)
     //a p3 v---u---w is stored in vector[u] with value (pair<int,int> = v,w) with the key: struct p3 u,v,w,cost
-    std::vector<std::map<p3, std::pair<int,int>, p3_comp>> p3s;
+    std::vector<std::map<struct p3, std::pair<int,int>, struct p3_comp>> p3s;
 
     Solver2();
     virtual ~Solver2();
