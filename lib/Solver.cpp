@@ -152,28 +152,6 @@ void Solver::get_all_p3() {
 }
 //v --- u --- w
 void Solver::add_p3(int u, int v, int w) {
-//    int key = v*v + w*w;
-//    int weight_uv = g->get_weight(u,v);
-//    int weight_uw = g->get_weight(u,w);
-//    int weight_vw = g->get_weight(v,w);
-//    int weight = 0;
-//    if(weight_uv != DO_NOT_DELETE && weight_uv != DO_NOT_ADD){
-//        weight += abs(weight_uv)*abs(weight_uv);
-//    }
-//    if(weight_uw != DO_NOT_DELETE && weight_uw != DO_NOT_ADD){
-//        weight += abs(weight_uw)*abs(weight_uw);
-//    }
-//    if(weight_vw != DO_NOT_DELETE && weight_vw != DO_NOT_ADD){
-//        weight += abs(weight_vw)*abs(weight_vw);
-//    }
-//    key += weight*weight;
-//    auto it = p3s.at(u).find(key);
-//    if(it != p3s.at(u).end()) {
-//        std::cout << "bad" << std::endl;
-//        EXIT_FAILURE;
-//    }
-//    p3s.at(u).emplace(key, std::make_pair(v,w));
-//    p3s.at(u).emplace(std::make_tuple(u,v,w,g->get_costs(u,v,w)), std::make_pair(v,w));
     p3s.at(u).emplace(p3(u,v,w,g->get_costs(u,v,w)), std::make_pair(v,w));
 }
 
@@ -272,4 +250,11 @@ if(PRINTDEBUG == true){
     std::cout << line << std::endl;
 }
 #endif
+}
+bool operator<(const Solver::p3& a, const Solver::p3& b){
+    if(a.cost == b.cost){
+        return (a.cost+a.v+a.w) > (b.cost+b.v+b.w);
+    }else{
+        return a.cost > b.cost;
+    }
 }
