@@ -88,8 +88,10 @@ int Solver2::branchEdge(int u, int v, int k, int layer){
     update_p3s(u,v, weight, FORWARD); //n*log(n^2)
 
     if(this->branch(k-abs(weight), layer) == CLUSTER_GRAPH){
-        // TODO
-        std::cout << u+1 << " " << v+1 <<std::endl;
+        if(u < g->num_vertices && v < g->num_vertices)
+            final_output(u,v);
+        else
+            printDebug("output (later): " + std::to_string(u+1-1) + " " + std::to_string(v+1-1));
         return CLUSTER_GRAPH;
     }
 
