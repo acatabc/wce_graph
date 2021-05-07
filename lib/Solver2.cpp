@@ -12,12 +12,14 @@
 
 Solver2::Solver2(){
     this->g = this->parse_and_build_graph();
-    p3s.resize(g->num_vertices_original);
+    p3s.resize(g->num_vertices);
 }
 
 Solver2::~Solver2() {}
 
 void Solver2::solve() {
+
+    g->printGraph(std::cout);
     int k = 0;
     this->get_all_p3(); //n^3
     while (this->branch(k, 0) == NONE){
@@ -89,13 +91,12 @@ int Solver2::branchEdge(int u, int v, int k, int layer){
 
 // iterates all vertex tuples and inserts all p3 in p3vec
 void Solver2::get_all_p3() {
-    for(int i = 0; i < this->g->num_vertices_original; ++i){
-        for(int j = 0; j < this->g->num_vertices_original; ++j){
-            if(this->g->get_weight(i,j) > 0){
-                for(int k = j+1; k < this->g->num_vertices_original; ++k){
-                    if(this->g->get_weight(i,k) > 0 && this->g->get_weight(j,k) < 0){
-                        this->add_p3(i,j,k);
-                    }
+    for(int i: this->g->active_nodes){
+        for(int j: this->g->active_nodes){
+            for(int k : this->g->active_nodes){
+                if(i == j || i == k || k == j) continue;
+                if(this->g->get_weight(i,j) >= 0 && this->g->get_weight(i,k) >= 0 && this->g->get_weight(j,k) <= 0){
+                    this->add_p3(i,j,k);
                 }
             }
         }
@@ -134,29 +135,29 @@ void Solver2::remove_p3(int u, int v, int w, int old_weight, int flag){
 }
 
 // updates vector of p3s given that u,v was modified (delete/add p3s)
+// TODO added <= and >= (correct?)
 void Solver2::update_p3s(int u, int v, int old_weight, int flag) {
     //edge was removed
-    if(g->get_weight(u,v) < 0){
-        for(int i = 0; i < g->num_vertices_original; ++i){
+    if(g->get_weight(u,v) <= 0){
+        for(int i: this->g->active_nodes){
+            if(i == v || i == u) continue;
             if(g->get_weight(u,i) > 0 && g->get_weight(v,i) < 0)
-                //remove
                 remove_p3(u,i,v, old_weight, flag);
-            else if(g->get_weight(u,i) > 0 && g->get_weight(v,i) > 0)
-                add_p3(i,v,u);
-
             if(g->get_weight(v,i) > 0 && g->get_weight(u,i) < 0)
                 remove_p3(v,i,u, old_weight, flag);
+            if(g->get_weight(u,i) >= 0 && g->get_weight(v,i) >= 0)
+                add_p3(i,v,u);
         }
-    } else if(g->get_weight(u,v) > 0){
+    } else if(g->get_weight(u,v) >= 0){
         //edge was added
-        for(int i = 0; i < g->num_vertices_original; ++i){
-            if(g->get_weight(u,i) > 0 && g->get_weight(v,i) < 0)
+        for(int i: this->g->active_nodes){
+            if(i == v || i == u) continue;
+            if(g->get_weight(u,i) >= 0 && g->get_weight(v,i) <= 0)
                 add_p3(u,i,v);
-            else if(g->get_weight(u,i) > 0 && g->get_weight(v,i) > 0)
-                remove_p3(i,v,u, old_weight, flag);
-
-            if(g->get_weight(v,i) > 0 && g->get_weight(u,i) < 0)
+            if(g->get_weight(v,i) >= 0 && g->get_weight(u,i) <= 0)
                 add_p3(v,i,u);
+            if(g->get_weight(u,i) > 0 && g->get_weight(v,i) > 0)
+                remove_p3(i,v,u,old_weight, flag);
         }
     }
 }
@@ -207,28 +208,28 @@ std::tuple<int, int, int> Solver2::get_max_cost_p3_naive(){
     int second_tuple_val = -1;
     int third_tuple_val = -1;
     int max_cost = INT32_MIN;
-    for(int i = 0; i < this->g->num_vertices_original; ++i){
-        for(int j = 0; j < this->g->num_vertices_original; ++j){
-            if(this->g->get_weight(i,j) > 0){
-                for(int k = j+1; k < this->g->num_vertices_original; ++k){
-                    if(this->g->get_weight(i,k) > 0 && this->g->get_weight(j,k) < 0){
+    for(int i: this->g->active_nodes){
+        for(int j: this->g->active_nodes){
+            for(int k : this->g->active_nodes){
+                if(i == j || i == k || k == j) continue;
+                if(this->g->get_weight(i,j) >= 0 && this->g->get_weight(i,k) >= 0 && this->g->get_weight(j,k) <= 0){
 
-                        // sum up costs of all three edges (only edges that are allowed to be modified)
-                        int current_cost = 0;
-                        if(this->g->get_weight(i,k) != DO_NOT_DELETE && this->g->get_weight(i,k) != DO_NOT_ADD) current_cost += abs(g->get_weight(i,k));
-                        if(this->g->get_weight(i,j) != DO_NOT_DELETE && this->g->get_weight(i,j) != DO_NOT_ADD) current_cost += abs(g->get_weight(i,j));
-                        if(this->g->get_weight(j,k) != DO_NOT_DELETE && this->g->get_weight(j,k) != DO_NOT_ADD) current_cost += abs(g->get_weight(j,k));
+                    // sum up costs of all three edges (only edges that are allowed to be modified)
+                    int current_cost = 0;
+                    if(this->g->get_weight(i,k) != DO_NOT_DELETE && this->g->get_weight(i,k) != DO_NOT_ADD) current_cost += abs(g->get_weight(i,k));
+                    if(this->g->get_weight(i,j) != DO_NOT_DELETE && this->g->get_weight(i,j) != DO_NOT_ADD) current_cost += abs(g->get_weight(i,j));
+                    if(this->g->get_weight(j,k) != DO_NOT_DELETE && this->g->get_weight(j,k) != DO_NOT_ADD) current_cost += abs(g->get_weight(j,k));
 
-                        // update maximum cost and corresponding p3
-                        if(current_cost > max_cost) {
-                            max_cost = current_cost;
-                            first_tuple_val = i;
-                            second_tuple_val = j;
-                            third_tuple_val = k;
-                        }
+                    // update maximum cost and corresponding p3
+                    if(current_cost > max_cost) {
+                        max_cost = current_cost;
+                        first_tuple_val = i;
+                        second_tuple_val = j;
+                        third_tuple_val = k;
                     }
                 }
             }
+
         }
     }
 #ifdef DEBUG
@@ -257,7 +258,8 @@ bool operator<(const Solver2::p3& a, const Solver2::p3& b){
 
 WCE_Graph *Solver2::parse_and_build_graph(){
 #ifdef DEBUG
-    freopen("../test_data/a001.dimacs", "r", stdin);
+    freopen("../wce-students/2-real-world/w029.dimacs", "r", stdin);
+//    freopen("../test_data/a001.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
@@ -269,6 +271,11 @@ WCE_Graph *Solver2::parse_and_build_graph(){
         w -= 1;
         if(!std::cin.fail())
             g->set_weight(v,w, weight);
+    }
+    for(int i = 0; i< g->num_vertices; i++){
+        std::vector<int> u = {i};
+        g->merge_map.push_back(u);
+        g->active_nodes.push_back(i);
     }
     return g;
 }
