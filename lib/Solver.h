@@ -4,7 +4,6 @@
 
 #include "WCE_Graph.h"
 #include "../include/utils.h"
-
 class Solver {
 private:
     WCE_Graph *g;

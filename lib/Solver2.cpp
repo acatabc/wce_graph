@@ -253,3 +253,10 @@ if(PRINTDEBUG == true){
 }
 #endif
 }
+bool operator<(const Solver2::p3& a, const Solver2::p3& b){
+    if(a.cost == b.cost){
+        return (a.cost+a.v+a.w) > (b.cost+b.v+b.w);
+    }else{
+        return a.cost > b.cost;
+    }
+}
