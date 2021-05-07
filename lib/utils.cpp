@@ -20,6 +20,38 @@ void printList(std::list<std::tuple<int, int, int, int>> mylist){
 #endif
 }
 
+
+void printList_int(std::list<int> mylist){
+#ifdef DEBUG
+    if(PRINTDEBUG == true){
+        std::list<int>::iterator it;
+        std::cout << "---------\n";
+        std::cout << "mylist contains:\n";
+        for(it=mylist.begin(); it!=mylist.end(); ++it){
+            std::cout << *it << "," ;
+        }
+        std::cout << "---------\n";
+    }
+#endif
+}
+
+
+void printVector_int(std::vector<int> myVec){
+#ifdef DEBUG
+    if(PRINTDEBUG == true){
+//        std::cout << "---------\n";
+        std::cout << "myVec contains:[ ";
+        for(int i = 0; i < myVec.size(); ++i){
+            if(i != myVec.size()-1)
+                std::cout << myVec[i] << ", " ;
+            else
+                std::cout << myVec[i] << "]\n";
+        }
+//        std::cout << "---------\n";
+    }
+#endif
+}
+
 void printDebug(std::string line){
 #ifdef DEBUG
     if(PRINTDEBUG == true){

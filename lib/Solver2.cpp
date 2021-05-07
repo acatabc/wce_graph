@@ -3,6 +3,7 @@
 #include <tuple>
 #include "iostream"
 #include "../include/utils.h"
+#include <math.h>
 
 #define FORWARD 0
 #define BACKWARD 1
@@ -12,20 +13,35 @@
 
 Solver2::Solver2(){
     this->g = this->parse_and_build_graph();
-    p3s.resize(g->num_vertices);
 }
 
 Solver2::~Solver2() {}
 
 void Solver2::solve() {
-
-    g->printGraph(std::cout);
     int k = 0;
-    this->get_all_p3(); //n^3
-    while (this->branch(k, 0) == NONE){
-        k++;
-//        printDebug("\nSOLVE FOR k:" + std::to_string(k));
+    int cluster_graph = NONE;
+    while (cluster_graph == NONE){
+        printDebug("\nSOLVE FOR k:" + std::to_string(k));
+
+        int k_reduced = dataRed_weight_larger_k(k); // data reduction method
+
+        if(k_reduced >= 0){
+            this->find_all_p3s();
+            cluster_graph = this->branch(k_reduced, 0);
+        }
+
+        if(cluster_graph == CLUSTER_GRAPH)
+            final_unmerge_and_output();
+        else{
+            g->recover_original();
+            k++;
+            k_forward.clear();
+        }
+
     }
+
+    verify_clusterGraph();
+
     std::cout << "#recursive steps: " << rec_steps << std::endl;
 
     printDebug("final k:" + std::to_string(k) + "\n");
@@ -84,13 +100,26 @@ int Solver2::branchEdge(int u, int v, int k, int layer){
     return NONE;
 }
 
+void Solver2::final_output(int u, int v)
+{
+#ifdef DEBUG
+    if(PRINTDEBUG){
+//        std::cout << u+1-1 << " " << v+1-1 <<std::endl;
+    }
+#endif
+    std::cout << u+1 << " " << v+1 <<std::endl;
+}
 
 
 // ----------------------------
 // ------- p3 - search --------
 
 // iterates all vertex tuples and inserts all p3 in p3vec
-void Solver2::get_all_p3() {
+void Solver2::find_all_p3s() {
+    for(int i = 0; i<p3s.size(); i++){
+        p3s[i].clear();
+    }
+    p3s.resize(g->merge_map.size());
     for(int i: this->g->active_nodes){
         for(int j: this->g->active_nodes){
             for(int k : this->g->active_nodes){
@@ -133,6 +162,7 @@ void Solver2::remove_p3(int u, int v, int w, int old_weight, int flag){
 //    p3s.at(u).erase(std::make_tuple(u,v,w,weight));
     p3s.at(u).erase(p3(u,v,w,weight));
 }
+
 
 // updates vector of p3s given that u,v was modified (delete/add p3s)
 // TODO added <= and >= (correct?)
@@ -250,15 +280,110 @@ bool operator<(const Solver2::p3& a, const Solver2::p3& b){
 
 
 // ----------------------------
+// ------- data reduction  --------
+
+// continuously merges all vertices whose edge weight exceeds the available costs
+// returns remaining costs k after merging
+// if k<0 no solution for the graph and input k exists
+int Solver2::dataRed_weight_larger_k(int k){
+    printDebug("Data reduction (weight > k): ");
+    int k_before = k;
+
+    start:
+    g->print_active_graph(std::cout);
+    for(int u : g->active_nodes){
+        for(int v : g->active_nodes){
+            if(u == v) continue;
+            if(g->get_weight(u,v) > k){ // for > -k set to -infinity TODO
+                int kd = g->merge(u,v);
+                k -= kd;
+                k_forward.push_back(kd);
+                if(k < 0) {
+                    printDebug("Fail: maximum cost exceeded");
+                    return -1;
+                }
+                goto start; // do this to avoid problems with modification of g->active_nodes TODO
+            }
+        }
+    }
+
+    if(k != k_before)
+        printDebug("Reduced k to " + std::to_string(k));
+    else
+        printDebug("no edges to merge");
+
+    return k;
+}
+
+// ----------------------------
 // ------- merging --------
 
+// unmerges all remaining vertices (after the solver finished) and outputs all modified edges
+void Solver2::final_unmerge_and_output(){
+    int k = 0;
+    while (g->merge_map.size() != g->num_vertices){
+        verify_clusterGraph();
+        int uv = g->merge_map.size() - 1;
+        int dk = unmerge_and_output(uv);
+        k_backward.insert(k_backward.begin(), dk);
+        k += dk;
+    }
+    printDebug("\nUnmerging sum of costs " +  std::to_string(k));
 
+}
 
+// unmerges vertex uv and outputs all modified edges (with u and v) to keep same edge connection as with uv
+int Solver2::unmerge_and_output(int uv){
+    std::vector<int> uv_children = g->merge_map[uv];
+    int u = uv_children[0];
+    int v = uv_children[1];
+
+    printDebug("Output for unmerging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(uv));
+
+    int dk = 0;
+    for(int x : g->active_nodes) {
+        if(x == uv || x == u ||x == v) continue;
+
+        // NOTE: if w(u,x) == 0 we have to do something ----> delete or add depending on w(uv,x)
+        if (g->get_weight(u, x) == 0 || (signbit(g->get_weight(u, x)) != signbit(g->get_weight(uv, x)))) {
+            dk += abs(g->get_weight(u,x));
+
+            // if w(uv,x) == 0 it doesnt matter if we delete or add ---> add edge
+            if(g->get_weight(uv, x) >= 0)
+                g->add_edge(u,x);
+            if(g->get_weight(uv, x) < 0)
+                g->delete_edge(u,x);
+
+            if(u < g->num_vertices && x < g->num_vertices)
+                final_output(u,x);
+            else
+                printDebug("Output queue: " + std::to_string(u+1-1) + " " + std::to_string(x+1-1));
+        }
+        if (g->get_weight(v, x) == 0 ||(signbit(g->get_weight(v, x)) != signbit(g->get_weight(uv, x)))) {
+            dk += abs(g->get_weight(v,x));
+            if(g->get_weight(uv, x) >= 0)
+                g->add_edge(v,x);
+            if(g->get_weight(uv, x) < 0)
+                g->delete_edge(v,x);
+
+            if(v < g->num_vertices && x < g->num_vertices)
+                final_output(v,x);
+            else
+                printDebug("Output queue: " + std::to_string(v+1-1) + " " + std::to_string(x+1-1));
+
+        }
+    }
+    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")" + " with cost " + std::to_string(dk));
+
+    g->unmerge(uv);
+
+    return dk;
+}
 
 
 WCE_Graph *Solver2::parse_and_build_graph(){
 #ifdef DEBUG
-    freopen("../wce-students/2-real-world/w029.dimacs", "r", stdin);
+    freopen("../wce-students/2-real-world/w033.dimacs", "r", stdin);
 //    freopen("../test_data/a001.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
@@ -278,4 +403,21 @@ WCE_Graph *Solver2::parse_and_build_graph(){
         g->active_nodes.push_back(i);
     }
     return g;
+}
+
+
+
+
+// ------ Debug ----
+
+
+// verify that the current graph is now a cluster graph
+void Solver2::verify_clusterGraph(){
+    auto p3 = this->get_max_cost_p3();
+    if(std::get<0>(p3) == -1){
+        printDebug("\nVERIFICATION SUCCESS\n");
+    } else {
+        printDebug("\nVERIFICATION FAIL:");
+        print_tuple(p3);
+    }
 }

@@ -8,16 +8,23 @@
 #define DO_NOT_DELETE INT32_MAX
 #define DO_NOT_ADD INT32_MIN
 
-#define PRINTDEBUG true
+#define PRINTDEBUG false
 
 
-void printList(std::list<std::tuple<int, int, int, int>> mylist);
 
 void printDebug(std::string line);
 
 void print_tuple(std::tuple<int,int,int> a);
 
 void print_tuple4(std::tuple<int,int,int,int> a);
+
+void printList(std::list<std::tuple<int, int, int, int>> mylist);
+
+void printList_int(std::list<int> mylist);
+
+void printVector_int(std::vector<int> myVec);
+
+
 
 
 #endif //ALGENG_WCE_SOLVER_UTILS_H
