@@ -5,14 +5,11 @@
 #include <iostream>
 #include <list>
 
-#define NONE -1
-#define CLUSTER_GRAPH -2
 #define DO_NOT_DELETE INT32_MAX
 #define DO_NOT_ADD INT32_MIN
 
 #define PRINTDEBUG true
 
-WCE_Graph *parse_and_build_graph(const char* filename);
 
 void printList(std::list<std::tuple<int, int, int, int>> mylist);
 

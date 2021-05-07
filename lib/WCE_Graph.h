@@ -12,7 +12,8 @@ private:
 
 public:
     WCE_Graph(int);
-    int num_vertices;
+    int num_vertices_original;
+
     void add_edge(int,int);
     void delete_edge(int, int);
     void modify_edge(int, int);
@@ -20,7 +21,7 @@ public:
     int get_weight(int,int);
     int get_p3_cost(int u, int v, int w);
     virtual ~WCE_Graph();
-    int get_costs(int u, int v, int w);
+    int get_cost(int u, int v, int w);
     void printGraph(std::ostream &os);
 };
 

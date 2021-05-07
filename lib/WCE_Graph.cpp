@@ -7,7 +7,7 @@
 #include "../include/utils.h"
 
 
-WCE_Graph::WCE_Graph(int n): num_vertices(n){
+WCE_Graph::WCE_Graph(int n): num_vertices_original(n){
     this->adj_matrix = new int*[n];
     for(int i = 0; i < n ; ++i){
         adj_matrix[i]= new int[n];
@@ -17,7 +17,7 @@ WCE_Graph::WCE_Graph(int n): num_vertices(n){
 }
 
 WCE_Graph::~WCE_Graph() {
-    for(int i = 0; i < num_vertices; ++i){
+    for(int i = 0; i < num_vertices_original; ++i){
         delete[] adj_matrix[i];
     }
     delete[] adj_matrix;
@@ -50,19 +50,12 @@ int WCE_Graph::get_weight(int v, int w){
     return this->adj_matrix[v][w];
 }
 
-int WCE_Graph::get_p3_cost(int u, int v, int w){
-    int cost = 0;
-    if(this->get_weight(u,v) != DO_NOT_DELETE && this->get_weight(u,v) != DO_NOT_ADD) cost += abs(get_weight(u,v));
-    if(this->get_weight(v,w) != DO_NOT_DELETE && this->get_weight(v,w) != DO_NOT_ADD) cost += abs(get_weight(v,w));
-    if(this->get_weight(u,w) != DO_NOT_DELETE && this->get_weight(u,w) != DO_NOT_ADD) cost += abs(get_weight(u,w));
-    return cost;
-}
 
 
 void WCE_Graph::printGraph(std::ostream& os) {
 #ifdef DEBUG
 
-    for(int i = -1; i <= this->num_vertices; ++i)
+    for(int i = -1; i <= this->num_vertices_original; ++i)
         if(i < 10)
             os << i <<std::setw(5)<< "|";
         else if(i < 100)
@@ -70,17 +63,17 @@ void WCE_Graph::printGraph(std::ostream& os) {
         else
             os << i << std::setw(3) << "|";
     os << std::endl;
-    for(int i = 0; i <= this->num_vertices; ++i){
+    for(int i = 0; i <= this->num_vertices_original; ++i){
         os << "-----+";
     }
     os << std::endl;
-    for(int i = 0; i < this->num_vertices; ++i){
+    for(int i = 0; i < this->num_vertices_original; ++i){
         if(i < 9) {
             os << i << std::setw(5) << "|";
         }else{
             os << i << std::setw(4) << "|";
         }
-        for(int j = 0; j < this->num_vertices; ++j){
+        for(int j = 0; j < this->num_vertices_original; ++j){
             int el = this->adj_matrix[i][j];
             if(el>= 0 && el <= 9)
                 os << el << std::setw(5) << "|";
@@ -101,13 +94,18 @@ void WCE_Graph::printGraph(std::ostream& os) {
 #endif
 }
 
-int WCE_Graph::get_costs(int u, int v, int w) {
+
+// returns sum of absolute value of edge cost of p3 (u,v,w)
+int WCE_Graph::get_cost(int u, int v, int w) {
     int sum = 0;
-    if(this->adj_matrix[u][v] != DO_NOT_DELETE && this->adj_matrix[u][v] != DO_NOT_ADD)
-        sum += abs(adj_matrix[u][v]);
-    if(this->adj_matrix[u][w] != DO_NOT_DELETE && this->adj_matrix[u][w] != DO_NOT_ADD)
-        sum += abs(adj_matrix[u][w]);
-    if(this->adj_matrix[w][v] != DO_NOT_DELETE && this->adj_matrix[w][v] != DO_NOT_ADD)
-        sum += abs(adj_matrix[w][v]);
+    int uv = get_weight(u,v);
+    int uw = get_weight(u,w);
+    int wv = get_weight(w,v);
+    if(uv != DO_NOT_DELETE && uv != DO_NOT_ADD)
+        sum += abs(uv);
+    if(uw != DO_NOT_DELETE && uw != DO_NOT_ADD)
+        sum += abs(uw);
+    if(wv != DO_NOT_DELETE && wv != DO_NOT_ADD)
+        sum += abs(wv);
     return sum;
 }

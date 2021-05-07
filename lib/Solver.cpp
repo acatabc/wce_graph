@@ -3,6 +3,9 @@
 #include <tuple>
 #include "iostream"
 
+#define NONE -1
+#define CLUSTER_GRAPH -2
+
 Solver::Solver(WCE_Graph *graph): g(graph){}
 
 Solver::~Solver() {}
@@ -83,10 +86,10 @@ int Solver::branchEdgeAllowLoop(int u, int v, int k, int layer){
 }
 
 std::tuple<int, int, int> Solver::find_first_p3() {
-    for(int i = 0; i < this->g->num_vertices; ++i){
-        for(int j = 0;j < this->g->num_vertices; ++j) {
+    for(int i = 0; i < this->g->num_vertices_original; ++i){
+        for(int j = 0;j < this->g->num_vertices_original; ++j) {
             if ( this->g->get_weight(i,j) > 0) {
-                for (int k = j + 1; k < this->g->num_vertices; ++k) {
+                for (int k = j + 1; k < this->g->num_vertices_original; ++k) {
                     if (this->g->get_weight(i,k) > 0 && (this->g->get_weight(j,k) < 0)) {
                         return std::make_tuple(i, k, j);
                     }
@@ -102,10 +105,10 @@ std::tuple<int, int, int> Solver::get_max_cost_p3(){
     int second_tuple_val = -1;
     int third_tuple_val = -1;
     int max_cost = INT32_MIN;
-    for(int i = 0; i < this->g->num_vertices; ++i){
-        for(int j = 0; j < this->g->num_vertices; ++j){
+    for(int i = 0; i < this->g->num_vertices_original; ++i){
+        for(int j = 0; j < this->g->num_vertices_original; ++j){
             if(this->g->get_weight(i,j) > 0){
-                for(int k = j+1; k < this->g->num_vertices; ++k){
+                for(int k = j+1; k < this->g->num_vertices_original; ++k){
                     if(this->g->get_weight(i,k) > 0 && this->g->get_weight(j,k) < 0){
 
                         // sum up costs of all three edges (only edges that are allowed to be modified)
@@ -139,12 +142,12 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_experimental(int *p3_weight){
     int thrd_p3_vertex = -1;
     *p3_weight = INT32_MIN;
 //    std::list<std::tuple<int, int, int>> p3_list;
-    for(int i = 0; i < g->num_vertices-1; ++i){
+    for(int i = 0; i < g->num_vertices_original - 1; ++i){
         counter++;
-        for(int j = i+1; j < g->num_vertices; ++j){
+        for(int j = i+1; j < g->num_vertices_original; ++j){
             counter++;
             if(g->get_weight(i,j) > 0){
-                for(int k = i+1; k < g->num_vertices; ++k){
+                for(int k = i+1; k < g->num_vertices_original; ++k){
                     counter++;
                     if(g->get_weight(k,j) > 0 && g->get_weight(i,k) <= 0){
                         int costs = abs(g->get_weight(i,k)) + abs(g->get_weight(i,j)) + abs(g->get_weight(k,j))/3;
@@ -181,8 +184,8 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_experimental(int *p3_weight){
 std::tuple<int, int, int> Solver::find_next_p3() {
     static int i, j, k= 0;
     static int old_k = 0;
-    for(; i < g->num_vertices; ++i){
-        for(;j < g->num_vertices; ++j){
+    for(; i < g->num_vertices_original; ++i){
+        for(;j < g->num_vertices_original; ++j){
             if(g->get_weight(i,j) > 0){
 
                 for(; ; ){
@@ -191,7 +194,7 @@ std::tuple<int, int, int> Solver::find_next_p3() {
                     else {
                         k++;
                     }
-                    if(k >= g->num_vertices) {
+                    if(k >= g->num_vertices_original) {
                         k = 0;
                         break;
                     }
@@ -223,10 +226,10 @@ void Solver::print_all_p3(){
 
 std::list<std::tuple<int, int, int>> Solver::get_all_p3() {
     std::list<std::tuple<int,int,int>> p3_list;
-    for(int i = 0; i < this->g->num_vertices; ++i){
-        for(int j = 0; j < this->g->num_vertices; ++j){
+    for(int i = 0; i < this->g->num_vertices_original; ++i){
+        for(int j = 0; j < this->g->num_vertices_original; ++j){
             if(this->g->get_weight(i,j) > 0){
-                for(int k = j+1; k < this->g->num_vertices; ++k){
+                for(int k = j+1; k < this->g->num_vertices_original; ++k){
                     if(this->g->get_weight(i,k) > 0 && this->g->get_weight(j,k) <= 0 && this->g->get_weight(i,k) != DO_NOT_DELETE){
                         p3_list.emplace_back(i,j,k);
                     }
