@@ -48,6 +48,8 @@ public:
 
     // data reduction methods
     int dataRed_weight_larger_k(int k);
+    int dataRed_heavy_non_edge();
+    int dataRed_heavy_edge_single_end();
 
     // merging
     int unmerge_and_output(int uv);

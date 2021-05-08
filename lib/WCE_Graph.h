@@ -18,6 +18,7 @@ private:
 public:
     WCE_Graph(int);
     const int num_vertices;
+    int num_vertices_after_reduction;
     virtual ~WCE_Graph();
 
     void set_weight(int, int, int);

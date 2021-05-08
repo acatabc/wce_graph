@@ -20,6 +20,8 @@ Solver2::~Solver2() {}
 void Solver2::solve() {
     int k = 0;
     int cluster_graph = NONE;
+    this->dataRed_heavy_edge_single_end();
+    this->dataRed_heavy_non_edge();
     while (cluster_graph == NONE){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 
@@ -317,6 +319,56 @@ int Solver2::dataRed_weight_larger_k(int k){
     return k;
 }
 
+int Solver2::dataRed_heavy_non_edge() {
+    for(int i : g->active_nodes){
+        int min_val = 0;
+        int i_min = -1;
+        int j_min = -1;
+        int weight_neighbours = 0;
+        for(int j : g->active_nodes){
+            if(i == j) continue;
+            int weight = g->get_weight(i,j);
+            if(weight < 0 && weight < min_val){
+                min_val = weight;
+                i_min = i;
+                j_min = j;
+            }else if(weight > 0){
+                weight_neighbours += weight;
+            }
+        }
+        if(abs(min_val) >= weight_neighbours && i_min != -1 && weight_neighbours > 0){
+            g->set_weight(i_min, j_min, DO_NOT_ADD);
+        }
+    }
+    return 0;
+}
+
+int Solver2::dataRed_heavy_edge_single_end() {
+    for(int i : g->active_nodes){
+        int max_weight = 0;
+        int sum = 0;
+        int i_max = -1;
+        int j_max = -1;
+        for(int j : g->active_nodes){
+            if(i == j) continue;
+            int weight = g->get_weight(i,j);
+            if(weight > max_weight){
+                max_weight = weight;
+                i_max = i;
+                j_max = j;
+            }
+            if(weight != DO_NOT_ADD && DO_NOT_DELETE)
+                sum += abs(weight);
+        }
+        if(max_weight >= sum - max_weight && i_max != -1) {
+            g->merge(i_max, j_max);
+            g->num_vertices_after_reduction += 1;
+            printDebug("did i even do anything");
+        }
+    }
+    return 0;
+}
+
 // ----------------------------
 // ------- merging --------
 
@@ -385,8 +437,8 @@ int Solver2::unmerge_and_output(int uv){
 
 WCE_Graph *Solver2::parse_and_build_graph(){
 #ifdef DEBUG
-    freopen("../wce-students/2-real-world/w033.dimacs", "r", stdin);
-//    freopen("../test_data/a001.dimacs", "r", stdin);
+//    freopen("../wce-students/2-real-world/w027.dimacs", "r", stdin);
+    freopen("../test_data/r049.dimacs", "r", stdin);
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
@@ -423,3 +475,5 @@ void Solver2::verify_clusterGraph(){
         print_tuple(p3);
     }
 }
+
+

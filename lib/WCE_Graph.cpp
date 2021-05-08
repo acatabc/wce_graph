@@ -4,9 +4,10 @@
 #include <tuple>
 #include <cmath>
 #include <iomanip>
+#include <algorithm>
 #include "../include/utils.h"
 
-WCE_Graph::WCE_Graph(int n): num_vertices(n){
+WCE_Graph::WCE_Graph(int n): num_vertices(n), num_vertices_after_reduction(n){
     for(int i = 0; i < n ; i++){
         this->adj_matrix.push_back(std::vector<matrix_entry>(i));
         for(int j = 0; j < i; j++){
@@ -138,11 +139,22 @@ int WCE_Graph::merge(int u, int v) {
         int weight_uj = this->get_weight(u, j);
         int weight_vj = this->get_weight(v, j);
 
-        adj_matrix[idx][j].weight = this->get_weight(u, j) + this->get_weight(v, j);
+        //preventing integer overflow through edge set to -inf(int_min)
+        if(weight_uj != DO_NOT_ADD && weight_vj != DO_NOT_ADD )
+            adj_matrix[idx][j].weight = this->get_weight(u, j) + this->get_weight(v, j);
+        else
+            adj_matrix[idx][j].weight = DO_NOT_ADD;
+
         adj_matrix[idx][j].flag = true;
 
         if((weight_vj > 0 &&  weight_uj < 0 ) || (weight_vj < 0 && weight_uj > 0 )){
-            dk += std::min(abs(weight_vj), abs(weight_uj));
+            printDebug("weights vj: " + std::to_string(abs(weight_vj)) + "    uj"+ std::to_string(abs(weight_uj)) + "    dk: " + std::to_string(dk));
+            if(weight_uj == DO_NOT_ADD)
+                dk += abs(weight_vj);
+            else if(weight_vj == DO_NOT_ADD)
+                dk += abs(weight_uj);
+            else
+                dk += std::min(abs(weight_vj), abs(weight_uj));
         }
     }
 
@@ -187,10 +199,10 @@ void WCE_Graph::unmerge(int uv) {
 
 // recovers original graph, merge map and actives nodes vector (as it has been before any merging operation)
 void WCE_Graph::recover_original(){
-    while (adj_matrix.size() != num_vertices){
+    while (adj_matrix.size() != num_vertices_after_reduction){
         unmerge(adj_matrix.size()-1);
     }
-    sort(active_nodes.begin(), active_nodes.end());
+    std::sort(active_nodes.begin(), active_nodes.end());
 }
 
 

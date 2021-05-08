@@ -8,7 +8,7 @@
 #define DO_NOT_DELETE INT32_MAX
 #define DO_NOT_ADD INT32_MIN
 
-#define PRINTDEBUG false
+#define PRINTDEBUG true
 
 
 
