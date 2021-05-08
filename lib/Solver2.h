@@ -51,6 +51,13 @@ public:
     int dataRed_heavy_non_edge();
     int dataRed_heavy_edge_single_end();
 
+    //large neighbourhood
+    int dataRed_large_neighbourhood_I();
+    //return pair for neighbourhood(first), & not neighbours
+    std::pair<std::list<int>, std::list<int>> closed_neighbourhood(int u);
+    int deficiency(std::list<int> neighbours);
+    int cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph);
+
     // merging
     int unmerge_and_output(int uv);
     void final_unmerge_and_output();

@@ -344,6 +344,8 @@ int Solver2::dataRed_heavy_non_edge() {
 }
 
 int Solver2::dataRed_heavy_edge_single_end() {
+    
+    redo:
     for(int i : g->active_nodes){
         int max_weight = 0;
         int sum = 0;
@@ -364,11 +366,62 @@ int Solver2::dataRed_heavy_edge_single_end() {
             g->merge(i_max, j_max);
             g->num_vertices_after_reduction += 1;
             printDebug("did i even do anything");
+            goto redo;
         }
     }
     return 0;
 }
 
+//is doing the large Neighbourhood Rule for all vertices in the graph TODO
+int Solver2::dataRed_large_neighbourhood_I() {
+    return 0;
+}
+
+// param: u is the index of the vertex of which the neighbours are collected
+// return: - pair for neighbourhood(first item in pair) - all the vertices that are adjacent to u,
+//         - not_neighbours(second item in pair) - all vertices that are not adjacent to u
+//
+std::pair<std::list<int>, std::list<int>> Solver2::closed_neighbourhood(int u) {
+    std::list<int> neighbours;
+    std::list<int> not_neighbours;
+    for(int i : g->active_nodes){
+        if(g->get_weight(u,i) > 0){
+            neighbours.push_back(i);
+        }else if(g->get_weight(u,i) < 0){
+            not_neighbours.push_back(i);
+        }
+    }
+    neighbours.push_back(u);
+    return std::pair<std::list<int>, std::list<int>>(neighbours, not_neighbours);
+}
+
+//calculates the costs to make the neighbourhood a clique
+int Solver2::deficiency(std::list<int> neighbours) {
+    int costs = 0;
+    while (!neighbours.empty()) {
+        int i = neighbours.front();
+        neighbours.pop_front();
+        for (int j : neighbours) {
+            if (g->get_weight(i, j) < 0) {
+                costs += abs(g->get_weight(i, j));
+            }
+        }
+    }
+    return costs;
+}
+//calculates the cost to cut of the neighbourhood(neighbourhood) from the rest of the graph(rest_graph)
+int Solver2::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph) {
+    int cut_costs = 0;
+    for(int i : neighbourhood){
+        for(int j : rest_graph){
+            int weight = g->get_weight(i,j);
+            if(weight > 0){
+                cut_costs += weight;
+            }
+        }
+    }
+    return cut_costs;
+}
 // ----------------------------
 // ------- merging --------
 
@@ -475,5 +528,10 @@ void Solver2::verify_clusterGraph(){
         print_tuple(p3);
     }
 }
+
+
+
+
+
 
 
