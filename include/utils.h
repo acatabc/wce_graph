@@ -25,6 +25,7 @@ void printList_int(std::list<int> mylist);
 void printVector_int(std::vector<int> myVec);
 
 
+void throwError(std::string msg);
 
 
 #endif //ALGENG_WCE_SOLVER_UTILS_H

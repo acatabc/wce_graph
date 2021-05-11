@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "../include/utils.h"
 
-WCE_Graph::WCE_Graph(int n): num_vertices(n), num_vertices_after_reduction(n){
+WCE_Graph::WCE_Graph(int n): num_vertices(n){
     for(int i = 0; i < n ; i++){
         this->adj_matrix.push_back(std::vector<matrix_entry>(i));
         for(int j = 0; j < i; j++){
@@ -23,12 +23,12 @@ WCE_Graph::~WCE_Graph() {
 
 void WCE_Graph::set_weight(int v, int w, int weight){
     if(v == w){
-        std::cout << "set_weight error: u and w have same value \n";
+        throwError( "set_weight error: u and w have same value " );
         return;
     }
     if(v > w){
         if(this->adj_matrix[v][w].flag == false){
-            std::cout << "set_weight error: invalid flag \n";
+            throwError( "set_weight error: invalid flag" );
             return;
         } else{
             this->adj_matrix[v][w].weight = weight;
@@ -37,7 +37,7 @@ void WCE_Graph::set_weight(int v, int w, int weight){
     }
     if(w > v) {
         if (this->adj_matrix[w][v].flag == false) {
-            std::cout << "set_weight error: invalid flag \n";
+            throwError( "set_weight error: invalid flag" );
             return;
         } else {
             this->adj_matrix[w][v].weight = weight;
@@ -49,13 +49,13 @@ void WCE_Graph::set_weight(int v, int w, int weight){
 
 int WCE_Graph::get_weight(int v, int w){
     if(v == w){
-        std::cout << "get_weight error: u and w have same value \n";
+        throwError( "get_weight error: u and w have same value " );
         return 0;
     }
 
     if(v > w){
         if(this->adj_matrix[v][w].flag == false){
-            std::cout << "get_weight error: invalid flag \n";
+            throwError( "get_weight error: invalid flag" );
             return 0;
         } else{
             return this->adj_matrix[v][w].weight;
@@ -63,7 +63,7 @@ int WCE_Graph::get_weight(int v, int w){
     }
     if(w > v) {
         if (this->adj_matrix[w][v].flag == false) {
-            std::cout << "get_weight error: invalid flag \n";
+            throwError( "get_weight error: invalid flag" );
             return 0;
         } else {
             return this->adj_matrix[w][v].weight;
@@ -106,10 +106,12 @@ int WCE_Graph::get_cost(int u, int v, int w) {
 // ---------- merging related ------------
 
 // merges vertices u and v and returns costs for merging
+// returns -1 if merging is not possible because of conflicting edges (DO_NOT_DELETE/DO_NOT_ADD)
 int WCE_Graph::merge(int u, int v) {
 
     int idx = this->adj_matrix.size();
 
+    printDebug(std::to_string(idx));
     // setup adjacency matrix for new vertex
     this->adj_matrix.push_back(std::vector<matrix_entry>());
     for(int i = 0; i < this->adj_matrix.size(); i++){
@@ -139,26 +141,32 @@ int WCE_Graph::merge(int u, int v) {
         int weight_uj = this->get_weight(u, j);
         int weight_vj = this->get_weight(v, j);
 
-        //preventing integer overflow through edge set to -inf(int_min)
-        if(weight_uj != DO_NOT_ADD && weight_vj != DO_NOT_ADD )
-            adj_matrix[idx][j].weight = this->get_weight(u, j) + this->get_weight(v, j);
-        else
+        // if one edge is DO_NOT_ADD and the other one is DO_NOT_DELETE, this merging fails
+        if((weight_uj == DO_NOT_ADD && weight_vj == DO_NOT_DELETE ) ||(weight_vj == DO_NOT_ADD && weight_uj == DO_NOT_DELETE)){
+            this->unmerge(idx);
+            return -1;
+        }
+            // if at least one of the two edges is DO_NOT_ADD/DO_NOT_DELETE, the merged one becomes DO_NOT_ADD/DO_NOT_DELETE as well
+        else if (weight_uj == DO_NOT_ADD || weight_vj == DO_NOT_ADD)
             adj_matrix[idx][j].weight = DO_NOT_ADD;
+        else if (weight_uj == DO_NOT_DELETE || weight_vj == DO_NOT_DELETE)
+            adj_matrix[idx][j].weight = DO_NOT_DELETE;
+            // otherwise use basic sum of edge cost
+        else adj_matrix[idx][j].weight = this->get_weight(u, j) + this->get_weight(v, j);
 
         adj_matrix[idx][j].flag = true;
 
+        // if the sign of the edges differ we have to add the hidden merging cost
         if((weight_vj > 0 &&  weight_uj < 0 ) || (weight_vj < 0 && weight_uj > 0 )){
-            printDebug("weights vj: " + std::to_string(abs(weight_vj)) + "    uj"+ std::to_string(abs(weight_uj)) + "    dk: " + std::to_string(dk));
-            if(weight_uj == DO_NOT_ADD)
-                dk += abs(weight_vj);
-            else if(weight_vj == DO_NOT_ADD)
-                dk += abs(weight_uj);
+//            printDebug("weights vj: " + std::to_string(abs(weight_vj)) + "  uj: "+ std::to_string(abs(weight_uj)) + "    dk: " + std::to_string(dk));
+            // at most one of vj and uj can be DO_NOT_DELETE or DO_NOT_ADD -> most cases covered by min(..)
+            if(weight_uj == DO_NOT_ADD || weight_vj == DO_NOT_ADD)
+                // prevent overflow which is happening in abs(-inf)
+                dk += std::max(weight_vj, weight_uj);
             else
                 dk += std::min(abs(weight_vj), abs(weight_uj));
         }
     }
-
-
     printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " +  std::to_string(idx) + "     with cost " + std::to_string(dk));
 
     return dk;
@@ -193,13 +201,14 @@ void WCE_Graph::unmerge(int uv) {
     merge_map.pop_back();
     adj_matrix.pop_back();
 
-//    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")");
+    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")");
     return;
 }
 
-// recovers original graph, merge map and actives nodes vector (as it has been before any merging operation)
-void WCE_Graph::recover_original(){
-    while (adj_matrix.size() != num_vertices_after_reduction){
+// recovers original graph, merge map and actives nodes vector (as it has been before any merging operation) until input vertex
+void WCE_Graph::recover_original(int last_merge_idx){
+    printDebug("Recover original graph");
+    while (adj_matrix.size() != last_merge_idx){
         unmerge(adj_matrix.size()-1);
     }
     std::sort(active_nodes.begin(), active_nodes.end());
@@ -369,3 +378,6 @@ void WCE_Graph::printGraph(std::ostream& os) {
     os <<""<< std::endl;
 #endif
 }
+
+
+

@@ -47,8 +47,9 @@ public:
 
 
     // data reduction methods
+    int data_reduction(int k);
     int dataRed_weight_larger_k(int k);
-    int dataRed_heavy_non_edge();
+    void dataRed_heavy_non_edge();
     int dataRed_heavy_edge_single_end();
 
     //large neighbourhood

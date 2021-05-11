@@ -35,7 +35,7 @@ public:
     std::vector<std::vector<int>> merge_map;
     int merge(int, int);
     void unmerge(int);
-    void recover_original();
+    void recover_original(int);
 
     void printGraph(std::ostream &os);
     void print_active_graph(std::ostream &os);

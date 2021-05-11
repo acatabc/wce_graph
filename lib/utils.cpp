@@ -62,7 +62,7 @@ void printDebug(std::string line){
 
 void print_tuple(std::tuple<int,int,int> a){
 #ifdef DEBUG
-    std::cout << std::get<0>(a) +1<< " " << std::get<1>(a) +1<< " " << std::get<2>(a) +1<< std::endl;
+    std::cout << std::get<0>(a)<< " " << std::get<1>(a)<< " " << std::get<2>(a)<< std::endl;
 #endif
 }
 
@@ -70,4 +70,11 @@ void print_tuple4(std::tuple<int,int,int,int> a){
 #ifdef DEBUG
     std::cout << std::get<0>(a)<< " " << std::get<1>(a) << " " << std::get<2>(a)<< std::get<3>(a)<< std::endl;
 #endif
+}
+
+
+void throwError(std::string text){
+//#ifdef DEBUG
+    throw std::invalid_argument( text );
+//#endif
 }
