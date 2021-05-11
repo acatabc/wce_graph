@@ -11,7 +11,7 @@
 #define NONE -1
 #define CLUSTER_GRAPH -2
 
-const char* FILENAME2 = "../wce-students/2-real-world/w037.dimacs";
+const char* FILENAME2 = "../wce-students/2-real-world/w005.dimacs";
 
 
 Solver2::Solver2(){

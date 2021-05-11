@@ -19,18 +19,14 @@ Solver::~Solver() {}
 
 void Solver::solve() {
     g->printGraph(std::cout);
-    verify_clusterGraph();
 
-    int k = 140;
+    int k = 0;
     int cluster_graph = NONE;
     while (cluster_graph == NONE){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 
         // data reduction methods
-        int k_reduced = data_reduction(k);
-
-        verify_clusterGraph();
-        g->printGraph(std::cout);
+        int k_reduced = dataRed_weight_larger_k(k);
 
         if(k_reduced >= 0){
             cluster_graph = this->branch(k_reduced, 0);
@@ -101,7 +97,7 @@ int Solver::branchEdge(int u, int v, int k, int layer){
 
     // data reduction
     int final_merged = g->merge_map.size(); // remember index of last vertex merged until here
-    int k_reduced = data_reduction(k-abs(weight));
+    int k_reduced = dataRed_weight_larger_k(k-abs(weight));
 
     if(this->branch(k_reduced, layer) == CLUSTER_GRAPH){
         if(u < g->num_vertices && v < g->num_vertices)
