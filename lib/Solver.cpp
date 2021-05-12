@@ -275,8 +275,11 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
             }
             if(weight != DO_NOT_ADD && weight != DO_NOT_DELETE && sum != DO_NOT_DELETE && sum != DO_NOT_ADD)
                 sum += abs(weight);
-            else
-                sum += DO_NOT_DELETE; // abs(do_not_add) is Do not add again => smaller 0
+            else{
+                sum = DO_NOT_DELETE; // abs(do_not_add) is Do not add again => smaller 0
+            }
+
+
         }
         if(max_weight >= sum - max_weight && i_max != -1) {
             cost += g->merge(i_max, j_max);
