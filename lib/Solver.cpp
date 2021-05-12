@@ -6,7 +6,8 @@
 #include <math.h>
 
 
-const char* FILENAME = "../wce-students/2-real-world/w037.dimacs";
+//const char* FILENAME = "../wce-students/2-real-world/w037.dimacs";
+const char* FILENAME = "../../wce-students-real/2-real-world/w037.dimacs";
 
 #define NONE -1
 #define CLUSTER_GRAPH -2
@@ -116,6 +117,7 @@ int Solver::branchEdge(int u, int v, int k, int layer){
         goto branch_zero;
     }
 
+
     return NONE;
 }
 
@@ -160,6 +162,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
                     }
                 }
             }
+
         }
     }
 #ifdef DEBUG
@@ -175,9 +178,9 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 
 
 int Solver::data_reduction(int k){
-//    k = dataRed_heavy_edge_single_end(k);
+    k = dataRed_heavy_edge_single_end(k);
     k = dataRed_weight_larger_k(k);
-//    this->dataRed_heavy_non_edge();
+    this->dataRed_heavy_non_edge();
     return k;
 }
 
@@ -270,8 +273,10 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
                 i_max = i;
                 j_max = j;
             }
-            if(weight != DO_NOT_ADD && DO_NOT_DELETE)
+            if(weight != DO_NOT_ADD && weight != DO_NOT_DELETE && sum != DO_NOT_DELETE && sum != DO_NOT_ADD)
                 sum += abs(weight);
+            else
+                sum += DO_NOT_DELETE; // abs(do_not_add) is Do not add again => smaller 0
         }
         if(max_weight >= sum - max_weight && i_max != -1) {
             cost += g->merge(i_max, j_max);
@@ -335,7 +340,6 @@ int Solver::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph
     }
     return cut_costs;
 }
-
 // ----------------------------
 // ------- merging --------
 
