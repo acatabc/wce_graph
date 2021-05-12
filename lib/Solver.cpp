@@ -7,7 +7,7 @@
 
 
 //const char* FILENAME = "../wce-students/2-real-world/w037.dimacs";
-const char* FILENAME = "../../wce-students-real/2-real-world/w037.dimacs";
+const char* FILENAME = "../../wce-students-real/2-real-world/w029.dimacs";
 
 #define NONE -1
 #define CLUSTER_GRAPH -2
@@ -268,6 +268,13 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
         for(int j : g->active_nodes){
             if(i == j) continue;
             int weight = g->get_weight(i,j);
+            if(weight == DO_NOT_DELETE){
+                cost += g->merge(i,j);
+                int uv = g->merge_map.size()-1;
+                data_red_stack.push(stack_elem{1,-1, -1,-1,uv});
+                goto redo;
+            }
+
             if(weight > max_weight){
                 max_weight = weight;
                 i_max = i;
