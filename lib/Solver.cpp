@@ -284,10 +284,10 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
                 sum += abs(weight);
             else{
                 sum = DO_NOT_DELETE; // abs(do_not_add) is Do not add again => smaller 0
+                break;
             }
-
-
         }
+
         if(max_weight >= sum - max_weight && i_max != -1) {
             cost += g->merge(i_max, j_max);
             int uv = g->merge_map.size()-1;
