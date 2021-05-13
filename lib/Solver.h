@@ -34,6 +34,7 @@ public:
     int dataRed_weight_larger_k(int k);
     void dataRed_heavy_non_edge();
     int dataRed_heavy_edge_single_end(int k);
+    int dataRed_heavy_edge_both_ends(int k);
 
     struct stack_elem{
         int type; // 1 is merge, 2 is set_inf

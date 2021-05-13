@@ -7,7 +7,7 @@
 
 
 //const char* FILENAME = "../wce-students/2-real-world/w037.dimacs";
-const char* FILENAME = "../../wce-students-random/1-random/r049.dimacs";
+const char* FILENAME = "../../wce-students-real/2-real-world/w013.dimacs";
 
 #define NONE -1
 #define CLUSTER_GRAPH -2
@@ -19,7 +19,7 @@ Solver::Solver(){
 Solver::~Solver() {}
 
 void Solver::solve() {
-    g->printGraph(std::cout);
+//    g->printGraph(std::cout);
 
     int k = 0;
     int cluster_graph = NONE;
@@ -146,13 +146,16 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
         for(int j: this->g->active_nodes){
             for(int k : this->g->active_nodes){
                 if(i == j || i == k || k == j) continue;
-                if(this->g->get_weight(i,j) >= 0 && this->g->get_weight(i,k) >= 0 && this->g->get_weight(j,k) <= 0){
+                int weight_i_j = g->get_weight(i,j);
+                int weight_i_k = g->get_weight(i,k);
+                int weight_j_k = g->get_weight(j,k);
+                if(weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0){
 
                     // sum up costs of all three edges (only edges that are allowed to be modified)
                     int current_cost = 0;
-                    if(this->g->get_weight(i,k) != DO_NOT_DELETE && this->g->get_weight(i,k) != DO_NOT_ADD) current_cost += abs(g->get_weight(i,k));
-                    if(this->g->get_weight(i,j) != DO_NOT_DELETE && this->g->get_weight(i,j) != DO_NOT_ADD) current_cost += abs(g->get_weight(i,j));
-                    if(this->g->get_weight(j,k) != DO_NOT_DELETE && this->g->get_weight(j,k) != DO_NOT_ADD) current_cost += abs(g->get_weight(j,k));
+                    if(weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) current_cost += abs(weight_i_k);
+                    if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) current_cost += abs(weight_i_j);
+                    if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) current_cost += abs(weight_j_k);
 
                     // update maximum cost and corresponding p3
                     if(current_cost > max_cost) {
@@ -179,10 +182,11 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 
 
 int Solver::data_reduction(int k){
+    this->dataRed_heavy_non_edge();
     k = dataRed_large_neighbourhood_I(k);
     k = dataRed_heavy_edge_single_end(k);
+    k = dataRed_heavy_edge_both_ends(k);
     k = dataRed_weight_larger_k(k);
-    this->dataRed_heavy_non_edge();
     return k;
 }
 
@@ -305,6 +309,72 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
     return k;
 }
 
+int Solver::dataRed_heavy_edge_both_ends(int k) {
+    int cost = 0;
+    redo:
+    if(k < 0) {
+        printDebug("Fail: maximum cost exceeded");
+        return -1;
+    }
+    for( int u: g->active_nodes){
+        int max_weight = 0;
+        int max_u = -1;
+        int max_v = -1;
+        for(int v : g->active_nodes){
+            if(u == v) continue;
+            int _weight = g->get_weight(u,v);
+            if(_weight > max_weight){
+                max_weight = _weight;
+                max_u = u;
+                max_v = v;
+            }
+        }
+        if(max_u != -1){
+            auto neighbours_of_u = closed_neighbourhood(max_u).first;
+            auto neighbours_of_v = closed_neighbourhood(max_v).first;
+            int sum_of_u = 0;
+            int sum_of_v = 0;
+            for(auto i: neighbours_of_u){
+                if(i == max_u || i == max_v) continue;
+                int weight = g->get_weight(i,max_u);
+                if(weight != DO_NOT_DELETE && weight != DO_NOT_ADD)
+                    sum_of_u += g->get_weight(i,max_u);
+                else{
+                    sum_of_u = DO_NOT_DELETE;
+                    break;
+                }
+            }
+
+            for(auto i : neighbours_of_v) {
+                if (i == max_u || i == max_v) continue;
+                int weight = g->get_weight(i, max_v);
+                if(weight != DO_NOT_DELETE && weight != DO_NOT_ADD)
+                    sum_of_v += g->get_weight(i, max_v);
+                else{
+                    sum_of_v = DO_NOT_DELETE;
+                    break;
+                }
+            }
+
+            int sum = sum_of_u + sum_of_v;
+            if(sum_of_u > 0 && sum_of_v > 0 && sum < 0){
+                sum = DO_NOT_DELETE;
+            }
+            if(sum_of_u < 0 && sum_of_v < 0 && sum > 0){
+                sum = DO_NOT_ADD;
+            }
+            if(max_weight >= sum){
+                k -= g->merge(max_u, max_v);
+                int uv = g->merge_map.size()-1;
+                data_red_stack.push(stack_elem{1,-1, -1,-1,uv});
+                goto redo;
+            }
+        }
+
+    }
+
+    return k;
+}
 
 //is doing the large Neighbourhood Rule for all vertices in the graph TODO
 int Solver::dataRed_large_neighbourhood_I(int k) {
@@ -538,6 +608,7 @@ void Solver::print_stack_rec(std::stack<stack_elem> s){
 
     s.push(x);
 }
+
 
 
 
