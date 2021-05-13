@@ -7,7 +7,7 @@
 
 
 //const char* FILENAME = "../wce-students/2-real-world/w037.dimacs";
-const char* FILENAME = "../../wce-students-real/2-real-world/w029.dimacs";
+const char* FILENAME = "../../wce-students-random/1-random/r049.dimacs";
 
 #define NONE -1
 #define CLUSTER_GRAPH -2
@@ -99,7 +99,8 @@ int Solver::branchEdge(int u, int v, int k, int layer){
 
     // data reduction
     int prev_stack_size = data_red_stack.size();
-    int k_reduced = data_reduction(k-abs(weight));
+//    int k_reduced = data_reduction(k-abs(weight));
+    int k_reduced = dataRed_weight_larger_k(k-abs(weight));
 
     if(this->branch(k_reduced, layer) == CLUSTER_GRAPH){
         if(u < g->num_vertices && v < g->num_vertices)
@@ -178,6 +179,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 
 
 int Solver::data_reduction(int k){
+    k = dataRed_large_neighbourhood_I(k);
     k = dataRed_heavy_edge_single_end(k);
     k = dataRed_weight_larger_k(k);
     this->dataRed_heavy_non_edge();
@@ -260,6 +262,10 @@ void Solver::dataRed_heavy_non_edge() {
 int Solver::dataRed_heavy_edge_single_end(int k) {
     int cost = 0;
     redo:
+    if(k < 0) {
+        printDebug("Fail: maximum cost exceeded");
+        return -1;
+    }
     for(int i : g->active_nodes){
         int max_weight = 0;
         int sum = 0;
@@ -269,7 +275,7 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
             if(i == j) continue;
             int weight = g->get_weight(i,j);
             if(weight == DO_NOT_DELETE){
-                cost += g->merge(i,j);
+                k -= g->merge(i,j);
                 int uv = g->merge_map.size()-1;
                 data_red_stack.push(stack_elem{1,-1, -1,-1,uv});
                 goto redo;
@@ -289,20 +295,59 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
         }
 
         if(max_weight >= sum - max_weight && i_max != -1) {
-            cost += g->merge(i_max, j_max);
+            k -= g->merge(i_max, j_max);
             int uv = g->merge_map.size()-1;
             data_red_stack.push(stack_elem{1,-1, -1,-1,uv});
             goto redo;
         }
     }
     if(cost > 0) printDebug("Merged vertices for dataRed_heavy_edge_single_end, cost: " + std::to_string(cost));
-    return k - cost;
+    return k;
 }
 
 
 //is doing the large Neighbourhood Rule for all vertices in the graph TODO
-int Solver::dataRed_large_neighbourhood_I() {
-    return 0;
+int Solver::dataRed_large_neighbourhood_I(int k) {
+
+    int merge_costs = 0;
+    rerun_after_merge:
+    if(k < 0) {
+        printDebug("Fail: maximum cost exceeded");
+        return -1;
+    }
+    for(int i : g->active_nodes){
+        auto neighbourhoods = closed_neighbourhood(i);
+        auto neighbours = neighbourhoods.first;
+        auto not_neighbours = neighbourhoods.second;
+        int deficiency = this->deficiency(neighbours);
+        int cut_weight = this->cut_weight(neighbours, not_neighbours);
+        if(deficiency != DO_NOT_DELETE && cut_weight != DO_NOT_DELETE) {
+            int sum = 2 * deficiency + cut_weight;
+            if(sum < 0) // int overflow
+                sum = DO_NOT_DELETE;
+            if(sum < neighbours.size() && neighbours.size() >= 2){
+                int first = neighbours.front();
+                neighbours.pop_front();
+                int second = neighbours.front();
+                neighbours.pop_front();
+                merge_costs += g->merge(first, second);
+                int uv = g->merge_map.size()-1;
+                data_red_stack.push(stack_elem{1,-1, -1,-1,uv});
+                while(!neighbours.empty()){
+                    int last_merged = g->active_nodes.back();
+                    int next_from_neighbourhood = neighbours.front();
+                    neighbours.pop_front();
+                    merge_costs += g->merge(last_merged, next_from_neighbourhood);
+                    int uv = g->merge_map.size()-1;
+                    data_red_stack.push(stack_elem{1,-1, -1,-1,uv});
+                }
+                k -= merge_costs;
+                goto rerun_after_merge;
+
+            }
+        }
+    }
+    return k;
 }
 
 // param: u is the index of the vertex of which the neighbours are collected
@@ -313,6 +358,7 @@ std::pair<std::list<int>, std::list<int>> Solver::closed_neighbourhood(int u) {
     std::list<int> neighbours;
     std::list<int> not_neighbours;
     for(int i : g->active_nodes){
+        if(i == u) continue;
         if(g->get_weight(u,i) > 0){
             neighbours.push_back(i);
         }else if(g->get_weight(u,i) < 0){
@@ -320,7 +366,7 @@ std::pair<std::list<int>, std::list<int>> Solver::closed_neighbourhood(int u) {
         }
     }
     neighbours.push_back(u);
-    return std::pair<std::list<int>, std::list<int>>(neighbours, not_neighbours);
+    return std::make_pair(neighbours, not_neighbours);
 }
 
 //calculates the costs to make the neighbourhood a clique
@@ -330,7 +376,11 @@ int Solver::deficiency(std::list<int> neighbours) {
         int i = neighbours.front();
         neighbours.pop_front();
         for (int j : neighbours) {
+            if ( i == j) continue;
             if (g->get_weight(i, j) < 0) {
+                if(g->get_weight(i,j) == DO_NOT_ADD){
+                    return DO_NOT_DELETE; // abs(DO_NOT_ADD) is DO_NOT_ADD again but a high value should be returned
+                }
                 costs += abs(g->get_weight(i, j));
             }
         }
@@ -342,8 +392,12 @@ int Solver::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph
     int cut_costs = 0;
     for(int i : neighbourhood){
         for(int j : rest_graph){
+            if(i == j)continue;
             int weight = g->get_weight(i,j);
             if(weight > 0){
+                if(weight == DO_NOT_DELETE){
+                    return DO_NOT_DELETE;
+                }
                 cut_costs += weight;
             }
         }

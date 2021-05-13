@@ -47,8 +47,7 @@ public:
     std::stack<stack_elem> data_red_stack;
 
 
-    //large neighbourhood
-    int dataRed_large_neighbourhood_I();
+    int dataRed_large_neighbourhood_I(int);
     //return pair for neighbourhood(first), & not neighbours
     std::pair<std::list<int>, std::list<int>> closed_neighbourhood(int u);
     int deficiency(std::list<int> neighbours);
