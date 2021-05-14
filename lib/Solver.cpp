@@ -6,7 +6,7 @@
 #include <math.h>
 
 
-const char* FILENAME = "../wce-students/2-real-world/w027.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w055.dimacs";
 //const char* FILENAME = "../../wce-students-real/2-real-world/w013.dimacs";
 
 #define NONE -1
@@ -19,7 +19,6 @@ Solver::Solver(){
 Solver::~Solver() {}
 
 void Solver::solve() {
-//    g->printGraph(std::cout);
 
     int k = 0;
     while (true){
@@ -33,10 +32,9 @@ void Solver::solve() {
         }
         undo_data_reduction(0);
         k++;
-
     }
 
-    verify_clusterGraph();
+    verify_clusterGraph(); // only used in debug
 
     std::cout << "#recursive steps: " << rec_steps << std::endl;
 
@@ -55,6 +53,7 @@ int Solver::branch(int k, int layer){
         printDebug("FOUND CLUSTER GRAPH");
         return CLUSTER_GRAPH;
     }
+
     rec_steps++;
 
     int v = std::get<0>(p3);
@@ -77,7 +76,6 @@ int Solver::branchEdge(int u, int v, int k, int layer){
         return NONE;
     }
 
-
     // if weight = 0, use flag to branch once with deleting edge and once with adding edge
     bool flag_branch_zero = true;
     branch_zero:
@@ -86,25 +84,27 @@ int Solver::branchEdge(int u, int v, int k, int layer){
         if(flag_branch_zero == false) g->delete_edge(u, v);
     }
 
-    int prev_stack_size = g->graph_mod_stack.size();
-    int k_reduced = k-abs(weight);
-
     if(weight > 0) g->delete_edge(u, v);
     if(weight < 0) g->add_edge(u, v);
 
+    int prev_stack_size = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
 
-    // data reduction
-    if(weight < 0){  // we have set {u,v} = DND --> merge {u,v}
+    int k_reduced = k-abs(weight);
+
+    // if {u,v} < 0, we inserted edge ==> merge {u,v}
+    if(weight < 0){
         int cost = g->merge(u,v);
         if(cost == -1) k_reduced = -1;
         else k_reduced -= cost;
     }
+
     k_reduced = data_reduction(k_reduced, layer);
 
     if(this->branch(k_reduced, layer) == CLUSTER_GRAPH){
         if(u < g->num_vertices && v < g->num_vertices)
             final_output(u,v);
-        else printDebug("output (later): " + std::to_string(u+1-1) + " " + std::to_string(v+1-1));
+        else
+            printDebug("output (later): " + std::to_string(u+1-1) + " " + std::to_string(v+1-1));
         return CLUSTER_GRAPH;
     }
 
@@ -180,19 +180,22 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 
 
 int Solver::data_reduction(int k, int layer){
+    int k_before = k;
+    // try different values for layers
+    if(layer != 0){
 //    this->dataRed_heavy_non_edge();
 //    k = dataRed_heavy_edge_single_end(k);
-
-    if(layer == 0){
         k = dataRed_heavy_non_edge_branch(k);
-        k = dataRed_large_neighbourhood_I(k);
         k = dataRed_heavy_edge_single_end_branch(k);
+        k = dataRed_large_neighbourhood_I(k);
         k = dataRed_heavy_edge_both_ends(k);
     }
 
-    if(layer % 3 == 0){ // try different values here
+    if(layer % 3 == 0){
         k = dataRed_weight_larger_k(k);
     }
+    if(k != k_before)
+        printDebug("Data reduction reduced k to " + std::to_string(k));
     return k;
 }
 
@@ -202,16 +205,16 @@ void Solver::undo_data_reduction(int prev_stack_size){
     }
 }
 
-// continuously merges all vertices whose edge weight exceeds the available costs
+// continuously merges all vertices whose edge weight exceeds the available costs (set edges = -inf analogously)
 // returns remaining costs k after merging
 // if k<0 no solution for the graph and input k exists
 int Solver::dataRed_weight_larger_k(int k){
-    printDebug("Data reduction (weight > k=" + std::to_string(k) + "):");
+//    printDebug("Data reduction (weight > k=" + std::to_string(k) + "):");
     int k_before = k;
 
     redo:
     if(k < 0) {
-        printDebug("Fail: maximum cost exceeded");
+//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int u : g->active_nodes){
@@ -230,20 +233,20 @@ int Solver::dataRed_weight_larger_k(int k){
         }
     }
 
-    if(k != k_before)
-        printDebug("Reduced k to " + std::to_string(k));
-    else
-        printDebug("no edges to merge");
+//    if(k != k_before)
+//        printDebug("Reduced k to " + std::to_string(k));
+//    else
+//        printDebug("no edges to merge");
 
     return k;
 }
 
 int Solver::dataRed_heavy_non_edge_branch(int k) {
-    printDebug("Data reduction (heavy_non_edge k=" + std::to_string(k) + "):");
+//    printDebug("Data reduction (heavy_non_edge k=" + std::to_string(k) + "):");
 
     redo:
     if(k < 0) {
-        printDebug("Fail: maximum cost exceeded");
+//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int u : g->active_nodes){
@@ -283,11 +286,11 @@ int Solver::dataRed_heavy_non_edge_branch(int k) {
 }
 
 int Solver::dataRed_heavy_edge_single_end_branch(int k) {
-    printDebug("Data reduction (heavy_edge_single_end k=" + std::to_string(k) + "):");
+//    printDebug("Data reduction (heavy_edge_single_end k=" + std::to_string(k) + "):");
 
     redo:
     if(k < 0) {
-        printDebug("Fail: maximum cost exceeded");
+//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int u : g->active_nodes){
@@ -324,13 +327,12 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
                 int cost = g->merge(u,v);
                 if(cost == -1) return -1;
                 k -= cost;
-                printDebug("Merged dnd for dataRed_heavy_edge_single_end: (" + std::to_string(u) + "," + std::to_string(v) + ")" );
+                printDebug("Merged dnd edge: (" + std::to_string(u) + "," + std::to_string(v) + ")" );
                 goto redo;
 
             }
 
             // for all edges where u is dna, check if v agrees, otherwise the merging fails
-            // TODO other idea would be to introduce extra cost (changing {v,w} instead)
             bool stop = false;
             for(int w: dna){ // if {u,w} = -inf and {v,w} > 0 --> merging fails (wir können {u,w} nicht {v,w} andpassen)
                 if(g->get_weight(v,w) == DO_NOT_DELETE) {
@@ -348,7 +350,7 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
                 int cost = g->merge(u,v);
                 if(cost == -1) return -1;
                 k -= cost;
-                printDebug("Merged vertices for dataRed_heavy_edge_single_end: (" + std::to_string(u) + "," + std::to_string(v) + ")" );
+//                printDebug("Merged vertices for dataRed_heavy_edge_single_end: (" + std::to_string(u) + "," + std::to_string(v) + ")" );
                 goto redo;
             }
         }
@@ -385,7 +387,7 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
     int cost = 0;
     redo:
     if(k < 0) {
-        printDebug("Fail: maximum cost exceeded");
+//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int i : g->active_nodes){
@@ -431,7 +433,7 @@ int Solver::dataRed_heavy_edge_both_ends(int k) {
     int cost = 0;
     redo:
     if(k < 0) {
-        printDebug("Fail: maximum cost exceeded");
+//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for( int u: g->active_nodes){
@@ -501,7 +503,7 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
     int merge_costs = 0;
     rerun_after_merge:
     if(k < 0) {
-        printDebug("Fail: maximum cost exceeded");
+//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int i : g->active_nodes){
@@ -623,47 +625,38 @@ void Solver::final_unmerge_and_output(){
 // unmerges vertex uv and outputs all edges {x,u} and {x,v} that had to be modified for merging
 int Solver::unmerge_and_output(int uv){
     std::vector<int> uv_children = g->merge_map[uv];
-    int u = uv_children[0];
-    int v = uv_children[1];
 
-    printDebug("Output for unmerging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(uv));
+    printDebug("Output for unmerging (" + std::to_string(uv_children[0]) + "," + std::to_string(uv_children[1]) + ") -> " + std::to_string(uv));
 
     int dk = 0;
     for(int x : g->active_nodes) {
-        if(x == uv || x == u ||x == v) continue;
+        if(x == uv || x == uv_children[0] ||x == uv_children[1]) continue;
+        int weight_uvx = g->get_weight(uv, x);
 
-        // NOTE: if w(u,x) == 0 we have to do something ----> delete or add depending on w(uv,x)
-        if (g->get_weight(u, x) == 0 || (signbit(g->get_weight(u, x)) != signbit(g->get_weight(uv, x)))) {
-            dk += abs(g->get_weight(u,x));
+        for(int u: uv_children){
+            int weight_ux = g->get_weight(u, x);
 
-            // if w(uv,x) == 0 it doesnt matter if we delete or add ---> add edge
-            if(g->get_weight(uv, x) >= 0)
-                g->add_edge(u,x);
-            if(g->get_weight(uv, x) < 0)
-                g->delete_edge(u,x);
+            // adapt edge {u,x} to previous merged edge {uv,x}
+            // if {u,x} = 0 or if the edges have different sign, we have to modify the edge {u,x}
+            if (weight_ux == 0 || (signbit(weight_ux) != signbit(weight_uvx))) {
 
-            if(u < g->num_vertices && x < g->num_vertices)
-                final_output(u,x);
-            else
-                printDebug("Output queue: " + std::to_string(u+1-1) + " " + std::to_string(x+1-1));
-        }
-        if (g->get_weight(v, x) == 0 ||(signbit(g->get_weight(v, x)) != signbit(g->get_weight(uv, x)))) {
-            dk += abs(g->get_weight(v,x));
-            if(g->get_weight(uv, x) >= 0)
-                g->add_edge(v,x);
-            if(g->get_weight(uv, x) < 0)
-                g->delete_edge(v,x);
+                if(weight_uvx >= 0) // if w(uv,x) = 0 it didnt matter if we delete or add (choose add edge)
+                    g->add_edge(u,x);
+                else
+                    g->delete_edge(u,x);
 
-            if(v < g->num_vertices && x < g->num_vertices)
-                final_output(v,x);
-            else
-                printDebug("Output queue: " + std::to_string(v+1-1) + " " + std::to_string(x+1-1));
+                if(u < g->num_vertices && x < g->num_vertices)
+                    final_output(u,x);
+                else
+                    printDebug("Output queue: " + std::to_string(u+1-1) + " " + std::to_string(x+1-1));
 
+                dk += abs(weight_ux); // debug
+            }
         }
     }
-    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")" + " with cost " + std::to_string(dk));
 
     g->undo_final_modification();
+    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(uv_children[0]) + "," + std::to_string(uv_children[1]) + ")" + " with cost " + std::to_string(dk));
 
     return dk;
 }
@@ -702,6 +695,7 @@ WCE_Graph *Solver::parse_and_build_graph(){
 
 // verify that the current graph is now a cluster graph
 void Solver::verify_clusterGraph(){
+#ifdef DEBUG
     auto p3 = this->get_max_cost_p3_naive();
     if(std::get<0>(p3) == -1){
         printDebug("\nVERIFICATION SUCCESS\n");
@@ -709,6 +703,7 @@ void Solver::verify_clusterGraph(){
         printDebug("\nVERIFICATION FAIL:");
         print_tuple(p3);
     }
+#endif
 }
 
 

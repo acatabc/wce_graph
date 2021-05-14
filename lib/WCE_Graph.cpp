@@ -171,7 +171,7 @@ int WCE_Graph::merge(int u, int v) {
     }
 
 
-    printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " +  std::to_string(idx) + "     with cost " + std::to_string(dk));
+//    printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " +  std::to_string(idx) + "     with cost " + std::to_string(dk));
 
     return dk;
 }
@@ -179,7 +179,7 @@ int WCE_Graph::merge(int u, int v) {
 void WCE_Graph::set_non_edge(int u, int v) {
     graph_mod_stack.push(stack_elem{2, u, v, this->get_weight(u, v), -1});
     set_weight(u, v, DO_NOT_ADD);
-    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ") jule");
+//    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ")");
 }
 
 // unmerges vertex uv, take care to unmerge in correct order!
@@ -222,7 +222,7 @@ void WCE_Graph::unmerge(int uv) {
     merge_map.pop_back();
     adj_matrix.pop_back();
 
-    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")");
+//    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")");
     return;
 }
 
@@ -242,7 +242,7 @@ void WCE_Graph::undo_final_modification(){
     if(el.type == 2){
         set_weight(el.v1, el.v2, el.weight);
         graph_mod_stack.pop();
-        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
+//        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
     }
 }
 
