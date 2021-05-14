@@ -3,7 +3,6 @@
 #define ALGENG_WCE_SOLVER_SOLVER_H
 
 #include <vector>
-#include <stack>
 #include "WCE_Graph.h"
 
 class Solver {
@@ -28,24 +27,19 @@ public:
 
 
     // data reduction methods
+    // input:   current available costs k
+    // output:  cost of merging which has been done by the method
+    //          returns -1 if data reduction failed with the given k (no solution exists)
     int data_reduction(int k);
     void undo_data_reduction(int final);
 
     int dataRed_weight_larger_k(int k);
     void dataRed_heavy_non_edge();
+    int dataRed_heavy_non_edge_branch(int k);
     int dataRed_heavy_edge_single_end(int k);
+    int dataRed_heavy_edge_single_end_branch(int k);
     int dataRed_heavy_edge_both_ends(int k);
 
-    struct stack_elem{
-        int type; // 1 is merge, 2 is set_inf
-        // edge set_inf
-        int v1;
-        int v2;
-        int weight;
-        // merged vertex
-        int uv;
-    };
-    std::stack<stack_elem> data_red_stack;
 
 
     int dataRed_large_neighbourhood_I(int);
@@ -61,11 +55,6 @@ public:
 
     // debug
     void verify_clusterGraph();
-    std::vector<int> k_forward;
-    std::vector<int> k_backward;
-
-    void print_stack(std::stack<stack_elem>);
-    void print_stack_rec(std::stack<stack_elem>);
 
 };
 

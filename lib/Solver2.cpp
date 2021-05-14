@@ -505,7 +505,7 @@ int Solver2::unmerge_and_output(int uv){
     }
     printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")" + " with cost " + std::to_string(dk));
 
-    g->unmerge(uv);
+//    g->unmerge(uv);
 
     return dk;
 }

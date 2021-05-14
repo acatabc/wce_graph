@@ -111,7 +111,8 @@ int WCE_Graph::merge(int u, int v) {
 
     int idx = this->adj_matrix.size();
 
-    printDebug(std::to_string(idx));
+    graph_mod_stack.push(stack_elem{1, -1, -1, -1, idx});
+
     // setup adjacency matrix for new vertex
     this->adj_matrix.push_back(std::vector<matrix_entry>());
     for(int i = 0; i < this->adj_matrix.size(); i++){
@@ -144,6 +145,7 @@ int WCE_Graph::merge(int u, int v) {
         // if one edge is DO_NOT_ADD and the other one is DO_NOT_DELETE, this merging fails
         if((weight_uj == DO_NOT_ADD && weight_vj == DO_NOT_DELETE ) ||(weight_vj == DO_NOT_ADD && weight_uj == DO_NOT_DELETE)){
             this->unmerge(idx);
+            printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") failed ");
             return -1;
         }
             // if at least one of the two edges is DO_NOT_ADD/DO_NOT_DELETE, the merged one becomes DO_NOT_ADD/DO_NOT_DELETE as well
@@ -167,16 +169,35 @@ int WCE_Graph::merge(int u, int v) {
                 dk += std::min(abs(weight_vj), abs(weight_uj));
         }
     }
+
+
     printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " +  std::to_string(idx) + "     with cost " + std::to_string(dk));
 
     return dk;
 }
 
+void WCE_Graph::set_non_edge(int u, int v) {
+    graph_mod_stack.push(stack_elem{2, u, v, this->get_weight(u, v), -1});
+    set_weight(u, v, DO_NOT_ADD);
+    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ") jule");
+}
+
 // unmerges vertex uv, take care to unmerge in correct order!
 void WCE_Graph::unmerge(int uv) {
 
-    // uv is not a merged vertex
-    if(this->merge_map[uv].size() == 1) return;
+    // verify that this vertex is on top of modification stack
+    stack_elem top = graph_mod_stack.top();
+    if(top.type != 1 && top.uv != uv){
+        throwError("Error: unmerges vertex which is not on top of stack");
+        return;
+    }
+    else graph_mod_stack.pop();
+
+    // verify that uv is a merged vertex
+    if(this->merge_map[uv].size() == 1) {
+        throwError("Error: uv is not a merged vertex");
+        return;
+    }
 
     std::vector<int> uv_nodes = this->merge_map[uv];
     int u = uv_nodes[0];
@@ -213,6 +234,19 @@ void WCE_Graph::recover_original(int last_merge_idx){
     }
     std::sort(active_nodes.begin(), active_nodes.end());
 }
+
+
+void WCE_Graph::undo_final_modification(){
+    stack_elem el = graph_mod_stack.top();
+    if(el.type == 1)
+        unmerge(el.uv);
+    if(el.type == 2){
+        set_weight(el.v1, el.v2, el.weight);
+        graph_mod_stack.pop();
+        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
+    }
+}
+
 
 
 
