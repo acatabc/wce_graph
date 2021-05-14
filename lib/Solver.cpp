@@ -20,17 +20,31 @@ Solver::~Solver() {}
 
 void Solver::solve() {
 
+    // apply data reduction before branching
+    int k_tmp = INT32_MAX;
+//    this->dataRed_heavy_non_edge();
+//    k = dataRed_heavy_edge_single_end(k);
+    k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
+    k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
+    k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
+    k_tmp = dataRed_large_neighbourhood_I(k_tmp);
+
+    int cost_before_branching = INT32_MAX - k_tmp;
+    int stack_before_branching = g->graph_mod_stack.size();
+
     int k = 0;
     while (true){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 
-        int k_reduced = data_reduction(k, 0);
+        int k_reduced = k - cost_before_branching;
+
+        k_reduced = data_reduction(k_reduced, 0);
 
         if(this->branch(k_reduced, 0) == CLUSTER_GRAPH){
             final_unmerge_and_output();
             break;
         }
-        undo_data_reduction(0);
+        undo_data_reduction(stack_before_branching);
         k++;
     }
 
@@ -178,7 +192,6 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 // ----------------------------
 // ------- data reduction  --------
 
-
 int Solver::data_reduction(int k, int layer){
     int k_before = k;
     // try different values for layers
@@ -250,16 +263,16 @@ int Solver::dataRed_heavy_non_edge_branch(int k) {
         return -1;
     }
     for(int u : g->active_nodes){
-        // sum {u,w} for all active neighbors w
+        // compute sum of {u,w} for all active neighbors w
         int weight_neighbours = 0;
         for(int w : g->active_nodes){
             if(u == w) continue;
             int weight = g->get_weight(u,w);
 
-            // merge vertices {u,w} if it is DND
+            // merge if {u,w} is DND
             if(weight == DO_NOT_DELETE) {
                 int cost = g->merge(u,w);
-                if(cost == -1) return -1;  // merging failed
+                if(cost == -1) return -1;
                 k -= cost;
                 goto redo;
             }
@@ -274,8 +287,7 @@ int Solver::dataRed_heavy_non_edge_branch(int k) {
         for(int v : g->active_nodes){
             if(u == v) continue;
             int weight_uv = g->get_weight(u,v);
-            if(weight_uv == DO_NOT_ADD)
-                // {u,v} is already a heavy non edge
+            if(weight_uv == DO_NOT_ADD) // {u,v} is already a heavy non edge
                 continue;
             if(weight_uv < 0 && abs(weight_uv) >= weight_neighbours){
                 g->set_non_edge(u,v);
@@ -294,21 +306,22 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
         return -1;
     }
     for(int u : g->active_nodes){
-        // sum abs({u,w}) for all active neighbors w
-        // save all DNA  edges of u for later, DND edges are merged
+        // compute sum abs({u,w}) for all active neighbors w
+        // save all DNA  edges of u for later; merge DND edges
         int weight_neighbours = 0;
         std::vector<int> dna = std::vector<int>();
         for(int w : g->active_nodes){
             if(u == w) continue;
             int weight = g->get_weight(u,w);
 
-            // merge vertices if {u,w} is DND
+            // merge if {u,w} is DND
             if(weight == DO_NOT_DELETE) {
                 int cost = g->merge(u,w);
                 if(cost == -1) return -1;  // merging failed
                 k -= cost;
                 goto redo;
             }
+
             if(weight == DO_NOT_ADD)
                 dna.push_back(w);
             else weight_neighbours += abs(weight);
@@ -322,19 +335,17 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
             if(weight_uv < 0)
                 continue;
 
-            // {u,v} already is a heavy edge -> merge {u,v}
+            // merge if {u,v} is DND
             if(weight_uv == DO_NOT_DELETE){
                 int cost = g->merge(u,v);
                 if(cost == -1) return -1;
                 k -= cost;
-                printDebug("Merged dnd edge: (" + std::to_string(u) + "," + std::to_string(v) + ")" );
                 goto redo;
-
             }
 
-            // for all edges where u is dna, check if v agrees, otherwise the merging fails
+            // if {u,w} = dna, check if {w,v} agrees, otherwise add cost for changing {w,v}
             bool stop = false;
-            for(int w: dna){ // if {u,w} = -inf and {v,w} > 0 --> merging fails (wir können {u,w} nicht {v,w} andpassen)
+            for(int w: dna){
                 if(g->get_weight(v,w) == DO_NOT_DELETE) {
                     stop = true;
                     break;
@@ -345,7 +356,7 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
             }
             if(stop == true) continue;
 
-            // merge if cost for deleting {u,v} would be higher than inverting all edges {u,w}
+            // merge if heavy edge condition holds
             if(weight_uv >= weight_neighbours - weight_uv){
                 int cost = g->merge(u,v);
                 if(cost == -1) return -1;

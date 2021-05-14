@@ -85,7 +85,6 @@ void WCE_Graph::modify_edge(int v, int w) {
     set_weight(v,w, -vw);
 }
 
-
 // returns sum of absolute value of edge cost of p3 (u,v,w)
 int WCE_Graph::get_cost(int u, int v, int w) {
     int sum = 0;
@@ -106,6 +105,7 @@ int WCE_Graph::get_cost(int u, int v, int w) {
 // ---------- merging related ------------
 
 // merges vertices u and v and returns costs for merging
+// adds merging to modification stack
 // returns -1 if merging is not possible because of conflicting edges (DO_NOT_DELETE/DO_NOT_ADD)
 int WCE_Graph::merge(int u, int v) {
 
@@ -176,15 +176,16 @@ int WCE_Graph::merge(int u, int v) {
     return dk;
 }
 
+// set edge {u,v} = -inf and adds operation to modification stack
 void WCE_Graph::set_non_edge(int u, int v) {
     graph_mod_stack.push(stack_elem{2, u, v, this->get_weight(u, v), -1});
     set_weight(u, v, DO_NOT_ADD);
 //    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ")");
 }
 
-// unmerges vertex uv, take care to unmerge in correct order!
+// unmerges vertex uv and removes uf from mofication stack
+// throws error if uv is not on top of modification stack
 void WCE_Graph::unmerge(int uv) {
-
     // verify that this vertex is on top of modification stack
     stack_elem top = graph_mod_stack.top();
     if(top.type != 1 && top.uv != uv){
@@ -226,15 +227,6 @@ void WCE_Graph::unmerge(int uv) {
     return;
 }
 
-// recovers original graph, merge map and actives nodes vector (as it has been before any merging operation) until input vertex
-void WCE_Graph::recover_original(int last_merge_idx){
-    printDebug("Recover original graph");
-    while (adj_matrix.size() != last_merge_idx){
-        unmerge(adj_matrix.size()-1);
-    }
-    std::sort(active_nodes.begin(), active_nodes.end());
-}
-
 void WCE_Graph::undo_final_modification(){
     stack_elem el = graph_mod_stack.top();
     if(el.type == 1)
@@ -246,8 +238,15 @@ void WCE_Graph::undo_final_modification(){
     }
 }
 
-
-
+// recovers original graph, merge map and actives nodes vector (as it has been before any merging operation) until input vertex
+// !! old method, does not use modification stack!
+void WCE_Graph::recover_original(int last_merge_idx){
+    printDebug("Recover original graph");
+    while (adj_matrix.size() != last_merge_idx){
+        unmerge(adj_matrix.size()-1);
+    }
+    std::sort(active_nodes.begin(), active_nodes.end());
+}
 
 
 // ---------------------------------------

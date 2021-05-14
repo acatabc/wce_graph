@@ -25,7 +25,7 @@ public:
     //method related to p3s
     std::tuple<int, int, int> get_max_cost_p3_naive();
 
-
+    // data reduction
     int data_reduction(int k, int layer);
     void undo_data_reduction(int final);
 
@@ -36,8 +36,6 @@ public:
     int dataRed_heavy_edge_single_end_branch(int k);
     int dataRed_heavy_edge_both_ends(int k);
 
-
-
     int dataRed_large_neighbourhood_I(int);
     //return pair for neighbourhood(first), & not neighbours
     std::pair<std::list<int>, std::list<int>> closed_neighbourhood(int u);
@@ -47,7 +45,6 @@ public:
     // merging
     int unmerge_and_output(int uv);
     void final_unmerge_and_output();
-
 
     // debug
     void verify_clusterGraph();

@@ -20,7 +20,6 @@ private:
 public:
     WCE_Graph(int);
     const int num_vertices;
-    int num_vertices_after_reduction;
     virtual ~WCE_Graph();
 
     void set_weight(int, int, int);
@@ -55,7 +54,6 @@ public:
     void print_active_graph(std::ostream &os);
     void print_active_nodes();
     void print_merge_map();
-
     void print_stack(std::stack<stack_elem>);
     void print_stack_rec(std::stack<stack_elem>);
 };
