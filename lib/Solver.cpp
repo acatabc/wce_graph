@@ -206,11 +206,15 @@ int Solver::dataRed_weight_larger_k(int k){
     for(int u : g->active_nodes){
         for(int v : g->active_nodes){
             if(u == v) continue;
-            if(g->get_weight(u,v) > k){ // for > -k set to -infinity TODO
+            int weight_uv = g->get_weight(u,v);
+            if(weight_uv > k){
                 int cost = g->merge(u,v);
                 if(cost == -1) return -1; // merging failed
                 k -= cost;
                 goto redo;
+            }
+            else if(weight_uv != DO_NOT_ADD && -weight_uv > k){
+                g->set_non_edge(u,v);
             }
         }
     }
@@ -233,7 +237,6 @@ int Solver::dataRed_heavy_non_edge_branch(int k) {
     }
     for(int u : g->active_nodes){
         // sum {u,w} for all active neighbors w
-        // if u has a DND edge, then data reduction fails (u will never be in a single cluster)
         int weight_neighbours = 0;
         for(int w : g->active_nodes){
             if(u == w) continue;

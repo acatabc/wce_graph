@@ -235,7 +235,6 @@ void WCE_Graph::recover_original(int last_merge_idx){
     std::sort(active_nodes.begin(), active_nodes.end());
 }
 
-
 void WCE_Graph::undo_final_modification(){
     stack_elem el = graph_mod_stack.top();
     if(el.type == 1)
