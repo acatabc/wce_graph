@@ -25,7 +25,7 @@ void Solver::solve() {
     while (true){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 
-        int k_reduced = data_reduction(k);
+        int k_reduced = data_reduction(k, 0);
 
         if(this->branch(k_reduced, 0) == CLUSTER_GRAPH){
             final_unmerge_and_output();
@@ -86,13 +86,20 @@ int Solver::branchEdge(int u, int v, int k, int layer){
         if(flag_branch_zero == false) g->delete_edge(u, v);
     }
 
+    int prev_stack_size = g->graph_mod_stack.size();
+    int k_reduced = k-abs(weight);
+
     if(weight > 0) g->delete_edge(u, v);
     if(weight < 0) g->add_edge(u, v);
 
+
     // data reduction
-    int prev_stack_size = g->graph_mod_stack.size();
-//    int k_reduced = data_reduction(k-abs(weight));
-    int k_reduced = dataRed_weight_larger_k(k-abs(weight));
+    if(weight < 0){  // we have set {u,v} = DND --> merge {u,v}
+        int cost = g->merge(u,v);
+        if(cost == -1) k_reduced = -1;
+        else k_reduced -= cost;
+    }
+    k_reduced = data_reduction(k_reduced, layer);
 
     if(this->branch(k_reduced, layer) == CLUSTER_GRAPH){
         if(u < g->num_vertices && v < g->num_vertices)
@@ -109,7 +116,6 @@ int Solver::branchEdge(int u, int v, int k, int layer){
         flag_branch_zero = false;
         goto branch_zero;
     }
-
 
     return NONE;
 }
@@ -173,15 +179,20 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 // ------- data reduction  --------
 
 
-int Solver::data_reduction(int k){
-    this->dataRed_heavy_non_edge();
-    k = this->dataRed_heavy_non_edge_branch(k);
-//    k = dataRed_large_neighbourhood_I(k);
+int Solver::data_reduction(int k, int layer){
+//    this->dataRed_heavy_non_edge();
 //    k = dataRed_heavy_edge_single_end(k);
-    k = dataRed_heavy_edge_single_end_branch(k);
-//    k = dataRed_heavy_edge_both_ends(k);
-    k = dataRed_weight_larger_k(k);
 
+    if(layer == 0){
+        k = dataRed_heavy_non_edge_branch(k);
+        k = dataRed_large_neighbourhood_I(k);
+        k = dataRed_heavy_edge_single_end_branch(k);
+        k = dataRed_heavy_edge_both_ends(k);
+    }
+
+    if(layer % 3 == 0){ // try different values here
+        k = dataRed_weight_larger_k(k);
+    }
     return k;
 }
 
@@ -370,7 +381,6 @@ void Solver::dataRed_heavy_non_edge() {
     return;
 }
 
-
 int Solver::dataRed_heavy_edge_single_end(int k) {
     int cost = 0;
     redo:
@@ -472,7 +482,10 @@ int Solver::dataRed_heavy_edge_both_ends(int k) {
                 sum = DO_NOT_ADD;
             }
             if(max_weight >= sum){
-                k -= g->merge(max_u, max_v);
+                int cost = g->merge(max_u, max_v);
+                if(cost == -1) return -1;
+                k -= cost;
+                printDebug("Successful heavy_edge_both_ends merge costs: " + std::to_string(cost));
                 goto redo;
             }
         }
@@ -506,14 +519,23 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
                 neighbours.pop_front();
                 int second = neighbours.front();
                 neighbours.pop_front();
-                merge_costs += g->merge(first, second);
+
+                int val = g->merge(first,second);
+                if(val == -1) return -1; // merging failed
+                merge_costs += val;
+
                 while(!neighbours.empty()){
                     int last_merged = g->active_nodes.back();
                     int next_from_neighbourhood = neighbours.front();
                     neighbours.pop_front();
-                    merge_costs += g->merge(last_merged, next_from_neighbourhood);
+
+                    int val = g->merge(last_merged, next_from_neighbourhood);
+                    if(val == -1) return -1; // merging failed
+                    merge_costs += val;
+
                 }
                 k -= merge_costs;
+                printDebug("Successful large neighborhood 1, merge costs: " + std::to_string(merge_costs));
                 goto rerun_after_merge;
 
             }
@@ -559,6 +581,7 @@ int Solver::deficiency(std::list<int> neighbours) {
     }
     return costs;
 }
+
 //calculates the cost to cut of the neighbourhood(neighbourhood) from the rest of the graph(rest_graph)
 int Solver::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph) {
     int cut_costs = 0;
@@ -576,13 +599,14 @@ int Solver::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph
     }
     return cut_costs;
 }
+
 // ----------------------------
 // ------- merging --------
 
-// unmerges all remaining vertices (after the solver finished) and outputs all modified edges
+
+// unmerges all remaining vertices and outputs edges that had to be modified for merging
 void Solver::final_unmerge_and_output(){
     int k = 0;
-//    while (g->merge_map.size() != g->num_vertices){
     while (g->graph_mod_stack.size() != 0){
         verify_clusterGraph();
         if(g->graph_mod_stack.top().type == 2) {
@@ -594,10 +618,9 @@ void Solver::final_unmerge_and_output(){
         }
     }
     printDebug("\nUnmerging sum of costs " +  std::to_string(k));
-
 }
 
-// unmerges vertex uv and outputs all modified edges (with u and v) to keep same edge connection as with uv
+// unmerges vertex uv and outputs all edges {x,u} and {x,v} that had to be modified for merging
 int Solver::unmerge_and_output(int uv){
     std::vector<int> uv_children = g->merge_map[uv];
     int u = uv_children[0];

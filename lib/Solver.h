@@ -26,11 +26,7 @@ public:
     std::tuple<int, int, int> get_max_cost_p3_naive();
 
 
-    // data reduction methods
-    // input:   current available costs k
-    // output:  cost of merging which has been done by the method
-    //          returns -1 if data reduction failed with the given k (no solution exists)
-    int data_reduction(int k);
+    int data_reduction(int k, int layer);
     void undo_data_reduction(int final);
 
     int dataRed_weight_larger_k(int k);
