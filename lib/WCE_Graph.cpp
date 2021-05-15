@@ -111,7 +111,7 @@ int WCE_Graph::merge(int u, int v) {
 
     int idx = this->adj_matrix.size();
 
-    graph_mod_stack.push(stack_elem{1, -1, -1, -1, idx});
+    graph_mod_stack.push(stack_elem{.type = 1, .uv = idx});
 
     // setup adjacency matrix for new vertex
     this->adj_matrix.push_back(std::vector<matrix_entry>());
@@ -235,6 +235,12 @@ void WCE_Graph::undo_final_modification(){
         set_weight(el.v1, el.v2, el.weight);
         graph_mod_stack.pop();
 //        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
+    }
+    if(el.type == 3){
+        for(int i: el.clique){
+            active_nodes.push_back(i);
+        }
+        graph_mod_stack.pop();
     }
 }
 

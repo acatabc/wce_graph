@@ -40,13 +40,14 @@ public:
     void undo_final_modification();
 
     struct stack_elem{
-        int type; // 1 is merge, 2 is set_inf
+        int type; // 1 is merge, 2 is set_inf, 3 is clique
         // edge set_inf
         int v1;
         int v2;
         int weight;
         // merged vertex
         int uv;
+        std::vector<int> clique;
     };
     std::stack<stack_elem> graph_mod_stack;
 

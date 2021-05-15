@@ -24,9 +24,9 @@ void Solver::solve() {
     // apply data reduction before branching
     int k_tmp = INT32_MAX;
     int k_before = 0;
-    dataRed_remove_existing_clique();
     while(k_tmp != k_before){
         k_before = k_tmp;
+        dataRed_remove_existing_clique();
         k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
         k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
         k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
@@ -77,7 +77,6 @@ void Solver::output_data_reduction() {
     }
 
     int cost = INT32_MAX - k_tmp;
-
 
     std::cout << g->active_nodes.size() << "\n";
     int i = 0;
@@ -587,6 +586,9 @@ int Solver::dataRed_remove_existing_clique() {
                 }
             }
 
+
+            g->graph_mod_stack.push(WCE_Graph::stack_elem{.type = 3, .clique = component});
+
         }
 //        std::cout << std::endl;
     }
@@ -757,13 +759,21 @@ int Solver::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph
 void Solver::final_unmerge_and_output(){
     int k = 0;
     while (g->graph_mod_stack.size() != 0){
-        verify_clusterGraph();
-        if(g->graph_mod_stack.top().type == 2) {
-            g->graph_mod_stack.pop();
-        } else{
-            int uv = g->graph_mod_stack.top().uv;
+//        verify_clusterGraph();
+        WCE_Graph::stack_elem el = g->graph_mod_stack.top();
+        if(el.type == 1) {
+            int uv = el.uv;
             int dk = unmerge_and_output(uv);
             k += dk;
+        }
+        else if(el.type == 2) {
+            g->graph_mod_stack.pop();
+        }
+        else if(el.type == 3){
+            for(int i: el.clique){
+                g->active_nodes.push_back(i);
+            }
+            g->graph_mod_stack.pop();
         }
     }
     printDebug("\nUnmerging sum of costs " +  std::to_string(k));
