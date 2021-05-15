@@ -8,7 +8,7 @@
 
 //const char* FILENAME = "../wce-students/2-real-world/w055.dimacs";
 //const char* FILENAME = "../../wce-students-real/2-real-world/w013.dimacs";
-const char* FILENAME = "../test_data/w021.dimacs";
+const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE -1
 #define CLUSTER_GRAPH -2
@@ -207,7 +207,7 @@ int Solver::data_reduction(int k, int layer){
         k = dataRed_heavy_edge_both_ends(k);
     }
 
-    if(layer % 2 == 0){
+    if(layer % 1 == 0){
         k = dataRed_weight_larger_k(k);
     }
     if(k != k_before)
@@ -526,7 +526,7 @@ int Solver::dataRed_remove_existing_clique() {
         }
     }
 
-    for(auto component : components){
+    for(auto &component : components){
         bool is_clique = true;
         for(int i = 0; i < component.size() && is_clique; ++i){
 //            std::cout << component.at(i) + 1 << " ";
@@ -544,6 +544,7 @@ int Solver::dataRed_remove_existing_clique() {
                 for(int j : component){
                     if(*i == j){
                         i = g->active_nodes.erase(i);
+                        i--;
                     }
                 }
             }
