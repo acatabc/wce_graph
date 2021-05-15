@@ -21,6 +21,7 @@ public:
     int branch(int k, int layer);
     int branchEdge(int u, int v, int k, int layer);
     void final_output(int u, int v);
+    void output_data_reduction();
 
     //method related to p3s
     std::tuple<int, int, int> get_max_cost_p3_naive();
@@ -37,6 +38,7 @@ public:
     int dataRed_heavy_edge_both_ends(int k);
     int dataRed_remove_existing_clique();
     void DFS(int , bool *, std::vector<int>&);
+    int dataRed_merge_dnd(int k);
 
     int dataRed_large_neighbourhood_I(int);
     //return pair for neighbourhood(first), & not neighbours

@@ -23,13 +23,16 @@ void Solver::solve() {
 
     // apply data reduction before branching
     int k_tmp = INT32_MAX;
-//    this->dataRed_heavy_non_edge();
-//    k = dataRed_heavy_edge_single_end(k);
+    int k_before = 0;
     dataRed_remove_existing_clique();
-    k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
-    k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
-    k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
-    k_tmp = dataRed_large_neighbourhood_I(k_tmp);
+    while(k_tmp != k_before){
+        k_before = k_tmp;
+        k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
+        k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
+        k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
+        k_tmp = dataRed_large_neighbourhood_I(k_tmp);
+        k_tmp = dataRed_merge_dnd(k_tmp);
+    }
 
     int cost_before_branching = INT32_MAX - k_tmp;
     int stack_before_branching = g->graph_mod_stack.size();
@@ -57,6 +60,41 @@ void Solver::solve() {
 
     printDebug("final k:" + std::to_string(k) + "\n");
 }
+
+
+void Solver::output_data_reduction() {
+    g->printGraph(std::cout);
+
+    int k_tmp = INT32_MAX;
+    int k_before = 0;
+    while(k_tmp != k_before){
+        k_before = k_tmp;
+        k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
+        k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
+        k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
+        k_tmp = dataRed_large_neighbourhood_I(k_tmp);
+        k_tmp = dataRed_merge_dnd(k_tmp);
+    }
+
+    int cost = INT32_MAX - k_tmp;
+
+
+    std::cout << g->active_nodes.size() << "\n";
+    int i = 0;
+    for(int u: g->active_nodes){
+        int j = 0;
+        for(int v: g->active_nodes){
+            if(u < v) std::cout << i+1 << " " << j+1 << " " << g->get_weight(u,v) << "\n";
+//            if(u < v) std::cout << u << " " << v << " " << g->get_weight(u,v) << "\n";
+            j++;
+        }
+        i++;
+    }
+
+    std::cout << "#weight:" << cost << "\n";
+
+}
+
 
 
 int Solver::branch(int k, int layer){
@@ -559,6 +597,37 @@ int Solver::dataRed_remove_existing_clique() {
 
     delete[] visited;
     return 0;
+}
+
+
+// merges all vertices with DND=INF edges
+int Solver::dataRed_merge_dnd(int k){
+//    printDebug("Data reduction merge DND" + std::to_string(k) + "):");
+    int k_before = k;
+
+    redo:
+    if(k < 0) {
+        printDebug("Fail: maximum cost exceeded");
+        return -1;
+    }
+    for(int u : g->active_nodes){
+        for(int v : g->active_nodes){
+            if(u == v) continue;
+            if(g->get_weight(u,v) == DO_NOT_DELETE){
+                int cost = g->merge(u,v);
+                if(cost == -1) return -1; // merging failed
+                k -= cost;
+                goto redo;
+            }
+        }
+    }
+
+    if(k != k_before)
+        printDebug("Data reduction merge DND reduced k to " + std::to_string(k));
+//    else
+//        printDebug("no edges to merge");
+
+    return k;
 }
 
 void Solver::DFS(int i, bool *visited, std::vector<int>& component) {
