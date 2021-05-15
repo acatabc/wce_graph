@@ -35,6 +35,8 @@ public:
     int dataRed_heavy_edge_single_end(int k);
     int dataRed_heavy_edge_single_end_branch(int k);
     int dataRed_heavy_edge_both_ends(int k);
+    int dataRed_remove_existing_clique();
+    void DFS(int , bool *, std::vector<int>&);
 
     int dataRed_large_neighbourhood_I(int);
     //return pair for neighbourhood(first), & not neighbours

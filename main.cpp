@@ -9,7 +9,7 @@ int main() {
     Solver *s = new Solver();
 
 //    g->printGraph(std::cout);
-
+//    s->dataRed_remove_existing_clique();
     s->solve();
 
     return 0;

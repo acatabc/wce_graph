@@ -6,8 +6,9 @@
 #include <math.h>
 
 
-const char* FILENAME = "../wce-students/2-real-world/w055.dimacs";
+//const char* FILENAME = "../wce-students/2-real-world/w055.dimacs";
 //const char* FILENAME = "../../wce-students-real/2-real-world/w013.dimacs";
+const char* FILENAME = "../test_data/w021.dimacs";
 
 #define NONE -1
 #define CLUSTER_GRAPH -2
@@ -24,6 +25,7 @@ void Solver::solve() {
     int k_tmp = INT32_MAX;
 //    this->dataRed_heavy_non_edge();
 //    k = dataRed_heavy_edge_single_end(k);
+    dataRed_remove_existing_clique();
     k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
     k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
     k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
@@ -39,7 +41,8 @@ void Solver::solve() {
         int k_reduced = k - cost_before_branching;
 
         k_reduced = data_reduction(k_reduced, 0);
-
+        //-1 nicht gemacht
+        //merge_map.size() => germergt => output
         if(this->branch(k_reduced, 0) == CLUSTER_GRAPH){
             final_unmerge_and_output();
             break;
@@ -195,7 +198,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 int Solver::data_reduction(int k, int layer){
     int k_before = k;
     // try different values for layers
-    if(layer != 0){
+    if(layer %15 ==  0 && layer > 15){
 //    this->dataRed_heavy_non_edge();
 //    k = dataRed_heavy_edge_single_end(k);
         k = dataRed_heavy_non_edge_branch(k);
@@ -204,7 +207,7 @@ int Solver::data_reduction(int k, int layer){
         k = dataRed_heavy_edge_both_ends(k);
     }
 
-    if(layer % 3 == 0){
+    if(layer % 2 == 0){
         k = dataRed_weight_larger_k(k);
     }
     if(k != k_before)
@@ -508,6 +511,69 @@ int Solver::dataRed_heavy_edge_both_ends(int k) {
     return k;
 }
 
+int Solver::dataRed_remove_existing_clique() {
+    int N = g->merge_map.size();
+    bool *visited = new bool[N];
+
+    for(int i = 0; i < N; ++i){
+        visited[i] = false;
+    }
+    std::vector<std::vector<int>> components;
+    for(int i : g->active_nodes){
+        if(visited[i] == false){
+            components.push_back({});
+            DFS(i, visited, components.back());
+        }
+    }
+
+    for(auto component : components){
+        bool is_clique = true;
+        for(int i = 0; i < component.size() && is_clique; ++i){
+//            std::cout << component.at(i) + 1 << " ";
+            for(int j = i +1 ; j < component.size(); ++j){
+                if(g->get_weight(component.at(i), component.at(j)) < 0){
+                    is_clique = false;
+                    break;
+                }
+
+            }
+        }
+        if(is_clique){
+//            std:: cout << " is a clique" << std::endl;
+            for(auto i = g->active_nodes.begin(); i != g->active_nodes.end(); ++i){
+                for(int j : component){
+                    if(*i == j){
+                        i = g->active_nodes.erase(i);
+                    }
+                }
+            }
+
+        }
+//        std::cout << std::endl;
+    }
+
+//    for(int i : g->active_nodes){
+//        std::cout << i + 1 << " ";
+//    }
+
+    delete[] visited;
+    return 0;
+}
+
+void Solver::DFS(int i, bool *visited, std::vector<int>& component) {
+    visited[i] = true;
+//    std::cout << i+1 << " ";
+    component.push_back(i);
+    for(int j : g->active_nodes){
+        if(i == j) continue;
+        if(g->get_weight(i,j) > 0){
+            if(visited[j] == false){
+                DFS(j, visited, component);
+            }
+        }
+    }
+    return;
+}
 //is doing the large Neighbourhood Rule for all vertices in the graph TODO
 int Solver::dataRed_large_neighbourhood_I(int k) {
 
@@ -716,6 +782,9 @@ void Solver::verify_clusterGraph(){
     }
 #endif
 }
+
+
+
 
 
 
