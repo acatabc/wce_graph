@@ -7,8 +7,8 @@
 
 
 //const char* FILENAME = "../wce-students/2-real-world/w055.dimacs";
-//const char* FILENAME = "../../wce-students-real/2-real-world/w013.dimacs";
-const char* FILENAME = "../test_data/w001.dimacs";
+const char* FILENAME = "../../wce-students-random/1-random/r041.dimacs";
+//const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE -1
 #define CLUSTER_GRAPH -2
@@ -238,6 +238,7 @@ int Solver::data_reduction(int k, int layer){
     if(layer %15 ==  0 && layer > 15){
 //    this->dataRed_heavy_non_edge();
 //    k = dataRed_heavy_edge_single_end(k);
+//        dataRed_remove_existing_clique();
         k = dataRed_heavy_non_edge_branch(k);
         k = dataRed_heavy_edge_single_end_branch(k);
         k = dataRed_large_neighbourhood_I(k);
@@ -638,7 +639,7 @@ void Solver::DFS(int i, bool *visited, std::vector<int>& component) {
     component.push_back(i);
     for(int j : g->active_nodes){
         if(i == j) continue;
-        if(g->get_weight(i,j) > 0){
+        if(g->get_weight(i,j) >= 0){
             if(visited[j] == false){
                 DFS(j, visited, component);
             }
@@ -763,6 +764,7 @@ void Solver::final_unmerge_and_output(){
         WCE_Graph::stack_elem el = g->graph_mod_stack.top();
         if(el.type == 1) {
             int uv = el.uv;
+            printDebug("unmerge " + std::to_string(uv));
             int dk = unmerge_and_output(uv);
             k += dk;
         }
