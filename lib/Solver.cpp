@@ -6,8 +6,8 @@
 #include <math.h>
 
 
-//const char* FILENAME = "../wce-students/2-real-world/w055.dimacs";
-const char* FILENAME = "../../wce-students-random/1-random/r041.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w017.dimacs";
+//const char* FILENAME = "../../wce-students-random/1-random/r041.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE -1
@@ -233,6 +233,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 // ------- data reduction  --------
 
 int Solver::data_reduction(int k, int layer){
+    dataRed_remove_existing_clique();
     int k_before = k;
     // try different values for layers
     if(layer %15 ==  0 && layer > 15){
@@ -569,7 +570,9 @@ int Solver::dataRed_remove_existing_clique() {
         for(int i = 0; i < component.size() && is_clique; ++i){
 //            std::cout << component.at(i) + 1 << " ";
             for(int j = i +1 ; j < component.size(); ++j){
-                if(g->get_weight(component.at(i), component.at(j)) < 0){
+                // for {u,v} = 0 we consider u,v as not adjacent (we delete {u,v} later in unmerging)
+                // thus, we have a clique only if {u,v} > 0
+                if(g->get_weight(component.at(i), component.at(j)) <= 0){
                     is_clique = false;
                     break;
                 }
@@ -639,7 +642,9 @@ void Solver::DFS(int i, bool *visited, std::vector<int>& component) {
     component.push_back(i);
     for(int j : g->active_nodes){
         if(i == j) continue;
-        if(g->get_weight(i,j) >= 0){
+        // for {i,j} = 0 we consider i,j as not adjacent (we delete {i,j} later in unmerging)
+        // thus, i and j are in different components if {i,j} <= 0
+        if(g->get_weight(i,j) > 0){
             if(visited[j] == false){
                 DFS(j, visited, component);
             }
@@ -785,23 +790,32 @@ void Solver::final_unmerge_and_output(){
 int Solver::unmerge_and_output(int uv){
     std::vector<int> uv_children = g->merge_map[uv];
 
-    printDebug("Output for unmerging (" + std::to_string(uv_children[0]) + "," + std::to_string(uv_children[1]) + ") -> " + std::to_string(uv));
+    printDebug("Output for unmerging " + std::to_string(uv) + " -> (" + std::to_string(uv_children[0]) + "," + std::to_string(uv_children[1]) + ")");
 
     int dk = 0;
     for(int x : g->active_nodes) {
         if(x == uv || x == uv_children[0] ||x == uv_children[1]) continue;
+
         int weight_uvx = g->get_weight(uv, x);
+
+        if(weight_uvx == 0){
+            // if {uv,x} = 0,  it doesnt matter if we propagate "delete" or "add" (choose delete)
+            printDebug("Propagate : " + std::to_string(uv) + " " + std::to_string(x) + " weight " + std::to_string(weight_uvx) + "  -> choose delete" );
+            g->delete_edge(uv,x);
+            weight_uvx = g->get_weight(uv, x);
+        }
 
         for(int u: uv_children){
             int weight_ux = g->get_weight(u, x);
 
             // adapt edge {u,x} to previous merged edge {uv,x}
-            // if {u,x} = 0 or if the edges have different sign, we have to modify the edge {u,x}
+            // we have to modify edge {u,x} if {u,x} = 0 and if {u,x} and {uv,x} have different sign
+            printDebug("Propagate : " + std::to_string(uv) + " " + std::to_string(x) + " weight " + std::to_string(weight_uvx) + "    to    " + std::to_string(u) + " " + std::to_string(x) + " weight " + std::to_string(weight_ux) );
             if (weight_ux == 0 || (signbit(weight_ux) != signbit(weight_uvx))) {
 
-                if(weight_uvx >= 0) // if w(uv,x) = 0 it didnt matter if we delete or add (choose add edge)
+                if(weight_uvx > 0)
                     g->add_edge(u,x);
-                else
+                if(weight_uvx < 0)
                     g->delete_edge(u,x);
 
                 if(u < g->num_vertices && x < g->num_vertices)
