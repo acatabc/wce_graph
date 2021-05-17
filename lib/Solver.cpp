@@ -241,15 +241,15 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 int Solver::data_reduction(int k, int layer){
     int k_before = k;
     // try different values for layers
-    if(layer %15 ==  0 && layer > 15){
-//    this->dataRed_heavy_non_edge();
-//    k = dataRed_heavy_edge_single_end(k);
-        dataRed_remove_existing_clique();
-        k = dataRed_heavy_non_edge_branch(k);
-        k = dataRed_heavy_edge_single_end_branch(k);
-        k = dataRed_large_neighbourhood_I(k);
-        k = dataRed_heavy_edge_both_ends(k);
-    }
+//    if(layer %15 ==  0 && layer > 15){
+////    this->dataRed_heavy_non_edge();
+////    k = dataRed_heavy_edge_single_end(k);
+//        dataRed_remove_existing_clique();
+//        k = dataRed_heavy_non_edge_branch(k);
+//        k = dataRed_heavy_edge_single_end_branch(k);
+//        k = dataRed_large_neighbourhood_I(k);
+//        k = dataRed_heavy_edge_both_ends(k);
+//    }
 
     if(layer % 1 == 0){
         k = dataRed_weight_larger_k(k);
