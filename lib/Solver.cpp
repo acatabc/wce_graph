@@ -44,8 +44,7 @@ void Solver::solve() {
         int k_reduced = k - cost_before_branching;
 
         k_reduced = data_reduction(k_reduced, 0);
-        //-1 nicht gemacht
-        //merge_map.size() => germergt => output
+
         if(this->branch(k_reduced, 0) == CLUSTER_GRAPH){
             final_unmerge_and_output();
             break;
@@ -67,9 +66,9 @@ void Solver::output_data_reduction() {
 
     int k_tmp = INT32_MAX;
     int k_before = 0;
-    dataRed_remove_existing_clique();
     while(k_tmp != k_before){
         k_before = k_tmp;
+        dataRed_remove_existing_clique();
         k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
         k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
         k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
@@ -240,13 +239,12 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 // ------- data reduction  --------
 
 int Solver::data_reduction(int k, int layer){
-    dataRed_remove_existing_clique();
     int k_before = k;
     // try different values for layers
     if(layer %15 ==  0 && layer > 15){
 //    this->dataRed_heavy_non_edge();
 //    k = dataRed_heavy_edge_single_end(k);
-//        dataRed_remove_existing_clique();
+        dataRed_remove_existing_clique();
         k = dataRed_heavy_non_edge_branch(k);
         k = dataRed_heavy_edge_single_end_branch(k);
         k = dataRed_large_neighbourhood_I(k);
