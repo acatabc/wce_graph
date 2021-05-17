@@ -67,6 +67,7 @@ void Solver::output_data_reduction() {
 
     int k_tmp = INT32_MAX;
     int k_before = 0;
+    dataRed_remove_existing_clique();
     while(k_tmp != k_before){
         k_before = k_tmp;
         k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
@@ -83,8 +84,14 @@ void Solver::output_data_reduction() {
     for(int u: g->active_nodes){
         int j = 0;
         for(int v: g->active_nodes){
-            if(u < v) std::cout << i+1 << " " << j+1 << " " << g->get_weight(u,v) << "\n";
-//            if(u < v) std::cout << u << " " << v << " " << g->get_weight(u,v) << "\n";
+            if(u < v){
+                int weight = g->get_weight(u,v);
+                if(weight == DO_NOT_ADD){
+                    std::cout << i+1 << " " << j+1 << " " << "-inf" << "\n";
+                }else{
+                    std::cout << i+1 << " " << j+1 << " " << g->get_weight(u,v) << "\n";
+                }
+            }
             j++;
         }
         i++;
