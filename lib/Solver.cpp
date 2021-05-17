@@ -596,7 +596,9 @@ int Solver::dataRed_remove_existing_clique() {
             }
 
 
-            g->graph_mod_stack.push(WCE_Graph::stack_elem{.type = 3, .clique = component});
+            g->graph_mod_stack.push(WCE_Graph::stack_elem{.type = 3, .v1 = -1, .v2 = -1, .weight = -1, .uv = -1, .clique = component});
+
+//            g->graph_mod_stack.push(WCE_Graph::stack_elem{.type = 3, .clique = component});
 
         }
 //        std::cout << std::endl;
