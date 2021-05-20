@@ -2,8 +2,6 @@
 #ifndef ALGENG_WCE_SOLVER_SOLVER_H
 #define ALGENG_WCE_SOLVER_SOLVER_H
 
-=======
-
 #include <vector>
 #include "WCE_Graph.h"
 
@@ -15,11 +13,6 @@ public:
     Solver();
     virtual ~Solver();
     WCE_Graph *parse_and_build_graph();
-
-
-    WCE_Graph *parse_and_build_graph();
-
-
     //solving
     void solve();
     int branch(int k, int layer);
