@@ -152,7 +152,6 @@ int Solver::branchEdge(int u, int v, int k, int layer){
 
     if(weight > 0) g->delete_edge(u, v);
     if(weight < 0) g->add_edge(u, v);
-    update_p3s(u,v, weight, FORWARD); //n*log(n^2)
 
     int prev_stack_size = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
 
