@@ -178,9 +178,7 @@ int WCE_Graph::merge(int u, int v) {
 
 // set edge {u,v} = -inf and adds operation to modification stack
 void WCE_Graph::set_non_edge(int u, int v) {
-
-    graph_mod_stack.push(stack_elem{.type = 2, .v1 = u, .v2 = v, .weight = this->get_weight(u, v), .uv = -1, .clique = std::vector<int>()});
-//    graph_mod_stack.push(stack_elem{2, u, v, this->get_weight(u, v), -1});
+    graph_mod_stack.push(stack_elem{2, u, v, this->get_weight(u, v), -1});
     set_weight(u, v, DO_NOT_ADD);
 //    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ")");
 }

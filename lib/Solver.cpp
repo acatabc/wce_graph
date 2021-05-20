@@ -6,8 +6,8 @@
 #include <math.h>
 
 
-const char* FILENAME = "../wce-students/2-real-world/w017.dimacs";
-//const char* FILENAME = "../../wce-students-random/1-random/r041.dimacs";
+//const char* FILENAME = "../wce-students/2-real-world/w017.dimacs";
+const char* FILENAME = "../../wce-students-real/2-real-world/w088.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE -1
@@ -241,19 +241,27 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 int Solver::data_reduction(int k, int layer){
     int k_before = k;
     // try different values for layers
-//    if(layer %15 ==  0 && layer > 15){
+    if(layer %5 ==  0 && layer >= 10){
 ////    this->dataRed_heavy_non_edge();
 ////    k = dataRed_heavy_edge_single_end(k);
 //        dataRed_remove_existing_clique();
 //        k = dataRed_heavy_non_edge_branch(k);
 //        k = dataRed_heavy_edge_single_end_branch(k);
 //        k = dataRed_large_neighbourhood_I(k);
-//        k = dataRed_heavy_edge_both_ends(k);
-//    }
+        k = dataRed_heavy_edge_both_ends(k);
+    }
 
     if(layer % 1 == 0){
         k = dataRed_weight_larger_k(k);
+//        k = dataRed_heavy_edge_single_end_branch(k);
+//        k = dataRed_large_neighbourhood_I(k);
+
     }
+//    if(layer % 3 == 0){
+//        k = dataRed_heavy_edge_both_ends(k);
+//        k = dataRed_heavy_non_edge_branch(k);
+//
+//    }
     if(k != k_before)
         printDebug("Data reduction reduced k to " + std::to_string(k));
     return k;
@@ -292,21 +300,12 @@ int Solver::dataRed_weight_larger_k(int k){
             }
         }
     }
-
-//    if(k != k_before)
-//        printDebug("Reduced k to " + std::to_string(k));
-//    else
-//        printDebug("no edges to merge");
-
     return k;
 }
 
 int Solver::dataRed_heavy_non_edge_branch(int k) {
-//    printDebug("Data reduction (heavy_non_edge k=" + std::to_string(k) + "):");
-
     redo:
     if(k < 0) {
-//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int u : g->active_nodes){
@@ -345,8 +344,6 @@ int Solver::dataRed_heavy_non_edge_branch(int k) {
 }
 
 int Solver::dataRed_heavy_edge_single_end_branch(int k) {
-//    printDebug("Data reduction (heavy_edge_single_end k=" + std::to_string(k) + "):");
-
     redo:
     if(k < 0) {
 //        printDebug("Fail: maximum cost exceeded");
@@ -698,13 +695,13 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
                     merge_costs += val;
 
                 }
-                k -= merge_costs;
                 printDebug("Successful large neighborhood 1, merge costs: " + std::to_string(merge_costs));
                 goto rerun_after_merge;
 
             }
         }
     }
+    k -= merge_costs;
     return k;
 }
 
