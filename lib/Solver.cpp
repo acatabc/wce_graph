@@ -5,6 +5,8 @@
 #include "../include/utils.h"
 #include <math.h>
 
+#define FORWARD 0
+#define BACKWARD 1
 
 //const char* FILENAME = "../wce-students/2-real-world/w017.dimacs";
 const char* FILENAME = "../../wce-students-real/2-real-world/w088.dimacs";
@@ -15,6 +17,7 @@ const char* FILENAME = "../../wce-students-real/2-real-world/w088.dimacs";
 
 Solver::Solver(){
     this->g = this->parse_and_build_graph();
+
 }
 
 Solver::~Solver() {}
@@ -107,19 +110,22 @@ int Solver::branch(int k, int layer){
         return NONE;
     }
 
+
     auto p3 = this->get_max_cost_p3_naive();
+
 
     if(std::get<0>(p3) == -1){
         printDebug("FOUND CLUSTER GRAPH");
         return CLUSTER_GRAPH;
     }
+    rec_steps++;
 
     rec_steps++;
 
     int v = std::get<0>(p3);
     int w = std::get<1>(p3);
     int u = std::get<2>(p3);
-
+//    printDebug(std::to_string(layer) + ": " + std::to_string(v) + " "+ std::to_string(w) + " "+ std::to_string(u));
     if(this->branchEdge(u,v,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(v,w,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
     if(this->branchEdge(w,u,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
@@ -146,10 +152,13 @@ int Solver::branchEdge(int u, int v, int k, int layer){
 
     if(weight > 0) g->delete_edge(u, v);
     if(weight < 0) g->add_edge(u, v);
+    update_p3s(u,v, weight, FORWARD); //n*log(n^2)
 
     int prev_stack_size = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
 
+
     int k_reduced = k-abs(weight);
+
 
     // if {u,v} < 0, we inserted edge ==> merge {u,v}
     if(weight < 0){
@@ -157,6 +166,7 @@ int Solver::branchEdge(int u, int v, int k, int layer){
         if(cost == -1) k_reduced = -1;
         else k_reduced -= cost;
     }
+
 
     k_reduced = data_reduction(k_reduced, layer);
 
@@ -196,6 +206,7 @@ void Solver::final_output(int u, int v)
 
 // iterates over all vertex tuples and returns max_cost p3
 std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
+
     int first_tuple_val = -1;
     int second_tuple_val = -1;
     int third_tuple_val = -1;
@@ -232,6 +243,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
 #endif
     return std::make_tuple(first_tuple_val, second_tuple_val, third_tuple_val);
 }
+
 
 
 
@@ -396,6 +408,7 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
                 }
                 if(g->get_weight(v,w) > 0) {
                     weight_neighbours += g->get_weight(v,w);
+
                 }
             }
             if(stop == true) continue;
@@ -410,6 +423,7 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
             }
         }
     }
+
     return k;
 }
 
@@ -840,6 +854,7 @@ int Solver::unmerge_and_output(int uv){
 
 
 WCE_Graph *Solver::parse_and_build_graph(){
+
 #ifdef DEBUG
     //    freopen("../wce-students/2-real-world/w027.dimacs", "r", stdin);
 //    freopen("../test_data/r049.dimacs", "r", stdin);
@@ -882,13 +897,4 @@ void Solver::verify_clusterGraph(){
     }
 #endif
 }
-
-
-
-
-
-
-
-
-
 

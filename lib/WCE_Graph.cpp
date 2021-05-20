@@ -417,5 +417,3 @@ void WCE_Graph::printGraph(std::ostream& os) {
 #endif
 }
 
-
-

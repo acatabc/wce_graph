@@ -27,7 +27,9 @@ public:
 
     void add_edge(int,int);
     void delete_edge(int, int);
+
     void modify_edge(int, int); // old, jusst used in solver1()
+
 
     int get_cost(int u, int v, int w);
 

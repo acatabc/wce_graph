@@ -1,0 +1,12 @@
+file;vertices;edges;time;solsize;recsteps;finished;verified
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a001.dimacs;10;8;0.00;41;4;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a003.dimacs;10;7;0.00;142;4;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a005.dimacs;10;14;0.02;229;9;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a007.dimacs;10;3;0.00;0;0;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a009.dimacs;10;3;0.00;28;2;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a011.dimacs;20;8;0.00;24;4;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a013.dimacs;20;20;0.06;204;11;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a015.dimacs;20;15;0.01;259;9;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a017.dimacs;20;23;1.04;328;14;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a019.dimacs;20;10;0.01;252;5;1;correct;
+/home/users/j/j.koeppeler/wce-students-action/actionseq/a021.dimacs;50;68;;;;0;

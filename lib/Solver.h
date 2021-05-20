@@ -2,6 +2,8 @@
 #ifndef ALGENG_WCE_SOLVER_SOLVER_H
 #define ALGENG_WCE_SOLVER_SOLVER_H
 
+=======
+
 #include <vector>
 #include "WCE_Graph.h"
 
@@ -10,11 +12,13 @@ private:
     unsigned int rec_steps = 0;
     WCE_Graph *g;
 public:
-
     Solver();
     virtual ~Solver();
+    WCE_Graph *parse_and_build_graph();
+
 
     WCE_Graph *parse_and_build_graph();
+
 
     //solving
     void solve();
@@ -52,6 +56,7 @@ public:
 
     // debug
     void verify_clusterGraph();
+
 
 };
 

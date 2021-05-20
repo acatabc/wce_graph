@@ -1,0 +1,189 @@
+\documentclass[5p,twocolumn,final]{elsarticle}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{float}
+
+%\newcommand{\exerciseno}{1}
+%\newcommand{\teamno}{0}
+
+
+\makeatletter
+\def\ps@pprintTitle{%
+ \let\@oddhead\@empty
+ \let\@evenhead\@empty
+ %\def\@oddfoot{\emph{Algorithm Engineering -- Team \teamno{} -- Exercise \exerciseno{}\hfill}}%
+ \let\@evenfoot\@oddfoot}
+\makeatother
+\usepackage{lipsum}
+\usepackage{lineno,hyperref}
+\usepackage{tikz,pgfplots,pgfplotstable,xcolor}
+\usepackage{ifthen}
+\modulolinenumbers[5]
+\bibliographystyle{elsarticle-num}
+
+
+\pgfplotsset{
+	discard if not/.style 2 args={
+		x filter/.code={
+			\edef\tempa{\thisrow{#1}}
+			\edef\tempb{#2}
+			\ifx\tempa\tempb
+			\else
+				\def\pgfmathresult{inf}
+			\fi
+		}
+	},
+}
+\pgfmathdeclarefunction{lg2}{1}{%
+    \pgfmathparse{ln(#1)/ln(2)}%
+}
+\pgfmathdeclarefunction{lg10}{1}{%
+    \pgfmathparse{ln(#1)/ln(10)}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\begin{frontmatter}
+	\title{Algorithm Engineering -- Exercise 1}
+	\author{Team 5: Jonas Köppeler, Julia Maria Lydia Henkel, Zia Badar}
+%\begin{keyword}
+%	Add keywords here
+%\end{keyword}
+\end{frontmatter}
+
+\linenumbers
+%\section*{Remarks [Not to be contained in the final version]}
+%\begin{itemize}
+%	\item Write a bit to each of the following four sections (at most one page of text, including references!)
+%	\item Put the figures (at least one) on the subsequent pages.
+%	\item Use references when appropriate. E.\,g.\ always reference Skiena \cite{skiena1998} ;-)
+%\end{itemize}
+
+\section{Implemented Features}
+We have used  the same method explained in the lecture of converting a graph into cluster graph. Complexity of our program is $3^{k}*n^{3}$,
+k is the minimum cost to convert graph to cluster graph, n is the no of nodes in graph, $3^{k}$ are the search states possible, $n^{3}$ is the time
+for finding a p3.
+
+Psuedo code of our program is:
+\begin{algorithm}[H]
+	\begin{algorithmic}	[1]
+		\Function{solve}{}
+		   \While{\Call{branch}{k} != CLUSTER\_GRAPH} \State k $\gets$ k+1 \EndWhile
+		\EndFunction
+	\end{algorithmic}	
+	//--------------------
+	\begin{algorithmic}	[1]
+		\Function{branch}{k}
+				\If {k $<$ 0}
+    				\Return NONE
+				\EndIf
+				\State \State u, v, w $\gets$  \Call{get\_p3}{}
+				\State \If {\Call{branch\_edge}{u, v, k} == CLUSTER\_GRAPH}
+    				\Return \textup{CLUSTER\_GRAPH}
+				\EndIf
+				\If {\Call{branch\_edge}{v, w, k} == CLUSTER\_GRAPH}
+    				\Return \textup{CLUSTER\_GRAPH}
+				\EndIf
+				\If {\Call{branch\_edge}{u, w, k} == CLUSTER\_GRAPH}
+    				\Return \textup{CLUSTER\_GRAPH}
+				\EndIf
+				\State \State\Return NONE												
+		\EndFunction
+	\end{algorithmic}
+ \caption{Cluster graph}
+\end{algorithm}
+\begin{algorithm}[h]	
+	\begin{algorithmic}	[1]
+	\Function{branch\_edge}{u, v, k}
+			\If {\Call{weight}{u, v} == ALREADY\_MODIFIED}
+				\Return NONE
+			\EndIf
+			\State\State weight $\gets$ \Call{weight}{u, v}
+			\State\If {\Call{weight}{u, v} $>$ 0}
+				\State \Call{delete\_edge}{u, v}
+			\EndIf
+			\If {\Call{weight}{u, v} $<$ 0}
+				\State \Call{add\_edge}{u, v}
+			\EndIf
+			\State\If {\Call{branch}{{k-abs(weight)}} == CLUSTER\_GRAPH}
+	    				\Return CLUSTER\_GRAPH
+			\EndIf
+			\State\State \Call{weight}{u, v} $\gets$ weight			\quad\quad \Comment{backtracking}
+			\State\State\Return NONE													
+		\EndFunction
+	\end{algorithmic}
+
+\caption{Cluster graph(cont.)}
+\end{algorithm}
+
+\section{Data Structures}
+Graph is implemented as a $n \times n$ adjancency matrix of size , positive weights represents connection, negative weights represents no connection, DO\_NOT\_DELETE preprocessor directive is replaced with INT32\_MAX and represents weights of edge that has been added and should not be removed to avoid cycles in search space, similarly DO\_NOT\_ADD is replaced with INT32\_MIN and represents weight of edge that has been removed and should not be added.
+
+\section{Highlights}
+	\begin{itemize}
+		\item Solving a p3 can lead to other p3's getting solved/new p3's getting generated or both.
+		\item Order of solving p3's does not matter if one p3 cannot be solved by exploring all of its three possibilities then solving other p3's will not lead to the unsolved p3 to get solved, therefore we only need to try to solve one of the p3's at a certain search state and decide based on it if solution exists at that state with given budget(k).
+		\item adding and deleting edges is done in O(1) time.
+		\item search for p3's is done in O($n^{3}$)
+	\end{itemize}
+
+\section{Experiments}
+Time dependence on the value of n(vertices) and k(optimal cost) is actually not seen from the data acquired from test except for real world data which shows time dependence a little bit. Our algorithm time complexity is O($3^{k}n^{3}$)
+
+% \section*{References}
+
+\bibliography{bib}
+
+%\clearpage
+\onecolumn
+
+\begin{figure}[h]
+	\centering
+	\def\maxValue{500} %
+	\def\minValue{0.1} % choose such that all values are displayed
+	
+	\begin{tikzpicture}
+		\begin{axis}[
+				width=0.8\textwidth,
+				height=0.6\textwidth,
+				grid,
+				xmode=log,
+				ymode=log,
+				title={A fancy plot with colors},
+				xlabel={$n$},
+				ylabel={$k$},
+				legend cell align=left,
+				legend style = {
+					at={(0.02, 0.98)}, % where is the legened located?
+					anchor={north west}, % what corner of the legend box is specified in line above?
+					font = \small  % if there is not enough space...
+				},
+				colorbar,
+				colorbar style={
+					ytick={-1,0,1,2},
+					ylabel=time in seconds,
+					ylabel style={
+						yshift=-7em
+					},
+					yticklabel={$10^{\pgfmathprintnumber{\tick}}$},
+				},
+			]
+			\addplot[only marks,scatter src=explicit, scatter,mark=+,thick,discard if not={finished}{1}] table[col sep=semicolon,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {action.csv};
+			\addlegendentry{action sequence}
+			\addplot[only marks,scatter src=explicit, scatter,mark=o,thick,discard if not={finished}{1}] table[col sep=semicolon,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {random.csv};
+			\addlegendentry{random}
+			\addplot[only marks,scatter src=explicit, scatter,mark=square,thick,discard if not={finished}{1}] table[col sep=semicolon,y={solsize},x={vertices},meta expr=lg10(\thisrow{time} + 0.01)] {real.csv};
+			\addlegendentry{real world}
+		\end{axis}
+	\end{tikzpicture}
+	\caption{
+		\textbf algorithm ran on different datasets, plus symbol representing action sequence data set, circle symbol representing random data set and square symbol representing real world data set.
+	}
+	\label{fig:example-diagrams}
+\end{figure}
+
+
+
+
+\end{document}
