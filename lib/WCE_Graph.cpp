@@ -111,7 +111,7 @@ int WCE_Graph::merge(int u, int v) {
 
     int idx = this->adj_matrix.size();
 
-    graph_mod_stack.push(stack_elem{.type = 1, .v1 = -1, .v2 = -1, .weight = -1, .uv = idx, .clique = std::vector<int>()});
+    graph_mod_stack.push(stack_elem{.type = MERGE, .v1 = -1, .v2 = -1, .weight = -1, .uv = idx, .clique = std::vector<int>()});
 
     // setup adjacency matrix for new vertex
     this->adj_matrix.push_back(std::vector<matrix_entry>());
@@ -176,19 +176,12 @@ int WCE_Graph::merge(int u, int v) {
     return dk;
 }
 
-// set edge {u,v} = -inf and adds operation to modification stack
-void WCE_Graph::set_non_edge(int u, int v) {
-    graph_mod_stack.push(stack_elem{2, u, v, this->get_weight(u, v), -1});
-    set_weight(u, v, DO_NOT_ADD);
-//    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ")");
-}
-
 // unmerges vertex uv and removes uf from mofication stack
 // throws error if uv is not on top of modification stack
 void WCE_Graph::unmerge(int uv) {
     // verify that this vertex is on top of modification stack
     stack_elem top = graph_mod_stack.top();
-    if(top.type != 1 && top.uv != uv){
+    if(top.type != MERGE && top.uv != uv){
         throwError("Error: unmerges vertex which is not on top of stack");
         return;
     }
@@ -227,16 +220,23 @@ void WCE_Graph::unmerge(int uv) {
     return;
 }
 
+// set edge {u,v} = -inf and adds operation to modification stack
+void WCE_Graph::set_non_edge(int u, int v) {
+    graph_mod_stack.push(stack_elem{2, u, v, this->get_weight(u, v), -1});
+    set_weight(u, v, DO_NOT_ADD);
+//    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ")");
+}
+
 void WCE_Graph::undo_final_modification(){
     stack_elem el = graph_mod_stack.top();
-    if(el.type == 1)
+    if(el.type == MERGE)
         unmerge(el.uv);
-    if(el.type == 2){
+    if(el.type == SET_INF){
         set_weight(el.v1, el.v2, el.weight);
         graph_mod_stack.pop();
 //        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
     }
-    if(el.type == 3){
+    if(el.type == CLIQUE){
         for(int i: el.clique){
             active_nodes.push_back(i);
         }
@@ -245,7 +245,7 @@ void WCE_Graph::undo_final_modification(){
 }
 
 // recovers original graph, merge map and actives nodes vector (as it has been before any merging operation) until input vertex
-// !! old method, does not use modification stack!
+// !! old method, only works for solver2
 void WCE_Graph::recover_original(int last_merge_idx){
     printDebug("Recover original graph");
     while (adj_matrix.size() != last_merge_idx){

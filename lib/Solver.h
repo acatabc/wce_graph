@@ -45,7 +45,7 @@ public:
 
     // merging
     int unmerge_and_output(int uv);
-    void final_unmerge_and_output();
+    void clear_stack_and_output();
 
     // debug
     void verify_clusterGraph();

@@ -7,6 +7,11 @@
 #include <vector>
 #include <stack>
 
+// type of operations in graph modification stack
+#define MERGE 1
+#define SET_INF 2
+#define CLIQUE 3
+
 
 class WCE_Graph {
 private:
@@ -28,9 +33,6 @@ public:
     void add_edge(int,int);
     void delete_edge(int, int);
 
-    void modify_edge(int, int); // old, jusst used in solver1()
-
-
     int get_cost(int u, int v, int w);
 
     // merging
@@ -38,18 +40,15 @@ public:
     std::vector<std::vector<int>> merge_map;
     int merge(int, int);
     void set_non_edge(int u, int v);
-    void recover_original(int);
     void undo_final_modification();
 
     struct stack_elem{
         int type; // 1 is merge, 2 is set_inf, 3 is clique
-        // edge set_inf
-        int v1;
+        int v1; // edge set_inf
         int v2;
         int weight;
-        // merged vertex
-        int uv;
-        std::vector<int> clique;
+        int uv; // merged vertex
+        std::vector<int> clique; // remove clique
     };
     std::stack<stack_elem> graph_mod_stack;
 
@@ -59,6 +58,10 @@ public:
     void print_merge_map();
     void print_stack(std::stack<stack_elem>);
     void print_stack_rec(std::stack<stack_elem>);
+
+    // old methods used in solver2
+    void recover_original(int);
+    void modify_edge(int, int);
 };
 
 #endif //ALGENG_WCE_SOLVER_WCE_GRAPH_H

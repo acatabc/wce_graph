@@ -9,7 +9,7 @@ add_executable(
         main.cpp
         lib/utils.cpp include/utils.h
         lib/WCE_Graph.cpp lib/WCE_Graph.h
-        lib/Solver.cpp lib/Solver.h
+        lib/Solver.cpp lib/Solver.h lib/dataReduction.cpp
         lib/Solver2.cpp lib/Solver2.h
         )
 add_executable(
