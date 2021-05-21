@@ -283,6 +283,36 @@ void WCE_Graph::print_active_nodes() {
 #endif
 }
 
+
+void WCE_Graph::print_graph_mod_stack()
+{
+    printDebug("-------");
+    printDebug("Graph Modification stack: ");
+
+    print_graph_mod_stack_rec();
+
+    printDebug("-------");
+
+}
+
+void WCE_Graph::print_graph_mod_stack_rec()
+{
+    if (graph_mod_stack.empty()) return;
+
+    WCE_Graph::stack_elem el = graph_mod_stack.top();
+
+    graph_mod_stack.pop();
+
+    print_graph_mod_stack_rec();
+
+    if(el.type == MERGE) printDebug("Merged: " + std::to_string(el.uv));
+    if(el.type == SET_INF) printDebug("SET_INF: " + std::to_string(el.v1) + "," + std::to_string(el.v2) );
+    if(el.type == CLIQUE) printDebug("CLIQUE " + std::to_string(el.clique.size()) );
+
+    graph_mod_stack.push(el);
+}
+
+
 void WCE_Graph::print_active_graph(std::ostream& os) {
 #ifdef DEBUG
 
