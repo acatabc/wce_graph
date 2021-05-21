@@ -120,7 +120,6 @@ int Solver::branch(int k, int layer){
     }
     rec_steps++;
 
-
     int v = std::get<0>(p3);
     int w = std::get<1>(p3);
     int u = std::get<2>(p3);
