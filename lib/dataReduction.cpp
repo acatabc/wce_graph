@@ -19,8 +19,8 @@ int Solver::data_reduction(int k, int layer){
 
     k = dataRed_weight_larger_k(k);
 
-    if(k != k_before)
-        printDebug("Data reduction reduced k to " + std::to_string(k));
+//    if(k != k_before)
+//        printDebug("Data reduction reduced k to " + std::to_string(k));
     return k;
 }
 
@@ -28,6 +28,7 @@ void Solver::undo_data_reduction(int prev_stack_size){
     while (g->graph_mod_stack.size() != prev_stack_size){
         g->undo_final_modification();
     }
+
 }
 
 

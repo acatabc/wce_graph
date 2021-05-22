@@ -5,7 +5,7 @@
 #include "../include/utils.h"
 #include <math.h>
 
-const char* FILENAME = "../wce-students/2-real-world/w021.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w053.dimacs";
 //const char* FILENAME = "../../wce-students-real/2-real-world/w021.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
@@ -36,17 +36,19 @@ void Solver::solve() {
     int cost_before_branching = INT32_MAX - k_tmp;
     int stack_before_branching = g->graph_mod_stack.size();
 
-    int k = 0;
+    int k = 56;
     while (true){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 
 
-        g->print_graph_mod_stack();
         int k_reduced = k - cost_before_branching;
 
         k_reduced = data_reduction(k_reduced, 0);
 
         g->print_graph_mod_stack();
+        g->printGraph(std::cout);
+        g->print_active_graph(std::cout);
+
         if(this->branch(k_reduced, 0) == CLUSTER_GRAPH){
             clear_stack_and_output();
             break;
@@ -69,6 +71,17 @@ int Solver::branch(int k, int layer){
         return NONE;
     }
 
+    g->print_active_graph(std::cout);
+
+    // data reduction
+    int stack_size = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
+    k = data_reduction(k, layer);
+    if(k == -1){ // data reduction shows that no solution for this k exists
+        undo_data_reduction(stack_size);
+        printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
+        return NONE;
+    }
+
     auto p3 = this->get_max_cost_p3_naive();
 
     if(std::get<0>(p3) == -1){
@@ -78,17 +91,12 @@ int Solver::branch(int k, int layer){
 
     rec_steps++;
 
-    int stack_size = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
-    k = data_reduction(k, layer);
-
-    if(k == -1){ // data reduction shows that no solution for this k exists
-        undo_data_reduction(stack_size);
-        return NONE;
-    }
-
     int u = std::get<0>(p3);
     int v = std::get<1>(p3);
     int w = std::get<2>(p3);
+
+    printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+
 
     // 1. branch on (u,v) >= 0
     int weight_uv = g->get_weight(u,v);
@@ -96,50 +104,73 @@ int Solver::branch(int k, int layer){
     if(weight_uv < 0) throwError("WHY IS THIS smaller 0?");
     if(weight_uv == DO_NOT_DELETE) throwError("WHY IS THIS DND?");
 
+    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
     g->delete_edge(u, v);
-    if(this->branch(k - weight_uv, layer) == CLUSTER_GRAPH){
+    printDebug(std::to_string(g->graph_mod_stack.size()));
+    if(this->branch(k - weight_uv, layer + 1) == CLUSTER_GRAPH){
         final_output(u,v);
         return CLUSTER_GRAPH;
     }
+
     // if deleting failed, any solution must contain (u,v) -> merge
     g->add_edge(u, v);
     int cost = g->merge(u,v);
     if(cost == -1) {  // also inserting (u,v) failed -> no solution for this k exists
         undo_data_reduction(stack_size);
+        g->set_weight(u,v, weight_uv);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
         return NONE;
     }
     k -= cost;
     int uv = g->merge_map.size()-1;
+    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(uv) );
+
 
 
     // 2. branch on edge (uv,w)
     int weight_uv_w = g->get_weight(uv,w);
 
+    if(weight_uv_w == DO_NOT_DELETE) throwError("WHY IS THIS DND?");
+
     // first try deleting (uv,w)
+    printDebug("Branch DELETE (" + std::to_string(uv) + "," + std::to_string(w) + ")");
     g->delete_edge(uv, w);
+    printDebug(std::to_string(g->graph_mod_stack.size()));
     int deleting_costs = std::max(0,weight_uv_w); // if (uv,w) < 0 there is no cost for deletion
-    if(this->branch(k - deleting_costs, layer) == CLUSTER_GRAPH){
+    if(this->branch(k - deleting_costs, layer + 1) == CLUSTER_GRAPH){
         final_output(uv,w);
         return CLUSTER_GRAPH;
     }
+
     // if deleting failed, any solution must contain (uv,w) -> merge
+    if(weight_uv_w == DO_NOT_ADD){
+        // we are not allowed to insert (uv,w) -> no solution for this k exists
+        undo_data_reduction(stack_size);
+        g->set_weight(u,v, weight_uv);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+        return NONE;
+    }
     g->add_edge(uv,w);
     if(weight_uv_w < 0) k -= abs(weight_uv_w); // remove cost of inserting edge (uv,w)
     cost = g->merge(uv,w);
     if(cost == -1) { // also inserting (uv,w) failed -> no solution for this k exists
         undo_data_reduction(stack_size);
+        g->set_weight(u,v, weight_uv);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
         return NONE;
     }
     k -= cost;
-
+    printDebug("Branch MERGE (" + std::to_string(uv) + "," + std::to_string(w) + ")" );
     // last try with the merged vertices (uv,w)
-    if(this->branch(k, layer) == CLUSTER_GRAPH){
+    if(this->branch(k, layer + 1) == CLUSTER_GRAPH){
         final_output(uv,w);
         return CLUSTER_GRAPH;
     }
 
-    // branching on all edges failed -> no solution for this k exists
+    // branching on all edges failed, no solution for this k exists, recover graph before branching
     undo_data_reduction(stack_size);
+    g->set_weight(u,v, weight_uv);
+    printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
     return NONE;
 }
 
@@ -150,7 +181,7 @@ void Solver::final_output(int u, int v)
         std::cout << u+1 << " " << v+1 <<std::endl;
         #ifdef DEBUG
                 if(PRINTDEBUG){
-        //        std::cout << u+1-1 << " " << v+1-1 <<std::endl;
+//                std::cout << u+1-1 << " " << v+1-1 <<std::endl;
             }
         #endif
     }
@@ -258,9 +289,11 @@ int Solver::unmerge_and_output(int uv){
         for(int u: uv_children){
             int weight_ux = g->get_weight(u, x);
 
+            printDebug("Propagate : " + std::to_string(uv) + " " + std::to_string(x) + " weight " + std::to_string(weight_uvx) + "    to    " + std::to_string(u) + " " + std::to_string(x) + " weight " + std::to_string(weight_ux) );
+            if((weight_ux == DO_NOT_DELETE && weight_uvx == DO_NOT_ADD) || (weight_ux == DO_NOT_ADD && weight_uvx == DO_NOT_DELETE) ) throwError("Cannot propagate, would need infinite budget");
+
             // adapt edge {u,x} to previous merged edge {uv,x}
             // we have to modify edge {u,x} if {u,x} = 0 and if {u,x} and {uv,x} have different sign
-            printDebug("Propagate : " + std::to_string(uv) + " " + std::to_string(x) + " weight " + std::to_string(weight_uvx) + "    to    " + std::to_string(u) + " " + std::to_string(x) + " weight " + std::to_string(weight_ux) );
             if (weight_ux == 0 || (signbit(weight_ux) != signbit(weight_uvx))) {
 
                 if(weight_uvx > 0)

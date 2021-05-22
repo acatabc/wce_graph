@@ -49,13 +49,13 @@ void WCE_Graph::set_weight(int v, int w, int weight){
 
 int WCE_Graph::get_weight(int v, int w){
     if(v == w){
-        throwError( "get_weight error: u and w have same value " );
+        throwError( "get_weight error: u and w have same value edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
         return 0;
     }
 
     if(v > w){
         if(this->adj_matrix[v][w].flag == false){
-            throwError( "get_weight error: invalid flag" );
+            throwError( "get_weight error: invalid flag edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
             return 0;
         } else{
             return this->adj_matrix[v][w].weight;
@@ -63,7 +63,7 @@ int WCE_Graph::get_weight(int v, int w){
     }
     if(w > v) {
         if (this->adj_matrix[w][v].flag == false) {
-            throwError( "get_weight error: invalid flag" );
+            throwError( "get_weight error: invalid flag edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
             return 0;
         } else {
             return this->adj_matrix[w][v].weight;
@@ -108,6 +108,8 @@ int WCE_Graph::get_cost(int u, int v, int w) {
 // adds merging to modification stack
 // returns -1 if merging is not possible because of conflicting edges (DO_NOT_DELETE/DO_NOT_ADD)
 int WCE_Graph::merge(int u, int v) {
+
+    if(get_weight(u,v) == DO_NOT_ADD) throwError("Cannot merge edge which is DNA ");
 
     int idx = this->adj_matrix.size();
 
@@ -171,7 +173,7 @@ int WCE_Graph::merge(int u, int v) {
     }
 
 
-//    printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " +  std::to_string(idx) + "     with cost " + std::to_string(dk));
+    printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " +  std::to_string(idx) + "     with cost " + std::to_string(dk));
 
     return dk;
 }
@@ -217,6 +219,7 @@ void WCE_Graph::unmerge(int uv) {
     adj_matrix.pop_back();
 
 //    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")");
+    std::sort(active_nodes.begin(), active_nodes.end());
     return;
 }
 
