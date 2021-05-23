@@ -16,7 +16,7 @@ public:
 
     //solving
     void solve();
-    int branch(int k, int layer);
+    int branch(int k, int c, int layer);
     int branch_old(int k, int layer);
     void final_output(int u, int v);
     void output_data_reduction();
@@ -34,24 +34,25 @@ public:
 
     // components related
     std::vector<std::vector<int>> find_components(int c);
+    void dataRed_split_component(int c);
     void dataRed_split_components();
 
     // data reduction
-    int data_reduction(int k, int layer);
+    int data_reduction(int k, int c, int layer);
     int data_reduction_before_branching();
     void undo_data_reduction(int final);
 
-    int dataRed_weight_larger_k(int k);
+    int dataRed_weight_larger_k(int k, int c);
     void dataRed_heavy_non_edge();
-    int dataRed_heavy_non_edge_branch(int k);
+    int dataRed_heavy_non_edge_branch(int k, int c);
     int dataRed_heavy_edge_single_end(int k);
-    int dataRed_heavy_edge_single_end_branch(int k);
-    int dataRed_heavy_edge_both_ends(int k);
+    int dataRed_heavy_edge_single_end_branch(int k, int c);
+    int dataRed_heavy_edge_both_ends(int k, int c);
     int dataRed_remove_existing_clique();
     void DFS(int , bool *, std::vector<int>&);
     int dataRed_merge_dnd(int k);
 
-    int dataRed_large_neighbourhood_I(int);
+    int dataRed_large_neighbourhood_I(int k, int c);
     //return pair for neighbourhood(first), & not neighbours
     std::pair<std::list<int>, std::list<int>> closed_neighbourhood(int u);
     int deficiency(std::list<int> neighbours);
