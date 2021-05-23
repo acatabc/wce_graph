@@ -3,7 +3,7 @@
 #include "../include/utils.h"
 
 // ----------------------------
-// ------- all methods related to data reduction  --------
+// ------- data reduction  --------
 
 int Solver::data_reduction(int k, int layer){
     int k_before = k;
@@ -14,22 +14,40 @@ int Solver::data_reduction(int k, int layer){
 //      k = dataRed_heavy_non_edge_branch(k);
 //      k = dataRed_heavy_edge_single_end_branch(k);
 //      k = dataRed_large_neighbourhood_I(k);
-//        k = dataRed_heavy_edge_both_ends(k);
+//      k = dataRed_heavy_edge_both_ends(k);
 //    }
 
     k = dataRed_weight_larger_k(k);
 
-    if(k != k_before)
-        printDebug("Data reduction reduced k to " + std::to_string(k));
+//    if(k != k_before)
+//        printDebug("Data reduction reduced k to " + std::to_string(k));
     return k;
 }
+
+// applies data reduction on current graph and data reduction cost (only used before branching)
+int Solver::data_reduction_before_branching(){
+    int k_tmp = INT32_MAX;
+    int k_before = 0;
+    dataRed_remove_existing_clique();
+    while(k_tmp != k_before){
+        k_before = k_tmp;
+        k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
+        k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
+        k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
+        k_tmp = dataRed_large_neighbourhood_I(k_tmp);
+        k_tmp = dataRed_merge_dnd(k_tmp);
+    }
+    int cost = INT32_MAX - k_tmp;
+    return cost;
+}
+
 
 void Solver::undo_data_reduction(int prev_stack_size){
     while (g->graph_mod_stack.size() != prev_stack_size){
         g->undo_final_modification();
     }
-}
 
+}
 
 
 // continuously merges all vertices whose edge weight exceeds the available costs (set edges = -inf analogously)

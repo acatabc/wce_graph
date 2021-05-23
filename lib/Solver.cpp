@@ -21,26 +21,22 @@ Solver::~Solver() {}
 
 void Solver::solve() {
 
-    int k_tmp = INT32_MAX;
-    int k_before = 0;
-    dataRed_remove_existing_clique();
-    while(k_tmp != k_before){
-        k_before = k_tmp;
-        k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
-        k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
-        k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
-        k_tmp = dataRed_large_neighbourhood_I(k_tmp);
-        k_tmp = dataRed_merge_dnd(k_tmp);
-    }
-
-    int cost_before_branching = INT32_MAX - k_tmp;
+    int cost_before_branching = data_reduction_before_branching();
     int stack_before_branching = g->graph_mod_stack.size();
+
+    // compute lower bound iterating over all existent p3s
+    int lower_bound_k = std::get<1>(get_best_p3_and_lowerBound_improved());
 
     int k = 0;
     while (true){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 
         int k_reduced = k - cost_before_branching;
+
+        if(lower_bound_k > k_reduced) {
+            k++;
+            continue;
+        }
 
         k_reduced = data_reduction(k_reduced, 0);
 
@@ -60,9 +56,87 @@ void Solver::solve() {
 }
 
 
-
 int Solver::branch(int k, int layer){
     if(k < 0){
+        return NONE;
+    }
+
+    // data reduction
+    int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
+    k = data_reduction(k, layer);
+    if(k == -1){ // data reduction shows that no solution for this k exists
+        undo_data_reduction(stack_size_0);
+        printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
+        return NONE;
+    }
+
+    // get best p3 and compute a lower bound
+    auto tuple = get_best_p3_and_lowerBound_improved();
+    auto p3 = std::get<0>(tuple);
+    int lower_bound_k = std::get<1>(tuple);
+    if(lower_bound_k > k) {
+        printDebug("Successfully applied lower bound");
+        return NONE;
+    }
+
+    if(std::get<0>(p3) == -1){
+        printDebug("FOUND CLUSTER GRAPH");
+        return CLUSTER_GRAPH;
+    }
+
+    rec_steps++;
+
+    int u = std::get<0>(p3);
+    int v = std::get<1>(p3);
+    int w = std::get<2>(p3);
+
+    printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+
+    // 1. Branch DELETE (u,v)
+    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
+    int weight_uv = g->get_weight(u,v); // it holds (u,v) >= 0
+    int stack_size_1 = g->graph_mod_stack.size();
+    g->set_non_edge(u, v);
+    if(this->branch(k - weight_uv, layer + 1) == CLUSTER_GRAPH){
+        final_output(u,v);
+        return CLUSTER_GRAPH;
+    }
+    else undo_data_reduction(stack_size_1);
+
+    // 2. Branch MERGE (u,v)
+    // since deleting failed any solution must contain (u,v)
+    // after merging (u,v) the p3 (u,v,w) will be resolved
+    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
+    int cost = g->merge(u,v);
+    k -= cost;
+    if(cost == -1) {  // both (delete/merge) failed -> no solution for this k exists
+        undo_data_reduction(stack_size_0);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+        return NONE;
+    }
+    if(this->branch(k, layer + 1) == CLUSTER_GRAPH){
+        // nothing to output here
+        return CLUSTER_GRAPH;
+    }
+
+    // both branches (delete/merge) failed, no solution for this k exists, recover graph before branching
+    undo_data_reduction(stack_size_0);
+    printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+    return NONE;
+}
+
+
+int Solver::branch_old(int k, int layer){
+    if(k < 0){
+        return NONE;
+    }
+
+    // data reduction
+    int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
+    k = data_reduction(k, layer);
+    if(k == -1){ // data reduction shows that no solution for this k exists
+        undo_data_reduction(stack_size_0);
+        printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
         return NONE;
     }
 
@@ -72,131 +146,92 @@ int Solver::branch(int k, int layer){
         printDebug("FOUND CLUSTER GRAPH");
         return CLUSTER_GRAPH;
     }
+
     rec_steps++;
 
-    int v = std::get<0>(p3);
-    int w = std::get<1>(p3);
-    int u = std::get<2>(p3);
+    int u = std::get<0>(p3);
+    int v = std::get<1>(p3);
+    int w = std::get<2>(p3);
 
-    if(this->branchEdge(u,v,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
-    if(this->branchEdge(v,w,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
-    if(this->branchEdge(w,u,k, layer+1) == CLUSTER_GRAPH) return CLUSTER_GRAPH;
+    printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
 
-    return NONE;
-}
 
-int Solver::branchEdge(int u, int v, int k, int layer){
-//    printDebug("Layer " + std::to_string(layer) + " Edge " + std::to_string(u) + ", " + std::to_string(v));
-    int weight = g->get_weight(u,v);
-//
-    if(weight == DO_NOT_DELETE || weight == DO_NOT_ADD) {
-//        printDebug("Do not delete / add " + std::to_string(u) + ", " + std::to_string(v));
+    // -----------------------------------
+    // 1. branch on (u,v) >= 0
+    int weight_uv = g->get_weight(u,v);
+    int stack_size_1 = g->graph_mod_stack.size();
+
+    if(weight_uv < 0) throwError("WHY IS THIS smaller 0?");
+    if(weight_uv == DO_NOT_DELETE) throwError("WHY IS THIS DND?");
+
+    // first try deleting (u,v)
+    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
+    g->set_non_edge(u, v);
+    if(this->branch(k - weight_uv, layer + 1) == CLUSTER_GRAPH){
+        final_output(u,v);
+        return CLUSTER_GRAPH;
+    }
+    else undo_data_reduction(stack_size_1);
+
+    // deleting failed: any solution must contain (u,v) -> merge
+    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
+    int cost = g->merge(u,v);
+    if(cost == -1) {  // also inserting (u,v) failed -> no solution for this k exists
+        undo_data_reduction(stack_size_0);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
         return NONE;
     }
+    k -= cost;
+    int uv = g->merge_map.size()-1;
 
-    // if weight = 0, use flag to branch once with deleting edge and once with adding edge
-    bool flag_branch_zero = true;
-    branch_zero:
-    if(weight == 0){
-        if(flag_branch_zero == true) g->add_edge(u, v);
-        if(flag_branch_zero == false) g->delete_edge(u, v);
+
+    // ----------------------------
+    // 2. branch on edge (uv,w)
+    int weight_uv_w = g->get_weight(uv,w);
+    int stack_size_2 = g->graph_mod_stack.size();
+
+    if(weight_uv_w == DO_NOT_DELETE) throwError("WHY IS THIS DND?");
+
+    // first try deleting (uv,w)
+    printDebug("Branch DELETE (" + std::to_string(uv) + "," + std::to_string(w) + ")");
+    g->set_non_edge(uv, w);
+    int deleting_costs = std::max(0,weight_uv_w); // if (uv,w) < 0 there is no cost for deletion
+    if(this->branch(k - deleting_costs, layer + 1) == CLUSTER_GRAPH){
+        final_output(uv,w);
+        return CLUSTER_GRAPH;
     }
+    else undo_data_reduction(stack_size_2);
 
-    if(weight > 0) g->delete_edge(u, v);
-    if(weight < 0) g->add_edge(u, v);
-
-    int prev_stack_size = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
-
-    int k_reduced = k-abs(weight);
-
-    // if {u,v} < 0, we inserted edge ==> merge {u,v}
-    if(weight < 0){
-        int cost = g->merge(u,v);
-        if(cost == -1) k_reduced = -1;
-        else k_reduced -= cost;
+    // deleting failed: any solution must contain (uv,w) -> merge
+    printDebug("Branch MERGE (" + std::to_string(uv) + "," + std::to_string(w) + ")" );
+    if(weight_uv_w == DO_NOT_ADD){ // we are not allowed to merge (uv,w)
+        undo_data_reduction(stack_size_0);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+        return NONE;
     }
-
-    k_reduced = data_reduction(k_reduced, layer);
-
-    if(this->branch(k_reduced, layer) == CLUSTER_GRAPH){
-        if(u < g->num_vertices && v < g->num_vertices)
-            final_output(u,v);
-        else
-            printDebug("output (later): " + std::to_string(u+1-1) + " " + std::to_string(v+1-1));
+    if(weight_uv_w < 0) k -= abs(weight_uv_w); // remove cost of inserting edge (uv,w)
+    cost = g->merge(uv,w);
+    if(cost == -1) { // also inserting (uv,w) failed -> no solution for this k exists
+        undo_data_reduction(stack_size_0);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+        return NONE;
+    }
+    k -= cost;
+    if(this->branch(k, layer + 1) == CLUSTER_GRAPH){
+        final_output(uv,w);
         return CLUSTER_GRAPH;
     }
 
-    undo_data_reduction(prev_stack_size);
-    g->set_weight(u, v, weight);
-
-    // redo branching for edge weight 0 with deleting edge
-    if(weight == 0 && flag_branch_zero == true){
-        flag_branch_zero = false;
-        goto branch_zero;
-    }
-
+    // branching on all edges failed, no solution for this k exists, recover graph before branching
+    undo_data_reduction(stack_size_0);
+    printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
     return NONE;
 }
 
-void Solver::final_output(int u, int v)
-{
-#ifdef DEBUG
-    if(PRINTDEBUG){
-//        std::cout << u+1-1 << " " << v+1-1 <<std::endl;
-    }
-#endif
-    std::cout << u+1 << " " << v+1 <<std::endl;
-}
 
 
 // ----------------------------
-// ------- p3 - search --------
-
-// iterates over all vertex tuples and returns max_cost p3
-std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
-
-    int first_tuple_val = -1;
-    int second_tuple_val = -1;
-    int third_tuple_val = -1;
-    int max_cost = INT32_MIN;
-    for(int i: this->g->active_nodes){
-        for(int j: this->g->active_nodes){
-            for(int k : this->g->active_nodes){
-                if(i == j || i == k || k == j) continue;
-                int weight_i_j = g->get_weight(i,j);
-                int weight_i_k = g->get_weight(i,k);
-                int weight_j_k = g->get_weight(j,k);
-                if(weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0){
-
-                    // sum up costs of all three edges (only edges that are allowed to be modified)
-                    int current_cost = 0;
-                    if(weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) current_cost += abs(weight_i_k);
-                    if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) current_cost += abs(weight_i_j);
-                    if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) current_cost += abs(weight_j_k);
-
-                    // update maximum cost and corresponding p3
-                    if(current_cost > max_cost) {
-                        max_cost = current_cost;
-                        first_tuple_val = i;
-                        second_tuple_val = j;
-                        third_tuple_val = k;
-                    }
-                }
-            }
-
-        }
-    }
-#ifdef DEBUG
-    //    std::cout << "counter " << counter<< " Found " << p3_list.size() << " p3's"<< std::endl;
-#endif
-    return std::make_tuple(first_tuple_val, second_tuple_val, third_tuple_val);
-}
-
-
-
-
-// ----------------------------
-// ------- merging --------
+// ------- output related --------
 
 
 // unmerges all remaining vertices and outputs edges that had to be modified for merging
@@ -229,6 +264,8 @@ int Solver::unmerge_and_output(int uv){
 
     printDebug("Output for unmerging " + std::to_string(uv) + " -> (" + std::to_string(uv_children[0]) + "," + std::to_string(uv_children[1]) + ")");
 
+    g->add_edge(uv_children[0],uv_children[1]);
+
     int dk = 0;
     for(int x : g->active_nodes) {
         if(x == uv || x == uv_children[0] ||x == uv_children[1]) continue;
@@ -245,9 +282,11 @@ int Solver::unmerge_and_output(int uv){
         for(int u: uv_children){
             int weight_ux = g->get_weight(u, x);
 
+            printDebug("Propagate : " + std::to_string(uv) + " " + std::to_string(x) + " weight " + std::to_string(weight_uvx) + "    to    " + std::to_string(u) + " " + std::to_string(x) + " weight " + std::to_string(weight_ux) );
+            if((weight_ux == DO_NOT_DELETE && weight_uvx == DO_NOT_ADD) || (weight_ux == DO_NOT_ADD && weight_uvx == DO_NOT_DELETE) ) throwError("Cannot propagate, would need infinite budget");
+
             // adapt edge {u,x} to previous merged edge {uv,x}
             // we have to modify edge {u,x} if {u,x} = 0 and if {u,x} and {uv,x} have different sign
-            printDebug("Propagate : " + std::to_string(uv) + " " + std::to_string(x) + " weight " + std::to_string(weight_uvx) + "    to    " + std::to_string(u) + " " + std::to_string(x) + " weight " + std::to_string(weight_ux) );
             if (weight_ux == 0 || (signbit(weight_ux) != signbit(weight_uvx))) {
 
                 if(weight_uvx > 0)
@@ -271,6 +310,21 @@ int Solver::unmerge_and_output(int uv){
     return dk;
 }
 
+void Solver::final_output(int u, int v)
+{
+    if(u < g->num_vertices && v < g->num_vertices){
+        std::cout << u+1 << " " << v+1 <<std::endl;
+#ifdef DEBUG
+        if(PRINTDEBUG){
+//                std::cout << u+1-1 << " " << v+1-1 <<std::endl;
+            }
+#endif
+    }
+    else{
+        printDebug("output (later): " + std::to_string(u+1-1) + " " + std::to_string(v+1-1));
+    }
+
+}
 
 WCE_Graph *Solver::parse_and_build_graph(){
 

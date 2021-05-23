@@ -56,8 +56,8 @@ public:
     void print_active_graph(std::ostream &os);
     void print_active_nodes();
     void print_merge_map();
-    void print_stack(std::stack<stack_elem>);
-    void print_stack_rec(std::stack<stack_elem>);
+    void print_graph_mod_stack();
+    void print_graph_mod_stack_rec();
 
     // old methods used in solver2
     void recover_original(int);
