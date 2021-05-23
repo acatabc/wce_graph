@@ -1,4 +1,6 @@
 
+#include <tuple>
+#include <algorithm>
 #include "Solver.h"
 #include "../include/utils.h"
 #define HEURISTIC 0
