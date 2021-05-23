@@ -25,7 +25,7 @@ void Solver::solve() {
     int stack_before_branching = g->graph_mod_stack.size();
 
     // compute lower bound iterating over all existent p3s
-    int lower_bound_k = std::get<1>(get_max_cost_p3_naive_lowerBound());
+    int lower_bound_k = std::get<1>(get_best_p3_and_lowerBound_improved());
 
     int k = 0;
     while (true){
@@ -75,7 +75,7 @@ int Solver::branch(int k, int c, int layer){
     }
 
     // get best p3 and compute a lower bound
-    auto tuple = get_max_cost_p3_naive_lowerBound();
+    auto tuple = get_best_p3_and_lowerBound_improved();
     auto p3 = std::get<0>(tuple);
     int lower_bound_k = std::get<1>(tuple);
     if(lower_bound_k > k) {

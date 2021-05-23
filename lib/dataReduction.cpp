@@ -18,7 +18,7 @@ int Solver::data_reduction(int k, int c, int layer){
         // otherwise do all data reduction only in the modified component
         k = dataRed_weight_larger_k(k, c);
         if(layer %10 ==  5){
-//            dataRed_split_component(c);
+            dataRed_split_component(c);
         }
     }
 
@@ -39,7 +39,7 @@ int Solver::data_reduction_before_branching(){
         k_tmp = dataRed_large_neighbourhood_I(k_tmp, 0);
     }
     int cost = INT32_MAX - k_tmp;
-//    dataRed_split_component(0);
+    dataRed_split_component(0);
     return cost;
 }
 

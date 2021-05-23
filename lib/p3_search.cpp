@@ -13,33 +13,36 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
     int second_tuple_val = -1;
     int third_tuple_val = -1;
     int max_cost = INT32_MIN;
-//    for(int i: this->g->active_nodes){
-//        for(int j: this->g->active_nodes){
-//            for(int k : this->g->active_nodes){
-//                if(i == j || i == k || k == j) continue;
-//                int weight_i_j = g->get_weight(i,j);
-//                int weight_i_k = g->get_weight(i,k);
-//                int weight_j_k = g->get_weight(j,k);
-//                if(weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0){
-//
-//                    // sum up costs of all three edges (only edges that are allowed to be modified)
-//                    int current_cost = 0;
-//                    if(weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) current_cost += abs(weight_i_k);
-//                    if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) current_cost += abs(weight_i_j);
-//                    if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) current_cost += abs(weight_j_k);
-//
-//                    // update maximum cost and corresponding p3
-//                    if(current_cost > max_cost) {
-//                        max_cost = current_cost;
-//                        first_tuple_val = i;
-//                        second_tuple_val = j;
-//                        third_tuple_val = k;
-//                    }
-//                }
-//            }
-//
-//        }
-//    }
+
+    for(int c = 0; c < g->active_nodes.size(); c++) {
+        for (int i: this->g->active_nodes[c]) {
+            for (int j: this->g->active_nodes[c]) {
+                for (int k : this->g->active_nodes[c]) {
+                    if (i == j || i == k || k == j) continue;
+                    int weight_i_j = g->get_weight(i, j);
+                    int weight_i_k = g->get_weight(i, k);
+                    int weight_j_k = g->get_weight(j, k);
+                    if (weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0) {
+
+                        // sum up costs of all three edges (only edges that are allowed to be modified)
+                        int current_cost = 0;
+                        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) current_cost += abs(weight_i_k);
+                        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) current_cost += abs(weight_i_j);
+                        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) current_cost += abs(weight_j_k);
+
+                        // update maximum cost and corresponding p3
+                        if (current_cost > max_cost) {
+                            max_cost = current_cost;
+                            first_tuple_val = i;
+                            second_tuple_val = j;
+                            third_tuple_val = k;
+                        }
+                    }
+                }
+
+            }
+        }
+    }
     return std::make_tuple(first_tuple_val, second_tuple_val, third_tuple_val);
 }
 
@@ -193,41 +196,42 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
 // iterates over all vertex tuples and returns a list of p3s
 std::vector<Solver::p3> Solver::find_all_p3(){
     std::vector<Solver::p3> allP3 = std::vector<Solver::p3>();
+    for(int c = 0; c < g->active_nodes.size(); c++) {
+        for (int i: this->g->active_nodes[c]) {
+            for (int j: this->g->active_nodes[c]) {
+                for (int k : this->g->active_nodes[c]) {
+                    if (i == j || i == k || k == j) continue;
+                    int weight_i_j = g->get_weight(i, j);
+                    int weight_i_k = g->get_weight(i, k);
+                    int weight_j_k = g->get_weight(j, k);
+                    if (weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0) {
 
-//    for(int i: this->g->active_nodes){
-//        for(int j: this->g->active_nodes){
-//            for(int k : this->g->active_nodes){
-//                if(i == j || i == k || k == j) continue;
-//                int weight_i_j = g->get_weight(i,j);
-//                int weight_i_k = g->get_weight(i,k);
-//                int weight_j_k = g->get_weight(j,k);
-//                if(weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0){
-//
-//                    // sum up costs of all three edges (only edges that are allowed to be modified)
-//                    int cost_sum = 0;
-//                    if(weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) cost_sum += abs(weight_i_k);
-//                    if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) cost_sum += abs(weight_i_j);
-//                    if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) cost_sum += abs(weight_j_k);
-//
-//                    // get minimum edge cost
-//                    int min_cost = INT32_MAX;
-//                    if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
-//                        abs(weight_i_k) < min_cost)
-//                        min_cost = abs(weight_i_k);
-//                    if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
-//                        abs(weight_i_j) < min_cost)
-//                        min_cost = abs(weight_i_j);
-//                    if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
-//                        abs(weight_j_k) < min_cost)
-//                        min_cost = abs(weight_j_k);
-//
-//                    Solver::p3 newP3 = {.i = i, .j = j, .k = k, .min_cost = min_cost, .cost_sum = cost_sum};
-//                    allP3.push_back(newP3);
-//                }
-//            }
-//
-//        }
-//    }
+                        // sum up costs of all three edges (only edges that are allowed to be modified)
+                        int cost_sum = 0;
+                        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) cost_sum += abs(weight_i_k);
+                        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) cost_sum += abs(weight_i_j);
+                        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) cost_sum += abs(weight_j_k);
+
+                        // get minimum edge cost
+                        int min_cost = INT32_MAX;
+                        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
+                            abs(weight_i_k) < min_cost)
+                            min_cost = abs(weight_i_k);
+                        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
+                            abs(weight_i_j) < min_cost)
+                            min_cost = abs(weight_i_j);
+                        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
+                            abs(weight_j_k) < min_cost)
+                            min_cost = abs(weight_j_k);
+
+                        Solver::p3 newP3 = {.i = i, .j = j, .k = k, .min_cost = min_cost, .cost_sum = cost_sum};
+                        allP3.push_back(newP3);
+                    }
+                }
+
+            }
+        }
+    }
     return allP3;
 }
 
