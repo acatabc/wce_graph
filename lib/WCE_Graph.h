@@ -10,7 +10,7 @@
 // type of operations in graph modification stack
 #define MERGE 1
 #define SET_INF 2
-#define CLIQUE 3
+#define COMPONENTS 3
 
 
 class WCE_Graph {
@@ -36,10 +36,13 @@ public:
     int get_cost(int u, int v, int w);
 
     // merging
-    std::vector<int> active_nodes;
+    std::vector<std::vector<int>> active_nodes; // a vector of sets of active nodes (each entry is one component)
+    std::vector<int> components_map; // maps each vertex to the index of its component
     std::vector<std::vector<int>> merge_map;
     int merge(int, int);
     void set_non_edge(int u, int v);
+    void split_component(std::vector<std::vector<int>> components);
+    void unify_components(std::vector<int> component_indices, int prev_stack_size);
     void undo_final_modification();
 
     struct stack_elem{
@@ -48,7 +51,8 @@ public:
         int v2;
         int weight;
         int uv; // merged vertex
-        std::vector<int> clique; // remove clique
+        std::vector<int> components; // split components
+        int stack_size_before_components;
     };
     std::stack<stack_elem> graph_mod_stack;
 

@@ -5,7 +5,7 @@
 #include "../include/utils.h"
 #include <math.h>
 
-const char* FILENAME = "../wce-students/2-real-world/w013.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w021.dimacs";
 //const char* FILENAME = "../../wce-students-real/2-real-world/w021.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
@@ -25,11 +25,13 @@ void Solver::solve() {
     int stack_before_branching = g->graph_mod_stack.size();
 
     // compute lower bound iterating over all existent p3s
-    int lower_bound_k = std::get<1>(get_best_p3_and_lowerBound_improved());
+    int lower_bound_k = std::get<1>(get_max_cost_p3_naive_lowerBound());
 
     int k = 0;
     while (true){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
+
+        g->print_graph_mod_stack();
 
         int k_reduced = k - cost_before_branching;
 
@@ -39,6 +41,8 @@ void Solver::solve() {
         }
 
         k_reduced = data_reduction(k_reduced, 0);
+
+        g->print_graph_mod_stack();
 
         if(this->branch(k_reduced, 0) == CLUSTER_GRAPH){
             clear_stack_and_output();
@@ -71,7 +75,7 @@ int Solver::branch(int k, int layer){
     }
 
     // get best p3 and compute a lower bound
-    auto tuple = get_best_p3_and_lowerBound_improved();
+    auto tuple = get_max_cost_p3_naive_lowerBound();
     auto p3 = std::get<0>(tuple);
     int lower_bound_k = std::get<1>(tuple);
     if(lower_bound_k > k) {
@@ -127,7 +131,7 @@ int Solver::branch(int k, int layer){
 
 
 int Solver::branch_old(int k, int layer){
-    if(k < 0){
+    if(k < 0) {
         return NONE;
     }
 
@@ -248,11 +252,8 @@ void Solver::clear_stack_and_output(){
         else if(el.type == SET_INF) {
             g->graph_mod_stack.pop();
         }
-        else if(el.type == CLIQUE){
-            for(int i: el.clique){
-                g->active_nodes.push_back(i);
-            }
-            g->graph_mod_stack.pop();
+        else if(el.type == COMPONENTS) {
+            g->unify_components(el.components, el.stack_size_before_components);
         }
     }
     printDebug("\nUnmerging sum of costs " +  std::to_string(k));
@@ -267,7 +268,8 @@ int Solver::unmerge_and_output(int uv){
     g->add_edge(uv_children[0],uv_children[1]);
 
     int dk = 0;
-    for(int x : g->active_nodes) {
+    int c = g->components_map[uv];
+    for(int x : g->active_nodes[c]) {
         if(x == uv || x == uv_children[0] ||x == uv_children[1]) continue;
 
         int weight_uvx = g->get_weight(uv, x);
@@ -331,7 +333,8 @@ WCE_Graph *Solver::parse_and_build_graph(){
 #ifdef DEBUG
     //    freopen("../wce-students/2-real-world/w027.dimacs", "r", stdin);
 //    freopen("../test_data/r049.dimacs", "r", stdin);
-    freopen(FILENAME, "r", stdin);
+    auto x = freopen(FILENAME, "r", stdin);
+    if (!x) printDebug("Cannot open file");
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
@@ -344,10 +347,12 @@ WCE_Graph *Solver::parse_and_build_graph(){
         if(!std::cin.fail())
             g->set_weight(v,w, weight);
     }
+    g->active_nodes.push_back(std::vector<int>());
     for(int i = 0; i< g->num_vertices; i++){
         std::vector<int> u = {i};
         g->merge_map.push_back(u);
-        g->active_nodes.push_back(i);
+        g->components_map.push_back(0);
+        g->active_nodes[0].push_back(i);
     }
     return g;
 }

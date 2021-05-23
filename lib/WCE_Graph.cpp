@@ -113,7 +113,10 @@ int WCE_Graph::merge(int u, int v) {
 
     int idx = this->adj_matrix.size();
 
-    graph_mod_stack.push(stack_elem{.type = MERGE, .v1 = -1, .v2 = -1, .weight = -1, .uv = idx, .clique = std::vector<int>()});
+    int c = components_map[u];
+    if(c != components_map[v]) throwError("Trying to merge vertiices from different components");
+
+    graph_mod_stack.push(stack_elem{.type = MERGE, .v1 = -1, .v2 = -1, .weight = -1, .uv = idx});
 
     // setup adjacency matrix for new vertex
     this->adj_matrix.push_back(std::vector<matrix_entry>());
@@ -121,24 +124,25 @@ int WCE_Graph::merge(int u, int v) {
         this->adj_matrix[idx].push_back(matrix_entry{0,false});
     }
 
-    // update merge_map
+    // update merge_map and components map
     std::vector<int> uv = {u,v};
     this->merge_map.push_back(uv);
 
-    // add active node uw, remove active nodes u and v
-    this->active_nodes.push_back(idx);
+    // add active node uw to component c and remove u and v
+    this->components_map.push_back(c);
+    this->active_nodes[c].push_back(idx);
     std::vector<int>::iterator it;
-    for(it=active_nodes.begin(); it != active_nodes.end(); ++it){
+    for(it=active_nodes[c].begin(); it != active_nodes[c].end(); ++it){
         if(*it == u || *it == v){
-            active_nodes.erase(it);
+            active_nodes[c].erase(it);
             it -=1;
         }
     }
 
     int dk = 0;
 
-    // unmerging must happen in same order as merging!!!!
-    for(int j : active_nodes){
+    // compute weights (uv,j) based on (u,j) and (v,j) for all vertices j in the same component
+    for(int j : active_nodes[c]){
         if(j == idx) continue;
 
         int weight_uj = this->get_weight(u, j);
@@ -199,11 +203,13 @@ void WCE_Graph::unmerge(int uv) {
     int u = uv_nodes[0];
     int v = uv_nodes[1];
 
+    int c = components_map[uv];
+
     // remove uv from active nodes
     std::vector<int>::iterator it;
-    for(it=active_nodes.begin(); it != active_nodes.end(); ++it){
+    for(it=active_nodes[c].begin(); it != active_nodes[c].end(); ++it){
         if(*it == uv){
-            active_nodes.erase(it);
+            active_nodes[c].erase(it);
             it -=1;
         }
         if(*it > uv)
@@ -211,15 +217,16 @@ void WCE_Graph::unmerge(int uv) {
     }
 
     // add u,v to active nodes
-    this->active_nodes.push_back(u);
-    this->active_nodes.push_back(v);
+    this->active_nodes[c].push_back(u);
+    this->active_nodes[c].push_back(v);
 
-    // remove uw from merge map and adjacency matrix
+    // remove uw from merge map, components map and adjacency matrix
     merge_map.pop_back();
+    components_map.pop_back();
     adj_matrix.pop_back();
 
 //    printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(u) + "," + std::to_string(v) + ")");
-    std::sort(active_nodes.begin(), active_nodes.end());
+    std::sort(active_nodes[c].begin(), active_nodes[c].end());
     return;
 }
 
@@ -228,6 +235,75 @@ void WCE_Graph::set_non_edge(int u, int v) {
     graph_mod_stack.push(stack_elem{2, u, v, this->get_weight(u, v), -1});
     set_weight(u, v, DO_NOT_ADD);
 //    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ")");
+}
+
+
+void WCE_Graph::split_component(std::vector<std::vector<int>> components){
+    int stack_size_before = graph_mod_stack.size();
+
+    // delete all 0-edged between components
+    for(int i = 0; i < components.size(); i++) {
+        for(int u: components[i]){
+            for(int j = i+1; j < components.size(); j++) {
+                for(int v: components[j]){
+                    if(get_weight(u,v) == 0) set_non_edge(u,v);
+                }
+            }
+        }
+    }
+
+    int old_c = components_map[components[0][0]];
+    std::vector<int> new_component_indices = std::vector<int>(); // vector of new components indices for graph_mod_stack
+
+    // remove all elements from old component; add all elements of the first component
+    active_nodes[old_c].clear();
+    for(int u: components[0]){
+        active_nodes[old_c].push_back(u);
+        components_map[u] = old_c;
+    }
+    new_component_indices.push_back(old_c);
+
+    for(int i = 1; i < components.size(); i++) {
+        // add a new component and insert its vertices
+        active_nodes.push_back(std::vector<int>());
+        int new_c = active_nodes.size() - 1;
+        for (int u: components[i]) {
+            active_nodes[new_c].push_back(u);
+            components_map[u] = new_c;
+        }
+        new_component_indices.push_back(new_c);
+    }
+
+    graph_mod_stack.push(
+            WCE_Graph::stack_elem{.type = COMPONENTS, .v1 = -1, .v2 = -1, .weight = -1, .uv = -1, .components = new_component_indices, .stack_size_before_components = stack_size_before});
+
+}
+
+
+void WCE_Graph::unify_components(std::vector<int> component_indices,  int prev_stack_size){
+    // put all nodes into the first component
+    int comp_0 = component_indices[0];
+    for(int c: component_indices){
+        if(c == comp_0) continue;
+        // copy nodes from all other component_indices to first component
+        for(int u: active_nodes[c]){
+            active_nodes[comp_0].push_back(u);
+            components_map[u] = comp_0;
+        }
+    }
+
+    // delete all resolved component_indices
+    for(int i = 1; i < component_indices.size(); i++){
+        active_nodes.pop_back(); // this works since we undo data reduction in the correct order
+    }
+    graph_mod_stack.pop();
+
+    // recover all edges that have been set to DNA
+    while (graph_mod_stack.size() != prev_stack_size){
+        undo_final_modification();
+    }
+
+    printDebug("unified components");
 }
 
 void WCE_Graph::undo_final_modification(){
@@ -239,22 +315,9 @@ void WCE_Graph::undo_final_modification(){
         graph_mod_stack.pop();
 //        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
     }
-    if(el.type == CLIQUE){
-        for(int i: el.clique){
-            active_nodes.push_back(i);
-        }
-        graph_mod_stack.pop();
+    if(el.type == COMPONENTS){
+         unify_components(el.components, el.stack_size_before_components);
     }
-}
-
-// recovers original graph, merge map and actives nodes vector (as it has been before any merging operation) until input vertex
-// !! old method, only works for solver2
-void WCE_Graph::recover_original(int last_merge_idx){
-    printDebug("Recover original graph");
-    while (adj_matrix.size() != last_merge_idx){
-        unmerge(adj_matrix.size()-1);
-    }
-    std::sort(active_nodes.begin(), active_nodes.end());
 }
 
 
@@ -276,12 +339,15 @@ void WCE_Graph::print_merge_map() {
 
 void WCE_Graph::print_active_nodes() {
 #ifdef DEBUG
-    std::cout << "Active Nodes Vec: [";
-    for(int i = 0; i < this->active_nodes.size(); ++i){
-        if(i != this->active_nodes.size()-1)
-            std::cout << active_nodes[i] << ", " ;
-        else
-            std::cout << active_nodes[i] << "]\n";
+    std::cout << "Active Nodes Vec:\n";
+    for(int c = 0; c < active_nodes.size(); c++) {
+        std::cout << "Component " << c << ": [";
+        for (int i = 0; i < this->active_nodes[c].size(); ++i) {
+            if (i != this->active_nodes[c].size() - 1)
+                std::cout << active_nodes[c][i] << ", ";
+            else
+                std::cout << active_nodes[c][i] << "]\n";
+        }
     }
 #endif
 }
@@ -310,8 +376,10 @@ void WCE_Graph::print_graph_mod_stack_rec()
 
     if(el.type == MERGE) printDebug("Merged: " + std::to_string(el.uv));
     if(el.type == SET_INF) printDebug("SET_INF: " + std::to_string(el.v1) + "," + std::to_string(el.v2) );
-    if(el.type == CLIQUE) printDebug("CLIQUE " + std::to_string(el.clique.size()) );
-
+    if(el.type == COMPONENTS) {
+        printDebug("COMPONENT");
+        printVector_int(el.components);
+    }
     graph_mod_stack.push(el);
 }
 
@@ -321,65 +389,70 @@ void WCE_Graph::print_active_graph(std::ostream& os) {
 
     std::cout << "\nActive Graph: \n";
 
-    sort(active_nodes.begin(), active_nodes.end());
+    for(int c = 0; c < active_nodes.size(); c++) {
 
-    os << "." <<std::setw(5)<< "|";
+        std::cout << "Component " << c << ":\n";
 
-    for(int j : active_nodes) {
-        if (j < 10)
-            os << j << std::setw(5) << "|";
-        else if (j < 100)
-            os << j << std::setw(4) << "|";
-        else
-            os << j << std::setw(3) << "|";
-    }
-    os << std::endl;
-    for(int i = 0; i <= active_nodes.size(); ++i){
-        os << "-----+";
-    }
-    os << std::endl;
-    for(int i : active_nodes){
-        if(i <= 9) {
-            os << i << std::setw(5) << "|";
-        }else{
-            os << i << std::setw(4) << "|";
-        }
-        for(int j : active_nodes){
+        sort(active_nodes[c].begin(), active_nodes[c].end());
 
-            if(i==j) {
-                os << "-" << std::setw(5) << "|";
-                continue;
-            }
+        os << "." << std::setw(5) << "|";
 
-            bool flag;
-            if(i<j) flag = this->adj_matrix[j][i].flag;
-            if(i>j) flag = this->adj_matrix[i][j].flag;
-            if(flag == false){
-                os << " " << std::setw(5) << "|";
-                continue;
-            }
-
-            int el;
-            if(i<j) el = this->adj_matrix[j][i].weight;
-            if(i>j) el = this->adj_matrix[i][j].weight;
-
-            if(el>= 0 && el <= 9)
-                os << el << std::setw(5) << "|";
-            else if(el >= 10 && el < 100 || el < 0 && el > -10)
-                os << el << std::setw(4) << "|";
-            else if(el == DO_NOT_DELETE)
-                os << "+DND" << std::setw(2) << "|";
-            else if(el == DO_NOT_ADD)
-                os << "-DNA" << std::setw(2) << "|";
-            else if (el >= 100 && el < 1000 || el <= -10 && el > -100)
-                os << el << std::setw(3) << "|";
+        for (int j : active_nodes[c]) {
+            if (j < 10)
+                os << j << std::setw(5) << "|";
+            else if (j < 100)
+                os << j << std::setw(4) << "|";
             else
-                os << el << std::setw(2) << "|";
+                os << j << std::setw(3) << "|";
         }
-
-        if(this->merge_map[i].size() != 1)
-            os << " --> (" << merge_map[i][0] << "," << merge_map[i][1] <<")";
         os << std::endl;
+        for (int i = 0; i <= active_nodes[c].size(); ++i) {
+            os << "-----+";
+        }
+        os << std::endl;
+        for (int i : active_nodes[c]) {
+            if (i <= 9) {
+                os << i << std::setw(5) << "|";
+            } else {
+                os << i << std::setw(4) << "|";
+            }
+            for (int j : active_nodes[c]) {
+
+                if (i == j) {
+                    os << "-" << std::setw(5) << "|";
+                    continue;
+                }
+
+                bool flag;
+                if (i < j) flag = this->adj_matrix[j][i].flag;
+                if (i > j) flag = this->adj_matrix[i][j].flag;
+                if (flag == false) {
+                    os << " " << std::setw(5) << "|";
+                    continue;
+                }
+
+                int el;
+                if (i < j) el = this->adj_matrix[j][i].weight;
+                if (i > j) el = this->adj_matrix[i][j].weight;
+
+                if (el >= 0 && el <= 9)
+                    os << el << std::setw(5) << "|";
+                else if (el >= 10 && el < 100 || el < 0 && el > -10)
+                    os << el << std::setw(4) << "|";
+                else if (el == DO_NOT_DELETE)
+                    os << "+DND" << std::setw(2) << "|";
+                else if (el == DO_NOT_ADD)
+                    os << "-DNA" << std::setw(2) << "|";
+                else if (el >= 100 && el < 1000 || el <= -10 && el > -100)
+                    os << el << std::setw(3) << "|";
+                else
+                    os << el << std::setw(2) << "|";
+            }
+
+            if (this->merge_map[i].size() != 1)
+                os << " --> (" << merge_map[i][0] << "," << merge_map[i][1] << ")";
+            os << std::endl;
+        }
     }
     os <<"\n"<< std::endl;
 #endif

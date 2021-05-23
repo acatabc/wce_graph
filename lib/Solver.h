@@ -32,6 +32,10 @@ public:
     };
     std::vector<p3> find_all_p3();
 
+    // components related
+    std::vector<std::vector<int>> find_components(int c);
+    void dataRed_split_components();
+
     // data reduction
     int data_reduction(int k, int layer);
     int data_reduction_before_branching();
