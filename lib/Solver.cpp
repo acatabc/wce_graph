@@ -5,8 +5,8 @@
 #include "../include/utils.h"
 #include <math.h>
 
-//const char* FILENAME = "../wce-students/2-real-world/w017.dimacs";
-const char* FILENAME = "../../wce-students-real/2-real-world/w088.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w021.dimacs";
+//const char* FILENAME = "../../wce-students-real/2-real-world/w21.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE -1
@@ -277,7 +277,8 @@ WCE_Graph *Solver::parse_and_build_graph(){
 #ifdef DEBUG
     //    freopen("../wce-students/2-real-world/w027.dimacs", "r", stdin);
 //    freopen("../test_data/r049.dimacs", "r", stdin);
-    freopen(FILENAME, "r", stdin);
+    auto x = freopen(FILENAME, "r", stdin);
+    if (!x) printDebug("Cannot open file");
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
