@@ -27,16 +27,11 @@ void Solver::solve() {
     // compute lower bound iterating over all existent p3s
     int lower_bound_k = std::get<1>(get_best_p3_and_lowerBound_improved());
 
-    int k = 0;
+    int k = lower_bound_k + cost_before_branching;
     while (true){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 
         int k_reduced = k - cost_before_branching;
-
-        if(lower_bound_k > k_reduced) {
-            k++;
-            continue;
-        }
 
         k_reduced = data_reduction(k_reduced, 0);
 
