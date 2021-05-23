@@ -1,4 +1,6 @@
 
+#include <tuple>
+#include <algorithm>
 #include "Solver.h"
 #include "../include/utils.h"
 #define HEURISTIC 0
@@ -224,7 +226,7 @@ std::vector<Solver::p3> Solver::find_all_p3(){
                             abs(weight_j_k) < min_cost)
                             min_cost = abs(weight_j_k);
 
-                        Solver::p3 newP3 = {.i = i, .j = j, .k = k, .min_cost = min_cost, .cost_sum = cost_sum};
+                        Solver::p3 newP3 = {.i = i, .j = j, .k = k,  .cost_sum = cost_sum,.min_cost = min_cost};
                         allP3.push_back(newP3);
                     }
                 }
