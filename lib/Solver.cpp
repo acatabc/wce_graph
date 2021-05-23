@@ -21,26 +21,22 @@ Solver::~Solver() {}
 
 void Solver::solve() {
 
-    int k_tmp = INT32_MAX;
-    int k_before = 0;
-    dataRed_remove_existing_clique();
-    while(k_tmp != k_before){
-        k_before = k_tmp;
-        k_tmp = dataRed_heavy_non_edge_branch(k_tmp);
-        k_tmp = dataRed_heavy_edge_single_end_branch(k_tmp);
-        k_tmp = dataRed_heavy_edge_both_ends(k_tmp);
-        k_tmp = dataRed_large_neighbourhood_I(k_tmp);
-        k_tmp = dataRed_merge_dnd(k_tmp);
-    }
-
-    int cost_before_branching = INT32_MAX - k_tmp;
+    int cost_before_branching = data_reduction_before_branching();
     int stack_before_branching = g->graph_mod_stack.size();
+
+    // compute lower bound iterating over all existent p3s
+    int lower_bound_k = std::get<1>(get_best_p3_and_lowerBound_improved());
 
     int k = 0;
     while (true){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 
         int k_reduced = k - cost_before_branching;
+
+        if(lower_bound_k > k_reduced) {
+            k++;
+            continue;
+        }
 
         k_reduced = data_reduction(k_reduced, 0);
 
@@ -74,7 +70,14 @@ int Solver::branch(int k, int layer){
         return NONE;
     }
 
-    auto p3 = this->get_max_cost_p3_naive();
+    // get best p3 and compute a lower bound
+    auto tuple = get_best_p3_and_lowerBound_improved();
+    auto p3 = std::get<0>(tuple);
+    int lower_bound_k = std::get<1>(tuple);
+    if(lower_bound_k > k) {
+        printDebug("Successfully applied lower bound");
+        return NONE;
+    }
 
     if(std::get<0>(p3) == -1){
         printDebug("FOUND CLUSTER GRAPH");
@@ -226,72 +229,9 @@ int Solver::branch_old(int k, int layer){
 }
 
 
-void Solver::final_output(int u, int v)
-{
-    if(u < g->num_vertices && v < g->num_vertices){
-        std::cout << u+1 << " " << v+1 <<std::endl;
-        #ifdef DEBUG
-                if(PRINTDEBUG){
-//                std::cout << u+1-1 << " " << v+1-1 <<std::endl;
-            }
-        #endif
-    }
-    else{
-        printDebug("output (later): " + std::to_string(u+1-1) + " " + std::to_string(v+1-1));
-    }
-
-}
-
 
 // ----------------------------
-// ------- p3 - search --------
-
-// iterates over all vertex tuples and returns max_cost p3 = (u,v,w)
-// (u,v) and (u,w) exist and (v,w) does not exist
-std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
-
-    int first_tuple_val = -1;
-    int second_tuple_val = -1;
-    int third_tuple_val = -1;
-    int max_cost = INT32_MIN;
-    for(int i: this->g->active_nodes){
-        for(int j: this->g->active_nodes){
-            for(int k : this->g->active_nodes){
-                if(i == j || i == k || k == j) continue;
-                int weight_i_j = g->get_weight(i,j);
-                int weight_i_k = g->get_weight(i,k);
-                int weight_j_k = g->get_weight(j,k);
-                if(weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0){
-
-                    // sum up costs of all three edges (only edges that are allowed to be modified)
-                    int current_cost = 0;
-                    if(weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) current_cost += abs(weight_i_k);
-                    if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) current_cost += abs(weight_i_j);
-                    if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) current_cost += abs(weight_j_k);
-
-                    // update maximum cost and corresponding p3
-                    if(current_cost > max_cost) {
-                        max_cost = current_cost;
-                        first_tuple_val = i;
-                        second_tuple_val = j;
-                        third_tuple_val = k;
-                    }
-                }
-            }
-
-        }
-    }
-#ifdef DEBUG
-    //    std::cout << "counter " << counter<< " Found " << p3_list.size() << " p3's"<< std::endl;
-#endif
-    return std::make_tuple(first_tuple_val, second_tuple_val, third_tuple_val);
-}
-
-
-
-
-// ----------------------------
-// ------- merging --------
+// ------- output related --------
 
 
 // unmerges all remaining vertices and outputs edges that had to be modified for merging
@@ -370,6 +310,21 @@ int Solver::unmerge_and_output(int uv){
     return dk;
 }
 
+void Solver::final_output(int u, int v)
+{
+    if(u < g->num_vertices && v < g->num_vertices){
+        std::cout << u+1 << " " << v+1 <<std::endl;
+#ifdef DEBUG
+        if(PRINTDEBUG){
+//                std::cout << u+1-1 << " " << v+1-1 <<std::endl;
+            }
+#endif
+    }
+    else{
+        printDebug("output (later): " + std::to_string(u+1-1) + " " + std::to_string(v+1-1));
+    }
+
+}
 
 WCE_Graph *Solver::parse_and_build_graph(){
 

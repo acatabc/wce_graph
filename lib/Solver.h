@@ -23,9 +23,18 @@ public:
 
     //method related to p3s
     std::tuple<int, int, int> get_max_cost_p3_naive();
+    std::tuple<std::tuple<int, int, int>, int> get_max_cost_p3_naive_lowerBound();
+    std::tuple<std::tuple<int, int, int>, int> get_best_p3_and_lowerBound_improved();
+    struct p3{
+        int i,j,k;
+        int cost_sum;
+        int min_cost;
+    };
+    std::vector<p3> find_all_p3();
 
     // data reduction
     int data_reduction(int k, int layer);
+    int data_reduction_before_branching();
     void undo_data_reduction(int final);
 
     int dataRed_weight_larger_k(int k);
