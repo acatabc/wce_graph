@@ -13,10 +13,11 @@ public:
     Solver();
     virtual ~Solver();
     WCE_Graph *parse_and_build_graph();
+
     //solving
     void solve();
     int branch(int k, int layer);
-    int branchEdge(int u, int v, int k, int layer);
+    int branch_old(int k, int layer);
     void final_output(int u, int v);
     void output_data_reduction();
 
