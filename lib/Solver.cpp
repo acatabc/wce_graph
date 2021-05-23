@@ -60,7 +60,70 @@ void Solver::solve() {
 }
 
 
-int Solver::branch2(int k, int layer){
+int Solver::branch(int k, int layer){
+    if(k < 0){
+        return NONE;
+    }
+
+    // data reduction
+    int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
+    k = data_reduction(k, layer);
+    if(k == -1){ // data reduction shows that no solution for this k exists
+        undo_data_reduction(stack_size_0);
+        printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
+        return NONE;
+    }
+
+    auto p3 = this->get_max_cost_p3_naive();
+
+    if(std::get<0>(p3) == -1){
+        printDebug("FOUND CLUSTER GRAPH");
+        return CLUSTER_GRAPH;
+    }
+
+    rec_steps++;
+
+    int u = std::get<0>(p3);
+    int v = std::get<1>(p3);
+    int w = std::get<2>(p3);
+
+    printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+
+    // 1. Branch DELETE (u,v)
+    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
+    int weight_uv = g->get_weight(u,v); // it holds (u,v) >= 0
+    int stack_size_1 = g->graph_mod_stack.size();
+    g->set_non_edge(u, v);
+    if(this->branch(k - weight_uv, layer + 1) == CLUSTER_GRAPH){
+        final_output(u,v);
+        return CLUSTER_GRAPH;
+    }
+    else undo_data_reduction(stack_size_1);
+
+    // 2. Branch MERGE (u,v)
+    // since deleting failed any solution must contain (u,v)
+    // after merging (u,v) the p3 (u,v,w) will be resolved
+    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
+    int cost = g->merge(u,v);
+    k -= cost;
+    if(cost == -1) {  // both (delete/merge) failed -> no solution for this k exists
+        undo_data_reduction(stack_size_0);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+        return NONE;
+    }
+    if(this->branch(k, layer + 1) == CLUSTER_GRAPH){
+        // nothing to output here
+        return CLUSTER_GRAPH;
+    }
+
+    // both branches (delete/merge) failed, no solution for this k exists, recover graph before branching
+    undo_data_reduction(stack_size_0);
+    printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+    return NONE;
+}
+
+
+int Solver::branch_old(int k, int layer){
     if(k < 0){
         return NONE;
     }
@@ -161,71 +224,6 @@ int Solver::branch2(int k, int layer){
     printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
     return NONE;
 }
-
-
-
-int Solver::branch(int k, int layer){
-    if(k < 0){
-        return NONE;
-    }
-
-    // data reduction
-    int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
-    k = data_reduction(k, layer);
-    if(k == -1){ // data reduction shows that no solution for this k exists
-        undo_data_reduction(stack_size_0);
-        printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
-        return NONE;
-    }
-
-    auto p3 = this->get_max_cost_p3_naive();
-
-    if(std::get<0>(p3) == -1){
-        printDebug("FOUND CLUSTER GRAPH");
-        return CLUSTER_GRAPH;
-    }
-
-    rec_steps++;
-
-    int u = std::get<0>(p3);
-    int v = std::get<1>(p3);
-    int w = std::get<2>(p3);
-
-    printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
-
-    // 1. Branch DELETE (u,v)
-    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
-    int weight_uv = g->get_weight(u,v); // it holds (u,v) >= 0
-    int stack_size_1 = g->graph_mod_stack.size();
-    g->set_non_edge(u, v);
-    if(this->branch(k - weight_uv, layer + 1) == CLUSTER_GRAPH){
-        final_output(u,v);
-        return CLUSTER_GRAPH;
-    }
-    else undo_data_reduction(stack_size_1);
-
-    // 2. Branch MERGE (u,v)
-    // since deleting failed any solution must contain (u,v)
-    // after merging (u,v) the p3 (u,v,w) will be resolved
-    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
-    int cost = g->merge(u,v);
-    k -= cost;
-    if(cost == -1) {  // both (delete/merge) failed -> no solution for this k exists
-        undo_data_reduction(stack_size_0);
-        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
-        return NONE;
-    }
-    if(this->branch(k, layer + 1) == CLUSTER_GRAPH){
-        // nothing to output here
-        return CLUSTER_GRAPH;
-    }
-
-    // both branches (delete/merge) failed, no solution for this k exists, recover graph before branching
-    undo_data_reduction(stack_size_0);
-    printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
-    return NONE;
-}
-
 
 
 void Solver::final_output(int u, int v)
