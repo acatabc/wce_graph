@@ -16,9 +16,7 @@ public:
     //solving
     void solve();
     int branch(int k, int layer);
-    int branch(int u, int v, int k, int layer);
-    int branchEdge(int u, int v, int k, int layer);
-    int function();
+    int branch2(int k, int layer);
     void final_output(int u, int v);
     void output_data_reduction();
 

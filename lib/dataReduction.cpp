@@ -14,7 +14,7 @@ int Solver::data_reduction(int k, int layer){
 //      k = dataRed_heavy_non_edge_branch(k);
 //      k = dataRed_heavy_edge_single_end_branch(k);
 //      k = dataRed_large_neighbourhood_I(k);
-//        k = dataRed_heavy_edge_both_ends(k);
+//      k = dataRed_heavy_edge_both_ends(k);
 //    }
 
     k = dataRed_weight_larger_k(k);
