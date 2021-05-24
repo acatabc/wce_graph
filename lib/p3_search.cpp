@@ -1,6 +1,7 @@
 
 #include <tuple>
 #include <algorithm>
+#include <map>
 #include "Solver.h"
 #include "../include/utils.h"
 #define HEURISTIC 0
@@ -127,9 +128,8 @@ bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
 // returns the best of all p3 based on heuristic (max_min_edge_cost / max_sum_edge_cost) and an (improved) lower bound
 std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_improved(){
 
-//    std::vector<Solver::p3> allP3 = find_all_p3();
     std::vector<Solver::p3> allP3 = find_all_p3_faster();
-    if((allP3).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
+//    if((allP3).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
 
     // use sorted p3 list to choose edge disjoint p3 in helpful order
     std::sort((allP3).begin(), (allP3).end(), compareP3_min_cost);
@@ -138,6 +138,9 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     // to get max_sum_edge_cost p3
     int max_cost_sum = -1;
     int arg_max = -1;
+    int best_i = -1;
+    int best_j = -1;
+    int best_k = -1;
 
     // init edge disjoint map: 1 means edge is contained in some p3 whose min edge has been counted (0 not)
     std::vector<std::vector<int>> edge_disjoint_map = std::vector<std::vector<int>>(g->merge_map.size());
@@ -150,7 +153,7 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     // compute lower bound
     int lower_bound = 0;
     int l = 0;
-    for(auto p3: allP3){
+    for(auto& p3: allP3){
         int i = p3.i;
         int j = p3.j;
         int k = p3.k;
@@ -173,6 +176,9 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
             if (p3.cost_sum > max_cost_sum) {
                 arg_max = l;
                 max_cost_sum = p3.cost_sum;
+                best_i = i;
+                best_j = j;
+                best_k = k;
             }
             l++;
         }
@@ -182,8 +188,10 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     // 0: max_sum_edge_cost p3
     // 1: max_min_edge_cost p3
     std::tuple<int,int,int> best_p3;
-    if(HEURISTIC == 0)  best_p3 = std::make_tuple((allP3)[arg_max].i, (allP3)[arg_max].j, (allP3)[arg_max].k);
-    if(HEURISTIC == 1)  best_p3 = std::make_tuple((allP3)[0].i, (allP3)[0].j, (allP3)[0].k);
+//    if(HEURISTIC == 0)  best_p3 = std::make_tuple((allP3)[arg_max].i, (allP3)[arg_max].j, (allP3)[arg_max].k);
+//    if(HEURISTIC == 1)  best_p3 = std::make_tuple((allP3)[0].i, (allP3)[0].j, (allP3)[0].k);
+    if(HEURISTIC == 0)  best_p3 = std::make_tuple(best_i, best_j, best_k);
+    if(HEURISTIC == 1)  best_p3 = std::make_tuple(best_i, best_j, best_k);
 
 
     return std::make_tuple(best_p3, lower_bound);
@@ -208,6 +216,37 @@ std::vector<Solver::p3> Solver::find_all_p3(){
     return allP3;
 }
 
+Solver::p3 Solver::generate_p3_struct(int i, int j, int k) {
+    int weight_i_j = g->get_weight(i,j);
+    int weight_i_k = g->get_weight(i, k);
+    int weight_j_k = g->get_weight(j, k);
+    if (weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0) {
+
+        // sum up costs of all three edges (only edges that are allowed to be modified)
+        int cost_sum = 0;
+        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) cost_sum += abs(weight_i_k);
+        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) cost_sum += abs(weight_i_j);
+        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) cost_sum += abs(weight_j_k);
+
+        // get minimum edge cost
+        int min_cost = INT32_MAX;
+        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
+            abs(weight_i_k) < min_cost)
+            min_cost = abs(weight_i_k);
+        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
+            abs(weight_i_j) < min_cost)
+            min_cost = abs(weight_i_j);
+        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
+            abs(weight_j_k) < min_cost)
+            min_cost = abs(weight_j_k);
+
+        Solver::p3 newP3 = {.i = i, .j = j, .k = k, .cost_sum = cost_sum, .min_cost = min_cost};
+        return newP3;
+    }else{
+        Solver::p3 no_p3 = {.i = -1, .j = -1, .k = -1, .cost_sum = -1, .min_cost = -1};
+        return no_p3;
+    }
+}
 std::vector<Solver::p3> Solver::find_all_p3_faster() {
 
     bool *already_checked = new bool[g->merge_map.size()];
@@ -256,36 +295,4 @@ std::vector<Solver::p3> Solver::find_all_p3_faster() {
     }
     delete[] already_checked;
     return all_p3;
-}
-
-Solver::p3 Solver::generate_p3_struct(int i, int j, int k) {
-    int weight_i_j = g->get_weight(i,j);
-    int weight_i_k = g->get_weight(i, k);
-    int weight_j_k = g->get_weight(j, k);
-    if (weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0) {
-
-        // sum up costs of all three edges (only edges that are allowed to be modified)
-        int cost_sum = 0;
-        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) cost_sum += abs(weight_i_k);
-        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) cost_sum += abs(weight_i_j);
-        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) cost_sum += abs(weight_j_k);
-
-        // get minimum edge cost
-        int min_cost = INT32_MAX;
-        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
-            abs(weight_i_k) < min_cost)
-            min_cost = abs(weight_i_k);
-        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
-            abs(weight_i_j) < min_cost)
-            min_cost = abs(weight_i_j);
-        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
-            abs(weight_j_k) < min_cost)
-            min_cost = abs(weight_j_k);
-
-        Solver::p3 newP3 = {.i = i, .j = j, .k = k, .cost_sum = cost_sum, .min_cost = min_cost};
-        return newP3;
-    }else{
-        Solver::p3 no_p3 = {.i = -1, .j = -1, .k = -1, .cost_sum = -1, .min_cost = -1};
-        return no_p3;
-    }
 }

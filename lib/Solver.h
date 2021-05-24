@@ -3,6 +3,7 @@
 #define ALGENG_WCE_SOLVER_SOLVER_H
 
 #include <vector>
+#include <map>
 #include "WCE_Graph.h"
 
 class Solver {
