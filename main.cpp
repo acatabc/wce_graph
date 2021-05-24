@@ -1,5 +1,3 @@
-
-
 #include "lib/Solver.h"
 
 int main() {
