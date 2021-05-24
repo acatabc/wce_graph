@@ -127,7 +127,8 @@ bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
 // returns the best of all p3 based on heuristic (max_min_edge_cost / max_sum_edge_cost) and an (improved) lower bound
 std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_improved(){
 
-    std::vector<Solver::p3> allP3 = find_all_p3();
+//    std::vector<Solver::p3> allP3 = find_all_p3();
+    std::vector<Solver::p3> allP3 = find_all_p3_faster();
     if((allP3).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
 
     // use sorted p3 list to choose edge disjoint p3 in helpful order
@@ -196,36 +197,95 @@ std::vector<Solver::p3> Solver::find_all_p3(){
         for(int j: this->g->active_nodes){
             for(int k : this->g->active_nodes){
                 if(i == j || i == k || k == j) continue;
-                int weight_i_j = g->get_weight(i,j);
-                int weight_i_k = g->get_weight(i,k);
-                int weight_j_k = g->get_weight(j,k);
-                if(weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0){
 
-                    // sum up costs of all three edges (only edges that are allowed to be modified)
-                    int cost_sum = 0;
-                    if(weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) cost_sum += abs(weight_i_k);
-                    if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) cost_sum += abs(weight_i_j);
-                    if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) cost_sum += abs(weight_j_k);
-
-                    // get minimum edge cost
-                    int min_cost = INT32_MAX;
-                    if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
-                        abs(weight_i_k) < min_cost)
-                        min_cost = abs(weight_i_k);
-                    if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
-                        abs(weight_i_j) < min_cost)
-                        min_cost = abs(weight_i_j);
-                    if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
-                        abs(weight_j_k) < min_cost)
-                        min_cost = abs(weight_j_k);
-
-                    Solver::p3 newP3 = {.i = i, .j = j, .k = k, .cost_sum = cost_sum, .min_cost = min_cost };
-                    allP3.push_back(newP3);
+                auto new_p3 = generate_p3_struct(i,j,k);
+                if(new_p3.i != -1)
+                    allP3.push_back(new_p3);
                 }
             }
 
         }
-    }
     return allP3;
 }
 
+std::vector<Solver::p3> Solver::find_all_p3_faster() {
+
+    bool *already_checked = new bool[g->merge_map.size()];
+    for(int i = 0; i < g->merge_map.size(); ++i){
+        already_checked[i] = false;
+    }
+    std::vector<Solver::p3> all_p3;
+    for(int start_node : g->active_nodes){
+        //BFS algorithm here
+        std::vector<bool> visited(g->merge_map.size(), false);
+        std::vector<int> queue;
+        queue.push_back(start_node);
+        visited[start_node] = true;
+        int layer = 1;
+        int current_node;
+        int nodes_in_layer = queue.size();
+
+        while(!queue.empty()){
+            if(nodes_in_layer == 0){
+                nodes_in_layer = queue.size();
+                layer++;
+                if(layer > 2)
+                    break;
+            }
+            current_node = queue.front();
+            //pop front
+            queue.erase(queue.begin());
+            //go through all neighbours of the current node that are not visited yet and add them to the queue
+            for(int i : g->active_nodes){
+                if(i == current_node) continue;
+                if(g->get_weight(current_node,i) > 0 && (!visited[i])){
+                    queue.push_back(i);
+                    if(layer < 2){
+                        visited[i] = true;
+                    }else if(layer == 2){
+                        if(!already_checked[i]){
+                            auto new_p3 = generate_p3_struct(current_node,start_node,i);
+                            all_p3.push_back(new_p3);
+                        }
+                    }
+                }
+            }
+            nodes_in_layer--;
+        }
+        already_checked[start_node] = true;
+    }
+    delete[] already_checked;
+    return all_p3;
+}
+
+Solver::p3 Solver::generate_p3_struct(int i, int j, int k) {
+    int weight_i_j = g->get_weight(i,j);
+    int weight_i_k = g->get_weight(i, k);
+    int weight_j_k = g->get_weight(j, k);
+    if (weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0) {
+
+        // sum up costs of all three edges (only edges that are allowed to be modified)
+        int cost_sum = 0;
+        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) cost_sum += abs(weight_i_k);
+        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) cost_sum += abs(weight_i_j);
+        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) cost_sum += abs(weight_j_k);
+
+        // get minimum edge cost
+        int min_cost = INT32_MAX;
+        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
+            abs(weight_i_k) < min_cost)
+            min_cost = abs(weight_i_k);
+        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
+            abs(weight_i_j) < min_cost)
+            min_cost = abs(weight_i_j);
+        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
+            abs(weight_j_k) < min_cost)
+            min_cost = abs(weight_j_k);
+
+        Solver::p3 newP3 = {.i = i, .j = j, .k = k, .cost_sum = cost_sum, .min_cost = min_cost};
+        return newP3;
+    }else{
+        Solver::p3 no_p3 = {.i = -1, .j = -1, .k = -1, .cost_sum = -1, .min_cost = -1};
+        return no_p3;
+    }
+}

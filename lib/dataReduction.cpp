@@ -570,3 +570,4 @@ void Solver::output_data_reduction() {
     std::cout << "#weight:" << cost << "\n";
 
 }
+
