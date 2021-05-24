@@ -188,10 +188,8 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     // 0: max_sum_edge_cost p3
     // 1: max_min_edge_cost p3
     std::tuple<int,int,int> best_p3;
-//    if(HEURISTIC == 0)  best_p3 = std::make_tuple((allP3)[arg_max].i, (allP3)[arg_max].j, (allP3)[arg_max].k);
-//    if(HEURISTIC == 1)  best_p3 = std::make_tuple((allP3)[0].i, (allP3)[0].j, (allP3)[0].k);
     if(HEURISTIC == 0)  best_p3 = std::make_tuple(best_i, best_j, best_k);
-    if(HEURISTIC == 1)  best_p3 = std::make_tuple(best_i, best_j, best_k);
+    if(HEURISTIC == 1)  best_p3 = std::make_tuple((allP3)[0].i, (allP3)[0].j, (allP3)[0].k);
 
 
     return std::make_tuple(best_p3, lower_bound);
