@@ -4,7 +4,7 @@
 #include <map>
 #include "Solver.h"
 #include "../include/utils.h"
-#define HEURISTIC 0
+#define HEURISTIC 1
 
 // ----------------------------
 // ------- p3 - search --------
@@ -129,7 +129,7 @@ bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
 std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_improved(){
 
     std::vector<Solver::p3> allP3 = find_all_p3_faster();
-//    if((allP3).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
+    if((allP3).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
 
     // use sorted p3 list to choose edge disjoint p3 in helpful order
     std::sort((allP3).begin(), (allP3).end(), compareP3_min_cost);
@@ -138,9 +138,6 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     // to get max_sum_edge_cost p3
     int max_cost_sum = -1;
     int arg_max = -1;
-    int best_i = -1;
-    int best_j = -1;
-    int best_k = -1;
 
     // init edge disjoint map: 1 means edge is contained in some p3 whose min edge has been counted (0 not)
     std::vector<std::vector<int>> edge_disjoint_map = std::vector<std::vector<int>>(g->merge_map.size());
@@ -176,9 +173,6 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
             if (p3.cost_sum > max_cost_sum) {
                 arg_max = l;
                 max_cost_sum = p3.cost_sum;
-                best_i = i;
-                best_j = j;
-                best_k = k;
             }
             l++;
         }
@@ -188,7 +182,7 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     // 0: max_sum_edge_cost p3
     // 1: max_min_edge_cost p3
     std::tuple<int,int,int> best_p3;
-    if(HEURISTIC == 0)  best_p3 = std::make_tuple(best_i, best_j, best_k);
+    if(HEURISTIC == 0)  best_p3 = std::make_tuple(allP3[arg_max].i, allP3[arg_max].j, allP3[arg_max].k);
     if(HEURISTIC == 1)  best_p3 = std::make_tuple((allP3)[0].i, (allP3)[0].j, (allP3)[0].k);
 
 
