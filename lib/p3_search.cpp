@@ -128,11 +128,11 @@ bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
 // returns the best of all p3 based on heuristic (max_min_edge_cost / max_sum_edge_cost) and an (improved) lower bound
 std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_improved(){
 
-    std::vector<Solver::p3> allP3 = find_all_p3_faster();
-    if((allP3).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
+    allP3_global = find_all_p3_faster();
+    if((allP3_global).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
 
     // use sorted p3 list to choose edge disjoint p3 in helpful order
-    std::sort((allP3).begin(), (allP3).end(), compareP3_min_cost);
+    std::sort((allP3_global).begin(), (allP3_global).end(), compareP3_min_cost);
 
 
     // to get max_sum_edge_cost p3
@@ -150,7 +150,7 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     // compute lower bound
     int lower_bound = 0;
     int l = 0;
-    for(auto& p3: allP3){
+    for(auto& p3: allP3_global){
         int i = p3.i;
         int j = p3.j;
         int k = p3.k;
@@ -182,11 +182,43 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     // 0: max_sum_edge_cost p3
     // 1: max_min_edge_cost p3
     std::tuple<int,int,int> best_p3;
-    if(HEURISTIC == 0)  best_p3 = std::make_tuple(allP3[arg_max].i, allP3[arg_max].j, allP3[arg_max].k);
-    if(HEURISTIC == 1)  best_p3 = std::make_tuple((allP3)[0].i, (allP3)[0].j, (allP3)[0].k);
+    if(HEURISTIC == 0)  best_p3 = std::make_tuple(allP3_global[arg_max].i, allP3_global[arg_max].j, allP3_global[arg_max].k);
+    if(HEURISTIC == 1)  best_p3 = std::make_tuple((allP3_global)[0].i, (allP3_global)[0].j, (allP3_global)[0].k);
 
 
     return std::make_tuple(best_p3, lower_bound);
+}
+
+bool Solver::check_p3_existent(Solver::p3 p3){
+    // check if all nodes (i,j,k) are still active
+    if(std::find(g->active_nodes.begin(), g->active_nodes.end(), p3.i) ==  g->active_nodes.end())
+        return false;
+    if(std::find(g->active_nodes.begin(), g->active_nodes.end(), p3.j) ==  g->active_nodes.end())
+        return false;
+    if(std::find(g->active_nodes.begin(), g->active_nodes.end(), p3.k) ==  g->active_nodes.end())
+        return false;
+
+    // check if edges still form a p3
+    if(g->get_weight(p3.i,p3.j) >= 0 && g->get_weight(p3.i,p3.k) >= 0 && g->get_weight(p3.j,p3.k) <= 0){
+        return true;
+    }
+
+    return false;
+}
+
+// returns the first (still existend) p3 from the allP3_global list
+// returns -1 if no such p3 exists
+std::tuple<int, int, int> Solver::get_next_p3(){
+    if(allP3_global.empty())
+        return std::make_tuple(-2,-2,-2);
+
+    for(Solver::p3 next_p3 : allP3_global){
+        if(check_p3_existent(next_p3) == true)
+            return std::make_tuple(next_p3.i, next_p3.j, next_p3.k);
+        else printDebug("p3 not existent");
+    }
+
+    return std::make_tuple(-2,-2,-2);
 }
 
 // iterates over all vertex tuples and returns a list of p3s
@@ -239,6 +271,10 @@ Solver::p3 Solver::generate_p3_struct(int i, int j, int k) {
         return no_p3;
     }
 }
+
+
+
+
 std::vector<Solver::p3> Solver::find_all_p3_faster() {
 
     bool *already_checked = new bool[g->merge_map.size()];
@@ -287,4 +323,70 @@ std::vector<Solver::p3> Solver::find_all_p3_faster() {
     }
     delete[] already_checked;
     return all_p3;
+}
+
+
+
+std::tuple<int, int, int> Solver::get_max_cost_p3_faster() {
+
+    int first_tuple_val = -1;
+    int second_tuple_val = -1;
+    int third_tuple_val = -1;
+    int max_cost = INT32_MIN;
+
+    bool *already_checked = new bool[g->merge_map.size()];
+    for(int i = 0; i < g->merge_map.size(); ++i){
+        already_checked[i] = false;
+    }
+    std::vector<Solver::p3> all_p3;
+    for(int start_node : g->active_nodes){
+        //BFS algorithm here
+        std::vector<bool> visited(g->merge_map.size(), false);
+        std::vector<int> queue;
+        queue.push_back(start_node);
+        visited[start_node] = true;
+        int layer = 1;
+        int current_node;
+        int nodes_in_layer = queue.size();
+
+        while(!queue.empty()){
+            if(nodes_in_layer == 0){
+                nodes_in_layer = queue.size();
+                layer++;
+                if(layer > 2)
+                    break;
+            }
+            current_node = queue.front();
+            //pop front
+            queue.erase(queue.begin());
+            //go through all neighbours of the current node that are not visited yet and add them to the queue
+            for(int i : g->active_nodes){
+                if(i == current_node) continue;
+                if(g->get_weight(current_node,i) > 0 && (!visited[i])){
+                    queue.push_back(i);
+                    if(layer < 2){
+                        visited[i] = true;
+                    }else if(layer == 2){
+                        if(!already_checked[i]){
+                            auto new_p3 = generate_p3_struct(current_node,start_node,i);
+
+                            // update maximum cost and corresponding p3
+                            if(new_p3.cost_sum > max_cost) {
+                                max_cost = new_p3.cost_sum;
+                                first_tuple_val = new_p3.i;
+                                second_tuple_val = new_p3.j;
+                                third_tuple_val = new_p3.k;
+                            }
+
+
+                        }
+                    }
+                }
+            }
+            nodes_in_layer--;
+        }
+        already_checked[start_node] = true;
+    }
+    delete[] already_checked;
+    return std::make_tuple(first_tuple_val, second_tuple_val, third_tuple_val);
 }

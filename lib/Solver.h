@@ -24,6 +24,7 @@ public:
 
     //method related to p3s
     std::tuple<int, int, int> get_max_cost_p3_naive();
+    std::tuple<int, int, int> get_max_cost_p3_faster();
 
     std::tuple<std::tuple<int, int, int>, int> get_max_cost_p3_naive_lowerBound();
     std::tuple<std::tuple<int, int, int>, int> get_best_p3_and_lowerBound_improved();
@@ -32,9 +33,13 @@ public:
         int cost_sum;
         int min_cost;
     };
+    std::vector<Solver::p3> allP3_global;
     struct p3 generate_p3_struct(int,int,int);
     std::vector<p3> find_all_p3_faster();
     std::vector<p3> find_all_p3();
+
+    bool check_p3_existent(Solver::p3);
+    std::tuple<int, int, int> get_next_p3();
 
 
     // data reduction

@@ -5,8 +5,8 @@
 #include "../include/utils.h"
 #include <math.h>
 
-//const char* FILENAME = "../wce-students/2-real-world/w021.dimacs";
-const char* FILENAME = "../../wce-students-random/1-random/r103.dimacs";
+const char* FILENAME = "../wce-students/1-random/r103.dimacs";
+//const char* FILENAME = "../../wce-students-random/1-random/r103.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE -1
@@ -65,13 +65,26 @@ int Solver::branch(int k, int layer){
         return NONE;
     }
 
-    // get best p3 and compute a lower bound
-    auto tuple = get_best_p3_and_lowerBound_improved();
-    auto p3 = std::get<0>(tuple);
-    int lower_bound_k = std::get<1>(tuple);
-    if(lower_bound_k > k) {
-        printDebug("Successfully applied lower bound");
-        return NONE;
+    std::tuple<int,int,int> p3;
+    // every 5th layer we compute all p3 and a new lower bound for k
+    if(layer % 5 == 0) {
+        // get best p3 and compute a lower bound
+        auto tuple = get_best_p3_and_lowerBound_improved();
+        p3 = std::get<0>(tuple);
+        int lower_bound_k = std::get<1>(tuple);
+        if (lower_bound_k > k) {
+            printDebug("Successfully applied lower bound k >= " + std::to_string(lower_bound_k));
+            return NONE;
+        }
+    }
+    // in every other layer we use the first (still existent) p3 from the previously computed p3 list
+    else{
+        p3 = get_next_p3();
+        if(std::get<0>(p3) == -2){
+
+            // no active p3 has been found in the p3 list -> we have to recompute all p3s
+            p3 = get_max_cost_p3_faster();
+        }
     }
 
     if(std::get<0>(p3) == -1){
@@ -88,7 +101,7 @@ int Solver::branch(int k, int layer){
     printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
 
     // 1. Branch DELETE (u,v)
-    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
+//    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
     int weight_uv = g->get_weight(u,v); // it holds (u,v) >= 0
     int stack_size_1 = g->graph_mod_stack.size();
     g->set_non_edge(u, v);
@@ -101,12 +114,12 @@ int Solver::branch(int k, int layer){
     // 2. Branch MERGE (u,v)
     // since deleting failed any solution must contain (u,v)
     // after merging (u,v) the p3 (u,v,w) will be resolved
-    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
+//    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
     int cost = g->merge(u,v);
     k -= cost;
     if(cost == -1) {  // both (delete/merge) failed -> no solution for this k exists
         undo_data_reduction(stack_size_0);
-        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+//        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
         return NONE;
     }
     if(this->branch(k, layer + 1) == CLUSTER_GRAPH){
@@ -116,7 +129,7 @@ int Solver::branch(int k, int layer){
 
     // both branches (delete/merge) failed, no solution for this k exists, recover graph before branching
     undo_data_reduction(stack_size_0);
-    printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+//    printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
     return NONE;
 }
 
