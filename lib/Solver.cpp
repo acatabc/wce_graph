@@ -67,7 +67,7 @@ int Solver::branch(int k, int layer){
 
     std::tuple<int,int,int> p3;
     // every 5th layer we compute all p3 and a new lower bound for k
-    if(layer % 5 == 0) {
+    if(layer % 1 == 0) {
         // get best p3 and compute a lower bound
         auto tuple = get_best_p3_and_lowerBound_improved();
         p3 = std::get<0>(tuple);
