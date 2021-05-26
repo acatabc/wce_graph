@@ -17,7 +17,7 @@ int Solver::data_reduction(int k, int c, int layer){
     } else{
         // otherwise do all data reduction only in the modified component
         k = dataRed_weight_larger_k(k, c);
-        if(layer %10 ==  5){
+        if(layer %5 ==  2){
             dataRed_split_component(c);
         }
     }
