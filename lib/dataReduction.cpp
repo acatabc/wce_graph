@@ -17,6 +17,9 @@ int Solver::data_reduction(int k, int layer){
 //      k = dataRed_heavy_edge_both_ends(k);
 //    }
 
+    if(layer % 5 == 0 && layer >= 15){
+        k = dataRed_large_neighbourhood_I(k);
+    }
     k = dataRed_weight_larger_k(k);
 
 //    if(k != k_before)
@@ -438,13 +441,24 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
         auto neighbourhoods = closed_neighbourhood(i);
         auto neighbours = neighbourhoods.first;
         auto not_neighbours = neighbourhoods.second;
+        bool valid_neighborhood = true;
+        //non of the edges is allowed to be 0 within the neighborhood
+        for(auto i: neighbours){
+            for(auto j : neighbours){
+                if(i == j) continue;
+                if(g->get_weight(i,j) == 0)
+                    valid_neighborhood = false;
+            }
+        }
+
+        //valid neighborhood(no edges have weight 0) so do the rest of the calculations
         int deficiency = this->deficiency(neighbours);
         int cut_weight = this->cut_weight(neighbours, not_neighbours);
         if(deficiency != DO_NOT_DELETE && cut_weight != DO_NOT_DELETE) {
-            int sum = 2 * deficiency + cut_weight;
-            if(sum < 0) // int overflow
-                sum = DO_NOT_DELETE;
-            if(sum < neighbours.size() && neighbours.size() >= 2){
+            int sum_LN1 = 2 * deficiency + cut_weight;
+            if(sum_LN1 < 0) // int overflow
+                sum_LN1 = DO_NOT_DELETE;
+            if(valid_neighborhood && sum_LN1 < neighbours.size() && neighbours.size() >= 2){
                 int first = neighbours.front();
                 neighbours.pop_front();
                 int second = neighbours.front();
@@ -466,7 +480,33 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
                 }
                 printDebug("Successful large neighborhood 1, merge costs: " + std::to_string(merge_costs));
                 goto rerun_after_merge;
+            }else if(neighbours.size() >= 2){
+                int min_cut_weight = this->min_cut(neighbours);
+                int sum_LN2 = deficiency + cut_weight;
+                printDebug("am I here");
+                if(sum_LN2 <= min_cut_weight){
+                    int first = neighbours.front();
+                    neighbours.pop_front();
+                    int second = neighbours.front();
+                    neighbours.pop_front();
 
+                    int val = g->merge(first,second);
+                    if(val == -1) return -1; // merging failed
+                    merge_costs += val;
+
+                    while(!neighbours.empty()){
+                        int last_merged = g->active_nodes.back();
+                        int next_from_neighbourhood = neighbours.front();
+                        neighbours.pop_front();
+
+                        int val = g->merge(last_merged, next_from_neighbourhood);
+                        if(val == -1) return -1; // merging failed
+                        merge_costs += val;
+
+                    }
+                    printDebug("Successful large neighborhood 2, merge costs: " + std::to_string(merge_costs));
+                    goto rerun_after_merge;
+                }
             }
         }
     }
@@ -572,9 +612,9 @@ void Solver::output_data_reduction() {
 }
 
 int Solver::min_cut(const std::list<int>& neighbours) {
-    g->printGraph(std::cout);
+//    g->printGraph(std::cout);
 
-    unsigned int all_possible_vertices = neighbours.size()*2-2;
+    unsigned int all_possible_vertices = neighbours.size()*2;
     unsigned int num_vertices = g->active_nodes.size();
     bool *active = new bool[all_possible_vertices];
     std::vector<int> active_nodes;
@@ -602,7 +642,7 @@ int Solver::min_cut(const std::list<int>& neighbours) {
         node_idx++;
     }
 
-    //*#######output graph
+    /*#######output graph
     int idx = 0;
     for(const auto& a : adj_list){
         std::cout << idx << " : ";
@@ -627,10 +667,13 @@ int Solver::min_cut(const std::list<int>& neighbours) {
 
     int min_cut_weight = INT32_MAX;
     while(active_nodes.size() > 1) {
+        //calculate the cut_weight of a min_cut_phase
         int cut_weight = min_cut_phase(adj_list, active, active_nodes, all_possible_vertices);
-        std::cout << cut_weight << std::endl;
+//        std::cout << cut_weight << std::endl;
         if(cut_weight < min_cut_weight)
             min_cut_weight = cut_weight;
+
+        /*This is debug output
         idx = 0;
         for (const auto &i : active_nodes) {
             auto a = adj_list[i];
@@ -641,53 +684,69 @@ int Solver::min_cut(const std::list<int>& neighbours) {
             std::cout << std::endl;
             ++idx;
         }
+        //end debug output*/
     }
-    std::cout << "the minimum cut weight is " << min_cut_weight << std::endl;
+//    std::cout << "the minimum cut weight is " << min_cut_weight << std::endl;
     delete[] active;
-
     return min_cut_weight;
 }
 
 int Solver::min_cut_phase
 (std::vector<std::vector<std::pair<int,int>>>& G, bool *active,std::vector<int>& active_nodes, int num_possible_vertices) {
+    //initialize
     std::vector<int> vertex_set;
+    //this array is for faster lookups if a vertex is in the vertex set or not
     bool *is_in_vertex_set = new bool[num_possible_vertices];
     for(int i = 0; i < num_possible_vertices; ++i)
         is_in_vertex_set[i] = false;
-    vertex_set.push_back(active_nodes[0]);
-    is_in_vertex_set[active_nodes[0]]=true;
+    //picking the first element of active nodes as the first element in the vertex set
+    int start_node = active_nodes[0];
+    vertex_set.push_back(start_node);
+    is_in_vertex_set[start_node]=true;
+    int weight_of_last_added = 0;
+    //the actual algorithm
     while (vertex_set.size() != active_nodes.size()){
         auto most_connected = get_most_tightly_connected(vertex_set, is_in_vertex_set, G, active);
         int most_connected_idx = most_connected.first;
-        int most_connected_weight = most_connected.second;
+        weight_of_last_added = most_connected.second;
+        //adding the most connected vertex to the set
         vertex_set.push_back(most_connected_idx);
         is_in_vertex_set[most_connected_idx] = true;
     }
 
+    //getting last two added vertices
     int last_added = vertex_set.back();
     vertex_set.pop_back();
     int second_last_added = vertex_set.back();
     vertex_set.pop_back();
 
-    //merge the last two nodes
+    //merge the last two added nodes
+    //add a new node at the back of the G and the active nodes
     active_nodes.push_back(G.size());
     G.emplace_back();
 
     for(auto it = active_nodes.begin(); it != active_nodes.end();++it){
+        //delete the two vertices that have to be merged
         if(*it == last_added || *it == second_last_added) {
             active_nodes.erase(it);
             --it;
             continue;
         }else{
+            //got over the all the neighbors of an active node
             int weight_to_merged_node = 0;
             for(auto& neigh: G[*it]){
                 int neigh_idx = neigh.first;
                 int neigh_weight = neigh.second;
+                //set the idx of the old not existent nodes to the new node(the merged node)
+                //i only change the idx, and do not add the two weight together because it is not necessary, because
+                //the weights are only important to get the most_tightly_connected node, and the way how i calculate this
+                //would just add all the weight with the same idx together
                 if(neigh_idx == last_added || neigh_idx == second_last_added){
                     neigh.first = G.size()-1;
                     weight_to_merged_node += neigh_weight;
                 }
             }
+            //add an edge to the merged node to the current node
             if(weight_to_merged_node != 0){
                 G[G.size()-1].push_back(std::make_pair(*it, weight_to_merged_node));
             }
@@ -705,6 +764,10 @@ int Solver::min_cut_phase
     for(auto neigh : G[last_added]){
         cut_weight += neigh.second;
     }
+    if(cut_weight != weight_of_last_added){
+        throwError("cut weight are not equal!! cut weight :" + std::to_string(cut_weight) + " weight of last added " + std::to_string(weight_of_last_added));
+    }
+
 
     delete[] is_in_vertex_set;
     return cut_weight;
@@ -714,12 +777,12 @@ std::pair<int,int> Solver::get_most_tightly_connected
 (const std::vector<int>& vertex_set,const bool *is_in_vertex_set, std::vector<std::vector<std::pair<int,int>>>& G, bool *active_nodes) {
 
     //for calculating the sum from any vertex not in vertex set to the vertex set
-    auto *sum_of_edges_to_subset = new unsigned int[G.size()];
+    auto *sum_of_edges_to_subset = new int[G.size()];
     for(int i = 0; i < G.size(); ++i){
         sum_of_edges_to_subset[i] = 0;
     }
 
-    unsigned int max_weight = 0;
+    int max_weight = 0;
     int max_weight_idx = -1;
     //go through all the nodes in the vertex set and then go through all the neighbours and add the weight,
     // find the max weighted connection to the vertex set
@@ -728,7 +791,13 @@ std::pair<int,int> Solver::get_most_tightly_connected
             int neighbor_idx = neigh.first;
             int neighbor_weight = neigh.second;
             if(!is_in_vertex_set[neighbor_idx] && active_nodes[neighbor_idx]){
-                sum_of_edges_to_subset[neighbor_idx] += neighbor_weight;
+                if(neighbor_weight == DO_NOT_DELETE){
+                    sum_of_edges_to_subset[neighbor_idx] = DO_NOT_DELETE;
+                }else if(sum_of_edges_to_subset[neighbor_idx] == DO_NOT_DELETE){
+                    sum_of_edges_to_subset[neighbor_idx] = DO_NOT_DELETE;
+                }else{
+                    sum_of_edges_to_subset[neighbor_idx] += neighbor_weight;
+                }
                 if(sum_of_edges_to_subset[neighbor_idx] > max_weight){
                     max_weight = sum_of_edges_to_subset[neighbor_idx];
                     max_weight_idx = neighbor_idx;
@@ -736,11 +805,14 @@ std::pair<int,int> Solver::get_most_tightly_connected
             }
         }
     }
+    /*/debug output
     std::cout << max_weight_idx << " "<< max_weight << "[ ";
     for(int i: vertex_set){
         std::cout << i<< " ";
     }
     std::cout << "]" << std::endl;
+
+    //end debug output*/
     delete[] sum_of_edges_to_subset;
     return std::make_pair(max_weight_idx, max_weight);
 }
