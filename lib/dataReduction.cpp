@@ -17,9 +17,9 @@ int Solver::data_reduction(int k, int layer){
 //      k = dataRed_heavy_edge_both_ends(k);
 //    }
 
-    if(layer % 5 == 0 && layer >= 15){
-        k = dataRed_large_neighbourhood_I(k);
-    }
+//    if(layer % 5 == 0 && layer >= 15){
+//        k = dataRed_large_neighbourhood_I(k);
+//    }
     k = dataRed_weight_larger_k(k);
 
 //    if(k != k_before)
@@ -483,7 +483,6 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
             }else if(neighbours.size() >= 2){
                 int min_cut_weight = this->min_cut(neighbours);
                 int sum_LN2 = deficiency + cut_weight;
-                printDebug("am I here");
                 if(sum_LN2 <= min_cut_weight){
                     int first = neighbours.front();
                     neighbours.pop_front();
@@ -502,8 +501,8 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
                         int val = g->merge(last_merged, next_from_neighbourhood);
                         if(val == -1) return -1; // merging failed
                         merge_costs += val;
-
                     }
+//                    std::cout << "aäasd" <<std::endl;
                     printDebug("Successful large neighborhood 2, merge costs: " + std::to_string(merge_costs));
                     goto rerun_after_merge;
                 }
