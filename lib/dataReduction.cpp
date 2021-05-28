@@ -6,24 +6,15 @@
 // ------- data reduction  --------
 
 int Solver::data_reduction(int k, int layer){
-    int k_before = k;
-
-//    if(layer %5 ==  0 && layer >= 10){
-////      this->dataRed_heavy_non_edge();
-////      k = dataRed_heavy_edge_single_end(k);
-//      k = dataRed_heavy_non_edge_branch(k);
+    if(layer %4 ==  0 && layer >= 20){
+        k = dataRed_heavy_non_edge_branch(k);
 //      k = dataRed_heavy_edge_single_end_branch(k);
-//      k = dataRed_large_neighbourhood_I(k);
-//      k = dataRed_heavy_edge_both_ends(k);
-//    }
+//        k = dataRed_heavy_edge_both_ends(k);
+        k = dataRed_large_neighbourhood_I(k);
+//      dataRed_remove_existing_clique();
+    }
 
-//    if(layer % 5 == 0 && layer >= 15){
-//        k = dataRed_large_neighbourhood_I(k);
-//    }
     k = dataRed_weight_larger_k(k);
-
-//    if(k != k_before)
-//        printDebug("Data reduction reduced k to " + std::to_string(k));
     return k;
 }
 
@@ -478,6 +469,7 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
                     merge_costs += val;
 
                 }
+//                    std::cout << "aäasd" <<std::endl;
                 printDebug("Successful large neighborhood 1, merge costs: " + std::to_string(merge_costs));
                 goto rerun_after_merge;
             }else if(neighbours.size() >= 2){
