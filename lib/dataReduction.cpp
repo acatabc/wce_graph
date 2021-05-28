@@ -12,11 +12,16 @@ int Solver::data_reduction(int k, int c, int layer){
     if(layer == 0){
         // in layer 0 do weight_k in all components
         for(int c = 0; c < g->active_nodes.size(); c++) {
+            if( g->components_active_map[c] == 0) continue;
             k = dataRed_weight_larger_k(k, c);
         }
     } else{
         // otherwise do all data reduction only in the modified component
         k = dataRed_weight_larger_k(k, c);
+        for(int comp = 0; comp < g->active_nodes.size(); comp ++){
+            if( g->components_active_map[comp] == 0) continue;
+            int val = dataRed_clique(comp);
+        }
         if(layer %5 ==  2){
             dataRed_split_component(c);
         }
@@ -464,6 +469,7 @@ int Solver::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph
 
 void Solver::dataRed_split_components(){
     for(int c = 0; c < g->active_nodes.size(); c++) {
+        if( g->components_active_map[c] == 0) continue;
         std::vector<std::vector<int>> components = find_components(c);
 
         if (components.size() > 1) {
@@ -518,4 +524,41 @@ void Solver::DFS(int i, bool *visited, std::vector<int>& component) {
         }
     }
     return;
+}
+
+
+int Solver::dataRed_clique(int c) {
+    std::vector<int> zero_edges_i = std::vector<int>();
+    std::vector<int> zero_edges_j = std::vector<int>();
+    bool is_clique = true;
+    for (int i : g->active_nodes[c]) {
+        if (is_clique == false) break;
+        for (int j : g->active_nodes[c]) {
+            if (i == j) continue;
+            // for {u,v} = 0 we consider u,v as not adjacent (we delete {u,v} later in unmerging)
+            // thus, we have a clique only if {u,v} > 0
+            if (g->get_weight(i, j) < 0) {
+                is_clique = false;
+                printDebug("NO CLIQUE " + std::to_string(c));
+                break;
+            }
+                // save zero edges to insert them later
+            else if (g->get_weight(i, j) == 0) {
+                if (i < j) {
+                    zero_edges_i.push_back(i);
+                    zero_edges_i.push_back(j);
+                }
+            }
+        }
+    }
+
+    if(is_clique) {
+        g->components_active_map[c] = 0;
+        g->graph_mod_stack.push(
+                WCE_Graph::stack_elem{.type = CLIQUE, .v1 = -1, .v2 = -1, .weight = -1, .uv = -1, .components = std::vector<int>(), .stack_size_before_components = -1,.clique = c});
+
+        printVector_int(g->components_active_map);
+    }
+
+    return 1;
 }

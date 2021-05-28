@@ -177,7 +177,7 @@ int WCE_Graph::merge(int u, int v) {
     }
 
 
-    printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " +  std::to_string(idx) + "     with cost " + std::to_string(dk));
+//    printDebug("Merging (" + std::to_string(u) + "," + std::to_string(v) + ") -> " +  std::to_string(idx) + "     with cost " + std::to_string(dk));
 
     return dk;
 }
@@ -272,6 +272,7 @@ void WCE_Graph::split_component(std::vector<std::vector<int>> components){
             components_map[u] = new_c;
         }
         new_component_indices.push_back(new_c);
+        components_active_map.push_back(1);
     }
 
     graph_mod_stack.push(
@@ -295,6 +296,7 @@ void WCE_Graph::unify_components(std::vector<int> component_indices,  int prev_s
     // delete all resolved component_indices
     for(int i = 1; i < component_indices.size(); i++){
         active_nodes.pop_back(); // this works since we undo data reduction in the correct order
+        components_active_map.pop_back();
     }
     graph_mod_stack.pop();
 
@@ -317,6 +319,10 @@ void WCE_Graph::undo_final_modification(){
     }
     if(el.type == COMPONENTS){
          unify_components(el.components, el.stack_size_before_components);
+    }
+    if(el.type == CLIQUE){
+        components_active_map[el.clique] = 1;
+        graph_mod_stack.pop();
     }
 }
 

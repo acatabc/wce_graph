@@ -36,6 +36,7 @@ public:
     std::vector<std::vector<int>> find_components(int c);
     void dataRed_split_component(int c);
     void dataRed_split_components();
+    int dataRed_clique(int c);
 
     // data reduction
     int data_reduction(int k, int c, int layer);
@@ -64,6 +65,8 @@ public:
 
     // debug
     void verify_clusterGraph();
+    std::vector<int> clique_size = std::vector<int>();
+    int num_comp = 0;
 
 
 };

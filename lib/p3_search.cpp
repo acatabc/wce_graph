@@ -17,6 +17,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
     int max_cost = INT32_MIN;
 
     for(int c = 0; c < g->active_nodes.size(); c++) {
+        if( g->components_active_map[c] == 0) continue;
         for (int i: this->g->active_nodes[c]) {
             for (int j: this->g->active_nodes[c]) {
                 for (int k : this->g->active_nodes[c]) {
@@ -67,6 +68,7 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_max_cost_p3_naive_lowerBo
     int max_cost = INT32_MIN;
 
     for(int c = 0; c < g->active_nodes.size(); c++) {
+        if( g->components_active_map[c] == 0) continue;
         for (int i: this->g->active_nodes[c]) {
             for (int j: this->g->active_nodes[c]) {
                 for (int k : this->g->active_nodes[c]) {
@@ -199,6 +201,7 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
 std::vector<Solver::p3> Solver::find_all_p3(){
     std::vector<Solver::p3> allP3 = std::vector<Solver::p3>();
     for(int c = 0; c < g->active_nodes.size(); c++) {
+        if( g->components_active_map[c] == 0) continue;
         for (int i: this->g->active_nodes[c]) {
             for (int j: this->g->active_nodes[c]) {
                 for (int k : this->g->active_nodes[c]) {

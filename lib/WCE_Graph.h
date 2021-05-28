@@ -11,6 +11,7 @@
 #define MERGE 1
 #define SET_INF 2
 #define COMPONENTS 3
+#define CLIQUE 4
 
 
 class WCE_Graph {
@@ -38,6 +39,7 @@ public:
     // merging
     std::vector<std::vector<int>> active_nodes; // a vector of sets of active nodes (each entry is one component)
     std::vector<int> components_map; // maps each vertex to the index of its component
+    std::vector<int> components_active_map; // for ech component states if it is acTiev
     std::vector<std::vector<int>> merge_map;
     int merge(int, int);
     void set_non_edge(int u, int v);
@@ -53,6 +55,7 @@ public:
         int uv; // merged vertex
         std::vector<int> components; // split components
         int stack_size_before_components;
+        int clique; // idx of the component which is a clique
     };
     std::stack<stack_elem> graph_mod_stack;
 
