@@ -264,7 +264,10 @@ int Solver::unmerge_and_output(int uv){
     std::vector<int> uv_children = g->merge_map[uv];
 
     printDebug("Output for unmerging " + std::to_string(uv) + " -> (" + std::to_string(uv_children[0]) + "," + std::to_string(uv_children[1]) + ")");
-
+    if(g->get_weight(uv_children[0],uv_children[1]) <= 0){
+        if(uv_children[0] < g->num_vertices && uv_children[1] < g->num_vertices)
+            final_output(uv_children[0],uv_children[1]);
+    }
     g->add_edge(uv_children[0],uv_children[1]);
 
     int dk = 0;
