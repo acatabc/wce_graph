@@ -66,7 +66,13 @@ int Solver::branch(int k, int layer){
     }
 
     // get best p3 and compute a lower bound
-    auto tuple = get_best_p3_and_lowerBound_improved();
+    std::tuple<std::tuple<int, int, int>, int> tuple;
+    if(layer % 5 == 0) {
+        tuple = get_best_p3_and_lowerBound_improved();
+    }
+    else{
+        tuple = get_max_cost_p3_naive_lowerBound();
+    }
     auto p3 = std::get<0>(tuple);
     int lower_bound_k = std::get<1>(tuple);
     if(lower_bound_k > k) {
