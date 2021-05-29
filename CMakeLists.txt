@@ -11,11 +11,3 @@ add_executable(
         lib/WCE_Graph.cpp lib/WCE_Graph.h
         lib/Solver.cpp lib/Solver.h lib/dataReduction.cpp lib/p3_search.cpp
 )
-add_executable(
-        data_reduction_output
-        main_data_reduction.cpp
-        lib/utils.cpp include/utils.h
-        lib/WCE_Graph.cpp lib/WCE_Graph.h
-        lib/Solver.cpp lib/Solver.h
-)
-
