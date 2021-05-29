@@ -128,7 +128,7 @@ bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
 // returns the best of all p3 based on heuristic (max_min_edge_cost / max_sum_edge_cost) and an (improved) lower bound
 std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_improved(){
 
-    std::vector<Solver::p3> allP3 = find_all_p3();
+    std::vector<Solver::p3> allP3 = find_all_p3_faster();
     if((allP3).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
 
     // use sorted p3 list to choose edge disjoint p3 in helpful order
