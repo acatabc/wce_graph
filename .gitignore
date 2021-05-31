@@ -9,3 +9,5 @@ presentations/**/*.aux
 presentations/**/*.log
 presentations/**/*.out
 presentations/**/*.gz
+Testing/__pycache__
+Testing/.ipynb_checkpoints
