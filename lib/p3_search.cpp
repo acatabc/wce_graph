@@ -128,7 +128,7 @@ bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
 // returns the best of all p3 based on heuristic (max_min_edge_cost / max_sum_edge_cost) and an (improved) lower bound
 std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_improved(){
 
-    std::vector<Solver::p3> allP3 = find_all_p3_faster();
+    std::vector<Solver::p3> allP3 = find_all_p3();
     if((allP3).empty()) return std::make_tuple(std::make_tuple(-1,-1,-1), 0);
 
     // use sorted p3 list to choose edge disjoint p3 in helpful order
@@ -246,7 +246,7 @@ std::vector<Solver::p3> Solver::find_all_p3_faster() {
         already_checked[i] = false;
     }
     std::vector<Solver::p3> all_p3;
-    for(int start_node : g->active_nodes){
+    for(int start_node : g->active_nodes){ // O(n)
         //BFS algorithm here
         std::vector<bool> visited(g->merge_map.size(), false);
         std::vector<int> queue;
@@ -266,7 +266,7 @@ std::vector<Solver::p3> Solver::find_all_p3_faster() {
             current_node = queue.front();
             //pop front
             queue.erase(queue.begin());
-            //go through all neighbours of the current node that are not visited yet and add them to the queue
+            //go through all neighbours of the current node that are not visited yet and add them to the queue O(n) / O(m)
             for(int i : g->active_nodes){
                 if(i == current_node) continue;
                 if(g->get_weight(current_node,i) > 0 && (!visited[i])){
