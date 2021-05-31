@@ -1,0 +1,32 @@
+master:
+- lower bound every layer
+- improved p3 search
+- branching 3to2
+
+master 5 layers
+- lower bound every 5 layers (otherwise naive lower bound)
+- improved p3 search
+- branching 3to2
+
+master_findp3naive
+- lower bound every layer
+- naive p3 search
+- branching 3to2
+
+
+
+# missing:
+- branching 3 vs branching 2
+- p3 search bad vs p3 search good 
+
+
+
+
+
+# final plots: 
+- old master / branching 2 (missing)
+- branching 2 (missing) / branching 2 + bad lower bound (missing)
+- branching 2 + bad lower bound (missing)   /   branchign 2 + good lower bound
+- branchign 2 + good lower bound    /    branchign 2 + good lower bound + improved p3 search (master)
+
+- old master / new master
