@@ -1,10 +1,8 @@
 
 #include <tuple>
 #include <algorithm>
-#include <map>
 #include "Solver.h"
 #include "../include/utils.h"
-#define HEURISTIC 1
 
 // ----------------------------
 // ------- p3 - search --------
@@ -52,9 +50,9 @@ bool compareP3_min_cost(Solver::p3& a, Solver::p3& b){
     return a.min_cost > b.min_cost;
 }
 // comparator returns p3 with higher sum of edge cost
-bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
-    return a.cost_sum > b.cost_sum;
-}
+//bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
+//    return a.cost_sum > b.cost_sum;
+//}
 
 // returns the best of all p3 based on heuristic (max_min_edge_cost / max_sum_edge_cost) and an (improved) lower bound
 std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_improved(){
@@ -66,10 +64,6 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
     std::sort((allP3).begin(), (allP3).end(), compareP3_min_cost);
 
 
-    // to get max_sum_edge_cost p3
-    int max_cost_sum = -1;
-    int arg_max = -1;
-
     // init edge disjoint map: 1 means edge is contained in some p3 whose min edge has been counted (0 not)
     std::vector<std::vector<int>> edge_disjoint_map = std::vector<std::vector<int>>(g->merge_map.size());
     for(int i = 0; i< g->merge_map.size(); i++){
@@ -80,7 +74,6 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
 
     // compute lower bound
     int lower_bound = 0;
-    int l = 0;
     for(auto& p3: allP3){
         int i = p3.i;
         int j = p3.j;
@@ -98,24 +91,12 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
             edge_disjoint_map[k][i] = 1;
 
         }
-
-        if(HEURISTIC == 0) {
-            // find p3 with max edge cost sum
-            if (p3.cost_sum > max_cost_sum) {
-                arg_max = l;
-                max_cost_sum = p3.cost_sum;
-            }
-            l++;
-        }
     }
 
     // HEURISTIC
-    // 0: max_sum_edge_cost p3
     // 1: max_min_edge_cost p3
     std::tuple<int,int,int> best_p3;
-    if(HEURISTIC == 0)  best_p3 = std::make_tuple(allP3[arg_max].i, allP3[arg_max].j, allP3[arg_max].k);
-    if(HEURISTIC == 1)  best_p3 = std::make_tuple((allP3)[0].i, (allP3)[0].j, (allP3)[0].k);
-
+    best_p3 = std::make_tuple((allP3)[0].i, (allP3)[0].j, (allP3)[0].k);
 
     return std::make_tuple(best_p3, lower_bound);
 }
@@ -151,6 +132,7 @@ Solver::p3 Solver::generate_p3_struct(int i, int j, int k) {
         return no_p3;
     }
 }
+
 std::vector<Solver::p3> Solver::find_all_p3_faster() {
 
     bool *already_checked = new bool[g->merge_map.size()];
@@ -166,7 +148,7 @@ std::vector<Solver::p3> Solver::find_all_p3_faster() {
         visited[start_node] = true;
         int layer = 1;
         int current_node;
-        int nodes_in_layer = queue.size();
+        unsigned int nodes_in_layer = queue.size();
 
         while(!queue.empty()){
             if(nodes_in_layer == 0){
