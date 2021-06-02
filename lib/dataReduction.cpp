@@ -48,12 +48,9 @@ void Solver::undo_data_reduction(int prev_stack_size){
 // returns remaining costs k after merging
 // if k<0 no solution for the graph and input k exists
 int Solver::dataRed_weight_larger_k(int k){
-//    printDebug("Data reduction (weight > k=" + std::to_string(k) + "):");
-    int k_before = k;
 
     redo:
     if(k < 0) {
-//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int u : g->active_nodes){
@@ -117,7 +114,6 @@ int Solver::dataRed_heavy_non_edge_branch(int k) {
 int Solver::dataRed_heavy_edge_single_end_branch(int k) {
     redo:
     if(k < 0) {
-//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int u : g->active_nodes){
@@ -170,7 +166,7 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
 
                 }
             }
-            if(stop == true) continue;
+            if(stop) continue;
 
             // merge if heavy edge condition holds
             if(weight_uv >= weight_neighbours - weight_uv){
@@ -186,82 +182,10 @@ int Solver::dataRed_heavy_edge_single_end_branch(int k) {
     return k;
 }
 
-void Solver::dataRed_heavy_non_edge() {
-    for(int i : g->active_nodes){
-        int min_val = 0;
-        int i_min = -1;
-        int j_min = -1;
-        int weight_neighbours = 0;
-        for(int j : g->active_nodes){
-            if(i == j) continue;
-            int weight = g->get_weight(i,j);
-            if(weight < 0 && weight < min_val){
-                min_val = weight;
-                i_min = i;
-                j_min = j;
-            }else if(weight > 0){
-                weight_neighbours += weight;
-            }
-        }
-        if(abs(min_val) >= weight_neighbours && i_min != -1 && weight_neighbours > 0){
-            g->set_non_edge(i_min,j_min);
-            printDebug("set edge infinity for dataRed_heavy_non_edge");
-        }
-    }
-    return;
-}
-
-int Solver::dataRed_heavy_edge_single_end(int k) {
-    int cost = 0;
-    redo:
-    if(k < 0) {
-//        printDebug("Fail: maximum cost exceeded");
-        return -1;
-    }
-    for(int i : g->active_nodes){
-        int max_weight = 0;
-        int sum = 0;
-        int i_max = -1;
-        int j_max = -1;
-        for(int j : g->active_nodes){
-            if(i == j) continue;
-            int weight = g->get_weight(i,j);
-            if(weight == DO_NOT_DELETE){
-                int cost = g->merge(i,j);
-                if(cost == -1) return -1; // merging failed
-                k -= cost;
-                goto redo;
-            }
-
-            if(weight > max_weight){
-                max_weight = weight;
-                i_max = i;
-                j_max = j;
-            }
-            if(weight != DO_NOT_ADD && weight != DO_NOT_DELETE && sum != DO_NOT_DELETE && sum != DO_NOT_ADD)
-                sum += abs(weight);
-            else{
-                sum = DO_NOT_DELETE; // abs(do_not_add) is Do not add again => smaller 0
-                break;
-            }
-        }
-
-        if(max_weight >= sum - max_weight && i_max != -1) {
-            int cost = g->merge(i_max,j_max);
-            if(cost == -1) return -1; // merging failed
-            k -= cost;
-            goto redo;
-        }
-    }
-    if(cost > 0) printDebug("Merged vertices for dataRed_heavy_edge_single_end, cost: " + std::to_string(cost));
-    return k;
-}
 
 int Solver::dataRed_heavy_edge_both_ends(int k) {
-    int cost = 0;
     redo:
     if(k < 0) {
-//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for( int u: g->active_nodes){
@@ -326,7 +250,7 @@ int Solver::dataRed_heavy_edge_both_ends(int k) {
 }
 
 int Solver::dataRed_remove_existing_clique() {
-    int N = g->merge_map.size();
+    auto N = g->merge_map.size();
     bool *visited = new bool[N];
 
     for(int i = 0; i < N; ++i){
@@ -334,8 +258,8 @@ int Solver::dataRed_remove_existing_clique() {
     }
     std::vector<std::vector<int>> components;
     for(int i : g->active_nodes){
-        if(visited[i] == false){
-            components.push_back({});
+        if(!visited[i]){
+            components.emplace_back();
             DFS(i, visited, components.back());
         }
     }
@@ -405,27 +329,25 @@ int Solver::dataRed_merge_dnd(int k){
 
 void Solver::DFS(int i, bool *visited, std::vector<int>& component) {
     visited[i] = true;
-//    std::cout << i+1 << " ";
     component.push_back(i);
     for(int j : g->active_nodes){
         if(i == j) continue;
         // for {i,j} = 0 we consider i,j as not adjacent (we delete {i,j} later in unmerging)
         // thus, i and j are in different components if {i,j} <= 0
         if(g->get_weight(i,j) > 0){
-            if(visited[j] == false){
+            if(!visited[j]){
                 DFS(j, visited, component);
             }
         }
     }
-    return;
 }
-//is doing the large Neighbourhood Rule for all vertices in the graph TODO
+
+//is doing the large Neighbourhood Rule for all vertices in the graph
 int Solver::dataRed_large_neighbourhood_I(int k) {
 
     int merge_costs = 0;
     rerun_after_merge:
     if(k < 0) {
-//        printDebug("Fail: maximum cost exceeded");
         return -1;
     }
     for(int i : g->active_nodes){
@@ -434,10 +356,10 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
         auto not_neighbours = neighbourhoods.second;
         bool valid_neighborhood = true;
         //non of the edges is allowed to be 0 within the neighborhood
-        for(auto i: neighbours){
+        for(auto n: neighbours){
             for(auto j : neighbours){
-                if(i == j) continue;
-                if(g->get_weight(i,j) == 0)
+                if(n == j) continue;
+                if(g->get_weight(n,j) == 0)
                     valid_neighborhood = false;
             }
         }
@@ -464,7 +386,7 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
                     int next_from_neighbourhood = neighbours.front();
                     neighbours.pop_front();
 
-                    int val = g->merge(last_merged, next_from_neighbourhood);
+                    val = g->merge(last_merged, next_from_neighbourhood);
                     if(val == -1) return -1; // merging failed
                     merge_costs += val;
 
@@ -489,11 +411,10 @@ int Solver::dataRed_large_neighbourhood_I(int k) {
                         int next_from_neighbourhood = neighbours.front();
                         neighbours.pop_front();
 
-                        int val = g->merge(last_merged, next_from_neighbourhood);
+                        val = g->merge(last_merged, next_from_neighbourhood);
                         if(val == -1) return -1; // merging failed
                         merge_costs += val;
                     }
-//                    std::cout << "aäasd" <<std::endl;
                     printDebug("Successful large neighborhood 2, merge costs: " + std::to_string(merge_costs));
                     goto rerun_after_merge;
                 }
@@ -605,7 +526,6 @@ int Solver::min_cut(const std::list<int>& neighbours) {
 //    g->printGraph(std::cout);
 
     unsigned int all_possible_vertices = neighbours.size()*2;
-    unsigned int num_vertices = g->active_nodes.size();
     bool *active = new bool[all_possible_vertices];
     std::vector<int> active_nodes;
 
@@ -632,57 +552,21 @@ int Solver::min_cut(const std::list<int>& neighbours) {
         node_idx++;
     }
 
-    /*#######output graph
-    int idx = 0;
-    for(const auto& a : adj_list){
-        std::cout << idx << " : ";
-        for(auto b : a){
-            std::cout << "(" << b.first << ", " << b.second << ") , ";
-        }
-        std::cout << std::endl;
-        ++idx;
-    }
-    //#################end output graph*/
-
-    // test get_most_tightly connected
-    /*std::vector<int> vertex_set = {0,4,5};
-    auto is_in_vertex_set = new bool[adj_list.size()];
-    for(int i = 0; i < adj_list.size();++i)
-        is_in_vertex_set[i] = false;
-    is_in_vertex_set[0] = true;
-    is_in_vertex_set[4] = true;
-    is_in_vertex_set[5] = true;
-    std::cout << get_most_tightly_connected(vertex_set, is_in_vertex_set, adj_list, active) << std::endl;*/
-    // end test get_most_tightly connected
 
     int min_cut_weight = INT32_MAX;
     while(active_nodes.size() > 1) {
         //calculate the cut_weight of a min_cut_phase
         int cut_weight = min_cut_phase(adj_list, active, active_nodes, all_possible_vertices);
-//        std::cout << cut_weight << std::endl;
         if(cut_weight < min_cut_weight)
             min_cut_weight = cut_weight;
 
-        /*This is debug output
-        idx = 0;
-        for (const auto &i : active_nodes) {
-            auto a = adj_list[i];
-            std::cout << i << " : ";
-            for (auto b : a) {
-                std::cout << "(" << b.first << ", " << b.second << ") , ";
-            }
-            std::cout << std::endl;
-            ++idx;
-        }
-        //end debug output*/
     }
-//    std::cout << "the minimum cut weight is " << min_cut_weight << std::endl;
     delete[] active;
     return min_cut_weight;
 }
 
 int Solver::min_cut_phase
-(std::vector<std::vector<std::pair<int,int>>>& G, bool *active,std::vector<int>& active_nodes, int num_possible_vertices) {
+(std::vector<std::vector<std::pair<int,int>>>& G, bool *active, std::vector<int>& active_nodes, unsigned int num_possible_vertices) {
     //initialize
     std::vector<int> vertex_set;
     //this array is for faster lookups if a vertex is in the vertex set or not
@@ -712,7 +596,7 @@ int Solver::min_cut_phase
 
     //merge the last two added nodes
     //add a new node at the back of the G and the active nodes
-    active_nodes.push_back(G.size());
+    active_nodes.push_back((int)G.size());
     G.emplace_back();
 
     for(auto it = active_nodes.begin(); it != active_nodes.end();++it){
@@ -764,7 +648,7 @@ int Solver::min_cut_phase
 }
 
 std::pair<int,int> Solver::get_most_tightly_connected
-(const std::vector<int>& vertex_set,const bool *is_in_vertex_set, std::vector<std::vector<std::pair<int,int>>>& G, bool *active_nodes) {
+(const std::vector<int>& vertex_set,const bool *is_in_vertex_set, std::vector<std::vector<std::pair<int,int>>>& G, const bool *active_nodes) {
 
     //for calculating the sum from any vertex not in vertex set to the vertex set
     auto *sum_of_edges_to_subset = new int[G.size()];
@@ -795,14 +679,6 @@ std::pair<int,int> Solver::get_most_tightly_connected
             }
         }
     }
-    /*/debug output
-    std::cout << max_weight_idx << " "<< max_weight << "[ ";
-    for(int i: vertex_set){
-        std::cout << i<< " ";
-    }
-    std::cout << "]" << std::endl;
-
-    //end debug output*/
     delete[] sum_of_edges_to_subset;
     return std::make_pair(max_weight_idx, max_weight);
 }

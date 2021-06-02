@@ -40,9 +40,7 @@ public:
     void undo_data_reduction(int final);
 
     int dataRed_weight_larger_k(int k);
-    void dataRed_heavy_non_edge();
     int dataRed_heavy_non_edge_branch(int k);
-    int dataRed_heavy_edge_single_end(int k);
     int dataRed_heavy_edge_single_end_branch(int k);
     int dataRed_heavy_edge_both_ends(int k);
     int dataRed_remove_existing_clique();
@@ -55,8 +53,9 @@ public:
     int deficiency(std::list<int> neighbours);
     int cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph);
     int min_cut(const std::list<int>&);
-    int min_cut_phase(std::vector<std::vector<std::pair<int,int>>>&,bool *,std::vector<int>&, int);
-    std::pair<int,int> get_most_tightly_connected(const std::vector<int>& vertex_set, const bool *, std::vector<std::vector<std::pair<int,int>>>&, bool *);
+    static int min_cut_phase(std::vector<std::vector<std::pair<int,int>>> &G, bool *active, std::vector<int> &active_nodes,
+                             unsigned int num_possible_vertices);
+    static std::pair<int,int> get_most_tightly_connected(const std::vector<int>& vertex_set, const bool *, std::vector<std::vector<std::pair<int,int>>>&, const bool *);
 
     // merging
     int unmerge_and_output(int uv);
