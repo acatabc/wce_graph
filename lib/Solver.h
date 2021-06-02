@@ -13,19 +13,17 @@ private:
 public:
     Solver();
     virtual ~Solver();
-    WCE_Graph *parse_and_build_graph();
+    static WCE_Graph *parse_and_build_graph();
 
     //solving
     void solve();
     int branch(int k, int layer);
-    int branch_old(int k, int layer);
     void final_output(int u, int v);
     void output_data_reduction();
 
     //method related to p3s
     std::tuple<int, int, int> get_max_cost_p3_naive();
 
-    std::tuple<std::tuple<int, int, int>, int> get_max_cost_p3_naive_lowerBound();
     std::tuple<std::tuple<int, int, int>, int> get_best_p3_and_lowerBound_improved();
     struct p3{
         int i,j,k;
@@ -34,7 +32,6 @@ public:
     };
     struct p3 generate_p3_struct(int,int,int);
     std::vector<p3> find_all_p3_faster();
-    std::vector<p3> find_all_p3();
 
 
     // data reduction

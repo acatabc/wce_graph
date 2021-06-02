@@ -46,75 +46,6 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
     return std::make_tuple(first_tuple_val, second_tuple_val, third_tuple_val);
 }
 
-// iterates over all vertex tuples, returns max_cost p3, as well as a greedy lower bound
-std::tuple<std::tuple<int, int, int>, int> Solver::get_max_cost_p3_naive_lowerBound(){
-
-    int lower_bound = 0;
-
-    // init edge disjoint map: 1 means edge is contained in some p3 which has been counted (0 not)
-    std::vector<std::vector<int>> edge_disjoint_map = std::vector<std::vector<int>>(g->merge_map.size());
-    for(int i = 0; i< g->merge_map.size(); i++){
-        for(int j = 0; j< g->merge_map.size(); j++){
-            edge_disjoint_map[i].push_back(0);
-        }
-    }
-
-    int first_tuple_val = -1;
-    int second_tuple_val = -1;
-    int third_tuple_val = -1;
-    int max_cost = INT32_MIN;
-    for(int i: this->g->active_nodes){
-        for(int j: this->g->active_nodes){
-            for(int k : this->g->active_nodes){
-                if(i == j || i == k || k == j) continue;
-                int weight_i_j = g->get_weight(i,j);
-                int weight_i_k = g->get_weight(i,k);
-                int weight_j_k = g->get_weight(j,k);
-                if(weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0){
-
-                    // sum up costs of all three edges (only edges that are allowed to be modified)
-                    int current_cost = 0;
-                    if(weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) current_cost += abs(weight_i_k);
-                    if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) current_cost += abs(weight_i_j);
-                    if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) current_cost += abs(weight_j_k);
-
-                    // update maximum cost and corresponding p3
-                    if(current_cost > max_cost) {
-                        max_cost = current_cost;
-                        first_tuple_val = i;
-                        second_tuple_val = j;
-                        third_tuple_val = k;
-                    }
-
-                    // if this is an edge disjoint p3, increase lower bound
-                    if(edge_disjoint_map[i][j] == 0 && edge_disjoint_map[j][k] == 0 && edge_disjoint_map[i][k] == 0) {
-                        int min_cost = INT32_MAX;
-                        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
-                            abs(weight_i_k) < min_cost)
-                            min_cost = abs(weight_i_k);
-                        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
-                            abs(weight_i_j) < min_cost)
-                            min_cost = abs(weight_i_j);
-                        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
-                            abs(weight_j_k) < min_cost)
-                            min_cost = abs(weight_j_k);
-
-                        lower_bound += min_cost;
-
-                        edge_disjoint_map[i][j] = 1;
-                        edge_disjoint_map[j][i] = 1;
-                        edge_disjoint_map[j][k] = 1;
-                        edge_disjoint_map[k][j] = 1;
-                        edge_disjoint_map[i][k] = 1;
-                        edge_disjoint_map[k][i] = 1;
-                    }
-                }
-            }
-        }
-    }
-    printDebug("lower bound: " + std::to_string(lower_bound));
-    return std::make_tuple(std::make_tuple(first_tuple_val, second_tuple_val, third_tuple_val), lower_bound);
-}
 
 // comparator returns p3 with higher minimum edge cost
 bool compareP3_min_cost(Solver::p3& a, Solver::p3& b){
@@ -187,25 +118,6 @@ std::tuple<std::tuple<int, int, int>, int> Solver::get_best_p3_and_lowerBound_im
 
 
     return std::make_tuple(best_p3, lower_bound);
-}
-
-// iterates over all vertex tuples and returns a list of p3s
-std::vector<Solver::p3> Solver::find_all_p3(){
-    std::vector<Solver::p3> allP3 = std::vector<Solver::p3>();
-
-    for(int i: this->g->active_nodes){
-        for(int j: this->g->active_nodes){
-            for(int k : this->g->active_nodes){
-                if(i == j || i == k || k == j) continue;
-
-                auto new_p3 = generate_p3_struct(i,j,k);
-                if(new_p3.i != -1)
-                    allP3.push_back(new_p3);
-                }
-            }
-
-        }
-    return allP3;
 }
 
 Solver::p3 Solver::generate_p3_struct(int i, int j, int k) {

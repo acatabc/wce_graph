@@ -14,7 +14,7 @@ const char* FILENAME = "../../wce-students-real/2-real-world/w041.dimacs";
 #define CLUSTER_GRAPH (-2)
 
 Solver::Solver(){
-    this->g = this->parse_and_build_graph();
+    this->g = Solver::parse_and_build_graph();
 
 }
 
@@ -120,111 +120,6 @@ int Solver::branch(int k, int layer){
     printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
     return NONE;
 }
-
-
-int Solver::branch_old(int k, int layer){
-    if(k < 0){
-        return NONE;
-    }
-
-    // data reduction
-    int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
-    k = data_reduction(k, layer);
-    if(k == -1){ // data reduction shows that no solution for this k exists
-        undo_data_reduction(stack_size_0);
-        printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
-        return NONE;
-    }
-
-    auto p3 = this->get_max_cost_p3_naive();
-
-    if(std::get<0>(p3) == -1){
-        printDebug("FOUND CLUSTER GRAPH");
-        return CLUSTER_GRAPH;
-    }
-
-    rec_steps++;
-
-    int u = std::get<0>(p3);
-    int v = std::get<1>(p3);
-    int w = std::get<2>(p3);
-
-    printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
-
-
-    // -----------------------------------
-    // 1. branch on (u,v) >= 0
-    int weight_uv = g->get_weight(u,v);
-    int stack_size_1 = g->graph_mod_stack.size();
-
-    if(weight_uv < 0) throwError("WHY IS THIS smaller 0?");
-    if(weight_uv == DO_NOT_DELETE) throwError("WHY IS THIS DND?");
-
-    // first try deleting (u,v)
-    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
-    g->set_non_edge(u, v);
-    if(this->branch(k - weight_uv, layer + 1) == CLUSTER_GRAPH){
-        final_output(u,v);
-        return CLUSTER_GRAPH;
-    }
-    else undo_data_reduction(stack_size_1);
-
-    // deleting failed: any solution must contain (u,v) -> merge
-    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
-    int cost = g->merge(u,v);
-    if(cost == -1) {  // also inserting (u,v) failed -> no solution for this k exists
-        undo_data_reduction(stack_size_0);
-        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
-        return NONE;
-    }
-    k -= cost;
-    int uv = g->merge_map.size()-1;
-
-
-    // ----------------------------
-    // 2. branch on edge (uv,w)
-    int weight_uv_w = g->get_weight(uv,w);
-    int stack_size_2 = g->graph_mod_stack.size();
-
-    if(weight_uv_w == DO_NOT_DELETE) throwError("WHY IS THIS DND?");
-
-    // first try deleting (uv,w)
-    printDebug("Branch DELETE (" + std::to_string(uv) + "," + std::to_string(w) + ")");
-    g->set_non_edge(uv, w);
-    int deleting_costs = std::max(0,weight_uv_w); // if (uv,w) < 0 there is no cost for deletion
-    if(this->branch(k - deleting_costs, layer + 1) == CLUSTER_GRAPH){
-        final_output(uv,w);
-        return CLUSTER_GRAPH;
-    }
-    else undo_data_reduction(stack_size_2);
-
-    // deleting failed: any solution must contain (uv,w) -> merge
-    printDebug("Branch MERGE (" + std::to_string(uv) + "," + std::to_string(w) + ")" );
-    if(weight_uv_w == DO_NOT_ADD){ // we are not allowed to merge (uv,w)
-        undo_data_reduction(stack_size_0);
-        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
-        return NONE;
-    }
-    if(weight_uv_w < 0) k -= abs(weight_uv_w); // remove cost of inserting edge (uv,w)
-    cost = g->merge(uv,w);
-    if(cost == -1) { // also inserting (uv,w) failed -> no solution for this k exists
-        undo_data_reduction(stack_size_0);
-        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
-        return NONE;
-    }
-    k -= cost;
-    if(this->branch(k, layer + 1) == CLUSTER_GRAPH){
-        final_output(uv,w);
-        return CLUSTER_GRAPH;
-    }
-
-    // branching on all edges failed, no solution for this k exists, recover graph before branching
-    undo_data_reduction(stack_size_0);
-    printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
-    return NONE;
-}
-
-
 
 // ----------------------------
 // ------- output related --------
