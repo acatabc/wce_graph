@@ -63,9 +63,5 @@ public:
 
     // debug
     void verify_clusterGraph();
-
-
 };
-
-
 #endif //ALGENG_WCE_SOLVER_SOLVER_H
