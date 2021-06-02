@@ -17,7 +17,7 @@ Solver::Solver(){
 
 }
 
-Solver::~Solver() {}
+Solver::~Solver() = default;
 
 void Solver::solve() {
 
@@ -28,6 +28,7 @@ void Solver::solve() {
     int lower_bound_k = std::get<1>(get_best_p3_and_lowerBound_improved());
 
     int k = lower_bound_k + cost_before_branching;
+
     while (true){
         printDebug("\nSOLVE FOR k:" + std::to_string(k));
 

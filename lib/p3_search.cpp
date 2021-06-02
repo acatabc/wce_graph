@@ -239,6 +239,7 @@ Solver::p3 Solver::generate_p3_struct(int i, int j, int k) {
         return no_p3;
     }
 }
+
 std::vector<Solver::p3> Solver::find_all_p3_faster() {
 
     bool *already_checked = new bool[g->merge_map.size()];
