@@ -4,7 +4,7 @@
 #include <map>
 #include "Solver.h"
 #include "../include/utils.h"
-#define HEURISTIC 0
+#define HEURISTIC 1
 
 // ----------------------------
 // ------- p3 - search --------
