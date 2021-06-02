@@ -9,8 +9,8 @@
 const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
-#define NONE -1
-#define CLUSTER_GRAPH -2
+#define NONE (-1)
+#define CLUSTER_GRAPH (-2)
 
 Solver::Solver(){
     this->g = this->parse_and_build_graph();
