@@ -10,15 +10,15 @@ const char* FILENAME = "../../wce-students-real/2-real-world/w041.dimacs";
 //const char* FILENAME = "../../min_cut_test_graph.txt";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
-#define NONE -1
-#define CLUSTER_GRAPH -2
+#define NONE (-1)
+#define CLUSTER_GRAPH (-2)
 
 Solver::Solver(){
     this->g = this->parse_and_build_graph();
 
 }
 
-Solver::~Solver() {}
+Solver::~Solver() = default;
 
 void Solver::solve() {
 
