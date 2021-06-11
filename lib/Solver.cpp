@@ -5,8 +5,9 @@
 #include "../include/utils.h"
 #include <math.h>
 
-//const char* FILENAME = "../wce-students/2-real-world/w021.dimacs";
-const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w159.dimacs";
+//const char* FILENAME = "../wce-students/3-actionseq/a055.dimacs";
+//const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE (-1)
@@ -239,8 +240,11 @@ WCE_Graph *Solver::parse_and_build_graph(){
         std::cin >> v >> w >> weight;
         v -= 1;
         w -= 1;
-        if(!std::cin.fail())
-            g->set_weight(v,w, weight);
+        if(!std::cin.fail()) {
+            g->set_weight(v, w, weight);
+            g->set_weight_original(v, w, weight);
+        }
+
     }
     for(int i = 0; i< g->num_vertices; i++){
         std::vector<int> u = {i};
@@ -267,5 +271,11 @@ void Solver::verify_clusterGraph(){
         print_tuple(p3);
     }
 #endif
+    auto p3 = this->get_max_cost_p3_naive();
+    if(std::get<0>(p3) == -1){
+        std::cout << "#VERIFICATION SUCCESS\n";
+    } else {
+        std::cout << "#VERIFICATION FAIL\n";
+    }
 }
 

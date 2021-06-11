@@ -17,7 +17,8 @@ class WCE_Graph {
 private:
     struct matrix_entry{
         int weight;
-        bool flag;
+        bool valid_entry;
+        int weight_original;
     };
     std::vector<std::vector<matrix_entry>> adj_matrix;
     void unmerge(int);
@@ -27,12 +28,17 @@ public:
     const int num_vertices;
     virtual ~WCE_Graph();
 
-    void set_weight(int, int, int);
+    // edges
     int get_weight(int, int);
+    void set_weight(int, int, int);
+
+    int get_weight_original(int, int);
+    void set_weight_original(int, int, int);
 
     void add_edge(int,int);
     void delete_edge(int, int);
 
+    // p3s
     int get_cost(int u, int v, int w);
 
     // merging
@@ -59,9 +65,8 @@ public:
     void print_graph_mod_stack();
     void print_graph_mod_stack_rec();
 
-    // old methods used in solver2
-    void recover_original(int);
-    void modify_edge(int, int);
+    // heuristics
+    void reset_graph();
 };
 
 #endif //ALGENG_WCE_SOLVER_WCE_GRAPH_H
