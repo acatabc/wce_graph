@@ -5,8 +5,9 @@
 #include "../include/utils.h"
 #include <math.h>
 
-//const char* FILENAME = "../wce-students/2-real-world/w021.dimacs";
-const char* FILENAME = "../../wce-students-real/2-real-world/w089.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w165.dimacs";
+//const char* FILENAME = "../wce-students/3-actionseq/a055.dimacs";
+//const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE (-1)
@@ -14,7 +15,6 @@ const char* FILENAME = "../../wce-students-real/2-real-world/w089.dimacs";
 
 Solver::Solver(){
     this->g = this->parse_and_build_graph();
-
 }
 
 Solver::~Solver() = default;
@@ -237,10 +237,19 @@ WCE_Graph *Solver::parse_and_build_graph(){
     int v, w, weight;
     while(std::cin){
         std::cin >> v >> w >> weight;
+
+        if(num_vertices > MAX_NUM_VERTICES){  // greedy-greedy: output all positive edges if too many vertices in input graph
+            if(weight > 0) std::cout << v << " " << w << "\n";
+            continue;
+        }
+
         v -= 1;
         w -= 1;
-        if(!std::cin.fail())
-            g->set_weight(v,w, weight);
+        if(!std::cin.fail()) {
+            g->set_weight(v, w, weight);
+            g->set_weight_original(v, w, weight);
+        }
+
     }
     for(int i = 0; i< g->num_vertices; i++){
         std::vector<int> u = {i};
@@ -259,12 +268,19 @@ WCE_Graph *Solver::parse_and_build_graph(){
 // verify that the current graph is now a cluster graph
 void Solver::verify_clusterGraph(){
 #ifdef DEBUG
+    printDebug("\nVerifying solution...");
     auto p3 = this->get_max_cost_p3_naive();
     if(std::get<0>(p3) == -1){
-        printDebug("\nVERIFICATION SUCCESS\n");
+        printDebug("VERIFICATION SUCCESS\n");
     } else {
         printDebug("\nVERIFICATION FAIL:");
         print_tuple(p3);
+        int u = std::get<0>(p3);
+        int v = std::get<1>(p3);
+        int w = std::get<2>(p3);
+        std::cout << "(" << u << "," << v << "):" << g->get_weight(u,v) << "/" << g->get_weight_original(u,v) << "\n";
+        std::cout << "(" << v << "," << w << "):" << g->get_weight(w,v) << "/" << g->get_weight_original(w,v) << "\n";
+        std::cout << "(" << u << "," << w << "):" << g->get_weight(u,w) << "/" << g->get_weight_original(u,w) << "\n";
     }
 #endif
 }

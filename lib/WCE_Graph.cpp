@@ -11,7 +11,7 @@ WCE_Graph::WCE_Graph(int n): num_vertices(n){
     for(int i = 0; i < n ; i++){
         this->adj_matrix.push_back(std::vector<matrix_entry>(i));
         for(int j = 0; j < i; j++){
-            matrix_entry entry = {0, true};
+            matrix_entry entry = {.weight = 0, .valid_entry = true, .weight_original = 0};
             adj_matrix[i][j] = entry;
         }
     }
@@ -27,8 +27,8 @@ void WCE_Graph::set_weight(int v, int w, int weight){
         return;
     }
     if(v > w){
-        if(this->adj_matrix[v][w].flag == false){
-            throwError( "set_weight error: invalid flag" );
+        if(this->adj_matrix[v][w].valid_entry == false){
+            throwError( "set_weight error: invalid valid_entry" );
             return;
         } else{
             this->adj_matrix[v][w].weight = weight;
@@ -36,8 +36,8 @@ void WCE_Graph::set_weight(int v, int w, int weight){
         }
     }
     if(w > v) {
-        if (this->adj_matrix[w][v].flag == false) {
-            throwError( "set_weight error: invalid flag" );
+        if (this->adj_matrix[w][v].valid_entry == false) {
+            throwError( "set_weight error: invalid valid_entry" );
             return;
         } else {
             this->adj_matrix[w][v].weight = weight;
@@ -47,6 +47,35 @@ void WCE_Graph::set_weight(int v, int w, int weight){
     return;
 }
 
+
+void WCE_Graph::set_weight_original(int v, int w, int weight){
+    if(v == w){
+        throwError( "set_weight error: u and w have same value " );
+        return;
+    }
+    if(v > w){
+        if(this->adj_matrix[v][w].valid_entry == false){
+            throwError( "set_weight error: invalid valid_entry" );
+            return;
+        } else{
+            this->adj_matrix[v][w].weight_original = weight;
+            return;
+        }
+    }
+    if(w > v) {
+        if (this->adj_matrix[w][v].valid_entry == false) {
+            throwError( "set_weight error: invalid valid_entry" );
+            return;
+        } else {
+            this->adj_matrix[w][v].weight_original = weight;
+            return;
+        }
+    }
+    return;
+}
+
+
+
 int WCE_Graph::get_weight(int v, int w){
     if(v == w){
         throwError( "get_weight error: u and w have same value edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
@@ -54,16 +83,16 @@ int WCE_Graph::get_weight(int v, int w){
     }
 
     if(v > w){
-        if(this->adj_matrix[v][w].flag == false){
-            throwError( "get_weight error: invalid flag edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
+        if(this->adj_matrix[v][w].valid_entry == false){
+            throwError( "get_weight error: invalid valid_entry edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
             return 0;
         } else{
             return this->adj_matrix[v][w].weight;
         }
     }
     if(w > v) {
-        if (this->adj_matrix[w][v].flag == false) {
-            throwError( "get_weight error: invalid flag edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
+        if (this->adj_matrix[w][v].valid_entry == false) {
+            throwError( "get_weight error: invalid valid_entry edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
             return 0;
         } else {
             return this->adj_matrix[w][v].weight;
@@ -71,6 +100,34 @@ int WCE_Graph::get_weight(int v, int w){
     }
     return 0;
 }
+
+
+int WCE_Graph::get_weight_original(int v, int w){
+    if(v == w){
+        throwError( "get_weight error: u and w have same value edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
+        return 0;
+    }
+
+    if(v > w){
+        if(this->adj_matrix[v][w].valid_entry == false){
+            throwError( "get_weight error: invalid valid_entry edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
+            return 0;
+        } else{
+            return this->adj_matrix[v][w].weight_original;
+        }
+    }
+    if(w > v) {
+        if (this->adj_matrix[w][v].valid_entry == false) {
+            throwError( "get_weight error: invalid valid_entry edge (" + std::to_string(v) + "," + std::to_string(w) + ")" );
+            return 0;
+        } else {
+            return this->adj_matrix[w][v].weight_original;
+        }
+    }
+    return 0;
+}
+
+
 
 void WCE_Graph::add_edge(int v, int w) {
     set_weight(v,w, DO_NOT_DELETE);
@@ -80,10 +137,6 @@ void WCE_Graph::delete_edge(int v, int w) {
     set_weight(v,w, DO_NOT_ADD);
 }
 
-void WCE_Graph::modify_edge(int v, int w) {
-    int vw = get_weight(v,w);
-    set_weight(v,w, -vw);
-}
 
 // returns sum of absolute value of edge cost of p3 (u,v,w)
 int WCE_Graph::get_cost(int u, int v, int w) {
@@ -158,7 +211,7 @@ int WCE_Graph::merge(int u, int v) {
             // otherwise use basic sum of edge cost
         else adj_matrix[idx][j].weight = this->get_weight(u, j) + this->get_weight(v, j);
 
-        adj_matrix[idx][j].flag = true;
+        adj_matrix[idx][j].valid_entry = true;
 
         // if the sign of the edges differ we have to add the hidden merging cost
         if((weight_vj > 0 &&  weight_uj < 0 ) || (weight_vj < 0 && weight_uj > 0 )){
@@ -245,16 +298,6 @@ void WCE_Graph::undo_final_modification(){
         }
         graph_mod_stack.pop();
     }
-}
-
-// recovers original graph, merge map and actives nodes vector (as it has been before any merging operation) until input vertex
-// !! old method, only works for solver2
-void WCE_Graph::recover_original(int last_merge_idx){
-    printDebug("Recover original graph");
-    while (adj_matrix.size() != last_merge_idx){
-        unmerge(adj_matrix.size()-1);
-    }
-    std::sort(active_nodes.begin(), active_nodes.end());
 }
 
 
@@ -352,8 +395,8 @@ void WCE_Graph::print_active_graph(std::ostream& os) {
             }
 
             bool flag;
-            if(i<j) flag = this->adj_matrix[j][i].flag;
-            if(i>j) flag = this->adj_matrix[i][j].flag;
+            if(i<j) flag = this->adj_matrix[j][i].valid_entry;
+            if(i>j) flag = this->adj_matrix[i][j].valid_entry;
             if(flag == false){
                 os << " " << std::setw(5) << "|";
                 continue;
@@ -418,8 +461,8 @@ void WCE_Graph::printGraph(std::ostream& os) {
             }
 
             bool flag;
-            if(i<j) flag = this->adj_matrix[j][i].flag;
-            if(i>j) flag = this->adj_matrix[i][j].flag;
+            if(i<j) flag = this->adj_matrix[j][i].valid_entry;
+            if(i>j) flag = this->adj_matrix[i][j].valid_entry;
             if(flag == false){
                 os << " " << std::setw(5) << "|";
                 continue;
@@ -450,3 +493,13 @@ void WCE_Graph::printGraph(std::ostream& os) {
 #endif
 }
 
+
+
+
+void WCE_Graph::reset_graph(){
+    for(int i = 0; i < this->adj_matrix.size(); ++i){
+        for(int j = i+1; j < this->adj_matrix.size(); ++j){
+            set_weight(i,j, get_weight_original(i,j));
+        }
+    }
+}

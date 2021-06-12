@@ -23,7 +23,7 @@ std::tuple<int, int, int> Solver::get_max_cost_p3_naive(){
                 int weight_i_j = g->get_weight(i,j);
                 int weight_i_k = g->get_weight(i,k);
                 int weight_j_k = g->get_weight(j,k);
-                if(weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0){
+                if(weight_i_j > 0 && weight_i_k > 0 && weight_j_k <= 0){
 
                     // sum up costs of all three edges (only edges that are allowed to be modified)
                     int current_cost = 0;
