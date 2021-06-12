@@ -5,6 +5,8 @@
 
 
 void Solver::run_heurisic() {
+    if(g->num_vertices > MAX_NUM_VERTICES) return;
+
     heuristic1();
 }
 
@@ -12,8 +14,8 @@ void Solver::run_heurisic() {
 void Solver::heuristic0() {
     random_cluster_graph();
     localSearch();
-    verify_clusterGraph();
     output_modified_edges();
+    verify_clusterGraph();
 }
 
 void Solver::heuristic1() {
@@ -26,9 +28,10 @@ void Solver::heuristic1() {
         random_cluster_graph();  // greedy cluster graph initialization
         localSearch();           // local search until minimum is reached
         save_best_solution();    // save computed solution if its better than the best one
-        verify_clusterGraph();
+//        verify_clusterGraph();
     }
     output_best_solution();
+    verify_best_solution();
 }
 
 
@@ -58,7 +61,7 @@ void Solver::heuristic2() {
         localSearch_weighted();  // local search until minimum is reached
         save_best_solution();    // save computed solution if its better than the best one
 
-        verify_clusterGraph();
+//        verify_clusterGraph();
 
         if(old_k != best_k)
             no_improvement_count = 0;
@@ -67,6 +70,7 @@ void Solver::heuristic2() {
     }
 
     output_best_solution();
+    verify_best_solution();
 }
 
 
@@ -92,7 +96,7 @@ void Solver::localSearch() {
 
 
 
-// see local search
+// see localSearch()
 // pick random vertex u based on distribution of vertex costs
 void Solver::localSearch_weighted() {
     std::default_random_engine generator;
@@ -167,7 +171,6 @@ int Solver::clusterMove(int u, int v) {
             // add u to cluster of v
             g->add_edge(u, neigh_v);
         }
-//            printDebug("moved vertex. Improved k: " + std::to_string(compute_modified_edge_cost()));
     }
     return k;
 }
@@ -207,6 +210,17 @@ void Solver::random_cluster_graph() {
         // delete C = {u} + N(u) from V
         // all vertices in C form a cluster and can now be disregarded
         for(int neigh : neighborhood.first){
+//            int dneigh1 = 119;
+//            int dneigh2 = 101;
+//            int dneigh3 = 151;
+//            if(neigh == dneigh1 ||  neigh == dneigh2 || neigh == dneigh3 ){
+//                printList_int(neighborhood.first);
+//                printList_int(neighborhood.second);
+//                std::cout << "(" << dneigh1 << "," << dneigh2 << "):" << g->get_weight(dneigh1,dneigh2) << "/" << g->get_weight_original(dneigh2,dneigh1) << "\n";
+//                std::cout << "(" << dneigh2 << "," << dneigh3 << "):" << g->get_weight(dneigh2,dneigh3) << "/" << g->get_weight_original(dneigh2,dneigh3) << "\n";
+//                std::cout << "(" << dneigh3 << "," << dneigh1 << "):" << g->get_weight(dneigh3,dneigh1) << "/" << g->get_weight_original(dneigh3,dneigh1) << "\n";
+//                printDebug("stop");
+//            }
             std::vector<int>::iterator it;
             for(it=vertices.begin(); it != vertices.end(); ++it){
                 if(*it == neigh){
@@ -224,16 +238,13 @@ void Solver::output_modified_edges(){
         for(int j = 0; j < g->num_vertices; ++j){
             if(i >= j) continue;
             if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) < 0 ){
-//                printDebug(std::to_string(g->get_weight(i,j)) + " :: " + std::to_string(g->get_weight_original(i,j)));
                 std::cout << i +1 << " " << j+1 << "\n";
             }
             if(g->get_weight(i,j) < 0  && g->get_weight_original(i,j) > 0 ){
-//                printDebug(std::to_string(g->get_weight(i,j)) + " :: " + std::to_string(g->get_weight_original(i,j)));
                 std::cout << i +1 << " " << j+1 << "\n";
             }
             // original 0 means the edge does not exist
             if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) == 0 ){
-//                printDebug(std::to_string(g->get_weight(i,j)) + " :: " + std::to_string(g->get_weight_original(i,j)));
                 std::cout << i +1 << " " << j+1 << "\n";
             }
         }
@@ -258,8 +269,7 @@ void Solver::save_best_solution(){
             }
             // original 0 means the edge does not exist
             if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) == 0 ){
-//                printDebug(std::to_string(g->get_weight(i,j)) + " :: " + std::to_string(g->get_weight_original(i,j)));
-                std::cout << i +1 << " " << j+1 << "\n";
+                modified_edges.push_back(std::make_pair(i,j));
             }
         }
     }
@@ -300,22 +310,49 @@ int Solver::compute_modified_edge_cost(){
 // cost(v) = sum |weight(v,x)| for all modified edges (v,x)
 std::vector<int>  Solver::compute_vertex_cost(){
     std::vector<int> vertex_cost = std::vector<int>(g->num_vertices);
-    for(int i = 0; i < g->num_vertices; ++i){
-        for(int j = 0; j < g->num_vertices; ++j){
-            if(i >= j) continue;
-            if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) < 0 ){
-                int dk = abs(g->get_weight_original(i,j));
+    for(int i = 0; i < g->num_vertices; ++i) {
+        for (int j = 0; j < g->num_vertices; ++j) {
+            if (i >= j) continue;
+            if (g->get_weight(i, j) > 0 && g->get_weight_original(i, j) < 0) {
+                int dk = abs(g->get_weight_original(i, j));
                 vertex_cost[i] += dk;
                 vertex_cost[j] += dk;
             }
-            if(g->get_weight(i,j) < 0  && g->get_weight_original(i,j) > 0 ){
-                int dk = abs(g->get_weight_original(i,j));
+            if (g->get_weight(i, j) < 0 && g->get_weight_original(i, j) > 0) {
+                int dk = abs(g->get_weight_original(i, j));
                 vertex_cost[i] += dk;
                 vertex_cost[j] += dk;
             }
         }
     }
-//    printDebug("Vertex costs: ");
-//    printVector_int(vertex_cost);
     return vertex_cost;
+}
+
+
+
+// generates graph from modified edges in best_solution and verifies that this graph is a cluster graph
+void Solver::verify_best_solution(){
+    g->reset_graph();
+
+    for(auto edge: best_solution){
+        if(g->get_weight_original(edge.first, edge.second) > 0) g->delete_edge(edge.first, edge.second);
+        else g->add_edge(edge.first, edge.second);
+    }
+
+    printDebug("\n#Verifying best solution...");
+    auto p3 = this->get_max_cost_p3_naive();
+    if(std::get<0>(p3) == -1){
+        printDebug("#VERIFICATION SUCCESS\n");
+    } else {
+        printDebug("#VERIFICATION FAIL:");
+        print_tuple(p3);
+        int u = std::get<0>(p3);
+        int v = std::get<1>(p3);
+        int w = std::get<2>(p3);
+        std::cout << "(" << u << "," << v << "):" << g->get_weight(u,v) << "/" << g->get_weight_original(u,v) << "\n";
+        std::cout << "(" << v << "," << w << "):" << g->get_weight(w,v) << "/" << g->get_weight_original(w,v) << "\n";
+        std::cout << "(" << u << "," << w << "):" << g->get_weight(u,w) << "/" << g->get_weight_original(u,w) << "\n";
+    }
+
+    return;
 }

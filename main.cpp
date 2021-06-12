@@ -9,12 +9,13 @@ Solver *s;
 
 void signal_handler(int signal){
     s->terminate = true;
+    std::cout << "#ALARM" << "\n";
 }
 
 int main() {
     std::signal(SIGALRM, signal_handler);
 
-    alarm(8);
+    alarm(10);
 
     s = new Solver();
     s->run_heurisic();

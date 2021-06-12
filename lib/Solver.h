@@ -6,6 +6,10 @@
 #include <map>
 #include "WCE_Graph.h"
 
+
+#define MAX_NUM_VERTICES 1000
+
+
 class Solver {
 private:
     unsigned int rec_steps = 0;
@@ -85,6 +89,7 @@ public:
     std::vector<std::pair<int,int>> best_solution;
     void save_best_solution();
     void output_best_solution();
+    void verify_best_solution();
 
     void output_modified_edges();
     int compute_modified_edge_cost();
