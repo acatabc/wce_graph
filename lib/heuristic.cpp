@@ -110,7 +110,7 @@ void Solver::localSearch_weighted() {
         count -= 1;
 
         // stop local search when we had no improvement for x iterations
-        if(no_improvement_count >= 2000){
+        if(no_improvement_count >= 1500){
             printDebug("Stop local search (no improvement for " + std::to_string(no_improvement_count) + " iterations)");
             break;
         }
