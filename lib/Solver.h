@@ -73,7 +73,7 @@ public:
 
     // heuristics
     bool terminate = false;
-    void run_heurisic();
+    void run_heuristic();
     void heuristic0();
     void heuristic1();
     void heuristic2();

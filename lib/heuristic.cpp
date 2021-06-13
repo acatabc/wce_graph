@@ -4,10 +4,10 @@
 #include <random>
 
 
-void Solver::run_heurisic() {
+void Solver::run_heuristic() {
     if(g->num_vertices > MAX_NUM_VERTICES) return;
 
-    heuristic1();
+    heuristic2();
 }
 
 
@@ -41,20 +41,20 @@ void Solver::heuristic2() {
 
     srand(time(NULL));
 
-    int count = 0;
-    int no_improvement_count = 0;
+//    int count = 0;
+//    int no_improvement_count = 0;
     while(!terminate){
-        count += 1;
+//        count += 1;
 
 //        std::cout << "#Heuristic iteration " << count << "\n";
-        printDebug("\nHeuristic iteration " + std::to_string(count));
+//        printDebug("\nHeuristic iteration " + std::to_string(count));
 
         // stop heuristic search if there is no improvement for x iterations
-        if(no_improvement_count > 10){
-            printDebug("Stop heuristic search (no improvement for " + std::to_string(no_improvement_count) + " iterations)");
-            break;
-        }
-        int old_k = best_k;
+//        if(no_improvement_count > 10){
+//            printDebug("Stop heuristic search (no improvement for " + std::to_string(no_improvement_count) + " iterations)");
+//            break;
+//        }
+//        int old_k = best_k;
 
         g->reset_graph();        // reset graph to its original
         random_cluster_graph();  // greedy cluster graph initialization
@@ -63,14 +63,14 @@ void Solver::heuristic2() {
 
 //        verify_clusterGraph();
 
-        if(old_k != best_k)
-            no_improvement_count = 0;
-        else
-            no_improvement_count += 1;
+//        if(old_k != best_k)
+//            no_improvement_count = 0;
+//        else
+//            no_improvement_count += 1;
     }
 
     output_best_solution();
-    verify_best_solution();
+//    verify_best_solution();
 }
 
 
@@ -110,7 +110,7 @@ void Solver::localSearch_weighted() {
         count -= 1;
 
         // stop local search when we had no improvement for x iterations
-        if(no_improvement_count >= 400){
+        if(no_improvement_count >= 2000){
             printDebug("Stop local search (no improvement for " + std::to_string(no_improvement_count) + " iterations)");
             break;
         }

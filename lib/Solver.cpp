@@ -5,7 +5,7 @@
 #include "../include/utils.h"
 #include <math.h>
 
-const char* FILENAME = "../wce-students/2-real-world/w165.dimacs";
+const char* FILENAME = "../wce-students/specialTests/w163.dimacs";
 //const char* FILENAME = "../wce-students/3-actionseq/a055.dimacs";
 //const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
@@ -233,23 +233,26 @@ WCE_Graph *Solver::parse_and_build_graph(){
 #endif
     int num_vertices = 0;
     std::cin >> num_vertices;
+
+    if(num_vertices > MAX_NUM_VERTICES){  // greedy-greedy: output all positive edges if too many vertices in input graph
+        int v, w, weight;
+        while(std::cin) {
+            std::cin >> v >> w >> weight;
+            if(weight > 0) std::cout << v << " " << w << "\n";
+        }
+        return new WCE_Graph(num_vertices);
+    }
+
     WCE_Graph *g = new WCE_Graph(num_vertices);
     int v, w, weight;
     while(std::cin){
         std::cin >> v >> w >> weight;
-
-        if(num_vertices > MAX_NUM_VERTICES){  // greedy-greedy: output all positive edges if too many vertices in input graph
-            if(weight > 0) std::cout << v << " " << w << "\n";
-            continue;
-        }
-
         v -= 1;
         w -= 1;
         if(!std::cin.fail()) {
             g->set_weight(v, w, weight);
             g->set_weight_original(v, w, weight);
         }
-
     }
     for(int i = 0; i< g->num_vertices; i++){
         std::vector<int> u = {i};
