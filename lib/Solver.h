@@ -6,6 +6,10 @@
 #include <map>
 #include "WCE_Graph.h"
 
+
+#define MAX_NUM_VERTICES 1000
+
+
 class Solver {
 private:
     unsigned int rec_steps = 0;
@@ -24,7 +28,6 @@ public:
 
     //method related to p3s
     std::tuple<int, int, int> get_max_cost_p3_naive();
-
     std::tuple<std::tuple<int, int, int>, int> get_max_cost_p3_naive_lowerBound();
     std::tuple<std::tuple<int, int, int>, int> get_best_p3_and_lowerBound_improved();
     struct p3{
@@ -58,13 +61,38 @@ public:
     int deficiency(std::list<int> neighbours);
     int cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph);
 
+
     // merging
     int unmerge_and_output(int uv);
     void clear_stack_and_output();
 
+
     // debug
     void verify_clusterGraph();
 
+
+    // heuristics
+    bool terminate = false;
+    void run_heuristic();
+    void heuristic0();
+    void heuristic1();
+    void heuristic2();
+
+    void localSearch();
+    void localSearch_weighted();
+
+    void random_cluster_graph();
+    int clusterMove(int u, int v);
+    std::vector<int> compute_vertex_cost();
+
+    int best_k = INT32_MAX;
+    std::vector<std::pair<int,int>> best_solution;
+    void save_best_solution();
+    void output_best_solution();
+    void verify_best_solution();
+
+    void output_modified_edges();
+    int compute_modified_edge_cost();
 
 };
 

@@ -41,13 +41,14 @@ void printVector_int(std::vector<int> myVec){
 #ifdef DEBUG
     if(PRINTDEBUG == true){
 //        std::cout << "---------\n";
-        std::cout << "myVec contains:[ ";
+        std::cout << "vec: [ ";
         for(int i = 0; i < myVec.size(); ++i){
             if(i != myVec.size()-1)
                 std::cout << myVec[i] << ", " ;
             else
-                std::cout << myVec[i] << "]\n";
+                std::cout << myVec[i];
         }
+        std::cout <<"]\n";
 //        std::cout << "---------\n";
     }
 #endif

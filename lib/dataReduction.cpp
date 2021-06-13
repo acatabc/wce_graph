@@ -485,7 +485,7 @@ std::pair<std::list<int>, std::list<int>> Solver::closed_neighbourhood(int u) {
         if(i == u) continue;
         if(g->get_weight(u,i) > 0){
             neighbours.push_back(i);
-        }else if(g->get_weight(u,i) < 0){
+        }else if(g->get_weight(u,i) <= 0){  // 0-edge = non-edge
             not_neighbours.push_back(i);
         }
     }
