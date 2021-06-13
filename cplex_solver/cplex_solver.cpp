@@ -1,8 +1,12 @@
 #include <ilcplex/ilocplex.h>
 #include "../lib/Solver.h"
+#include "../include/utils.h"
 
 int main(){
   Solver *s = new Solver();
+  int initial_number_of_nodes = s->g->active_nodes.size();
+  s->data_reduction_before_branching();
+
   std::vector<int> original_graph;
   unsigned int active_nodes_size = s->g->active_nodes.size();
   for(int i = 0; i < active_nodes_size; ++i){
@@ -43,7 +47,10 @@ int main(){
         if(weight > 0){
             expr += (-var[num_edges-1])*weight;
         }else{
-            expr += var[num_edges-1]*abs(weight);
+            if(weight == DO_NOT_ADD)
+              expr += var[num_edges-1]*DO_NOT_DELETE;
+            else
+                expr += var[num_edges-1]*abs(weight);
         }
   //  std::cout << expr << std::endl;
       }
@@ -76,18 +83,37 @@ int main(){
 	IloCplex cplex(model);
     cplex.setOut(env.getNullStream());
 	cplex.solve();
-
+        /*std::cout <<"active nodes" << std::endl;
+        for(int i : s->g->active_nodes){
+            std::cout << i << std::endl;
+        }
+        std::cout <<"end active nodes" << std::endl;
+*/
 
     for(int i = 0; i  < num_edges ; ++i){
         //auto b = cplex.getValue(var[i]);
         auto val = cplex.getIntValue(var[i]);
         auto orig = original_graph.at(i);
-//        std::cout <<i<<" ("<< lookup_table.at(i).first+1 <<","<<lookup_table.at(i).second+1 << ") " << orig << " " << val << std::endl;
+  //      std::cout <<i<<" ("<< lookup_table.at(i).first+1 <<","<<lookup_table.at(i).second+1 << ") " << orig << " " << val << std::endl;
         if(val^orig){
             auto p = lookup_table.at(i);
-            std::cout << p.first+1 << " " << p.second+1 << std::endl;
+            //std::cout << p.first+1 << " " << p.second+1 << std::endl;
+           if(val > 0){
+                if(p.first < initial_number_of_nodes && p.second < initial_number_of_nodes)
+                    std::cout << p.first+1 << " " << p.second+1 << std::endl;
+                else
+                    s->g->add_edge(p.first,p.second);
+                
+           }
+           else{
+                if(p.first < initial_number_of_nodes && p.second < initial_number_of_nodes)
+                    std::cout << p.first+1 << " " << p.second+1 << std::endl;
+                else
+                    s->g->delete_edge(p.first,p.second);
+           }
         }
     }
+    s->clear_stack_and_output();
 
 	env.end();
 	return 0;
