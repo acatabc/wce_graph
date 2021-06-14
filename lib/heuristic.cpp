@@ -115,11 +115,13 @@ void Solver::localSearch_weighted() {
             break;
         }
 
-        // u is random random vertex according to distribution of costs
-        // vertices resulting in high costs are more likely to be chosen
-        std::vector<int> vertex_costs = compute_vertex_cost();
-        std::discrete_distribution<int> distribution (vertex_costs.begin(), vertex_costs.end());
-        int u = distribution(generator);
+//        // u is random random vertex according to distribution of costs
+//        // vertices resulting in high costs are more likely to be chosen
+//        std::vector<int> vertex_costs = compute_vertex_cost();
+//        std::discrete_distribution<int> distribution (vertex_costs.begin(), vertex_costs.end());
+//        int u = distribution(generator);
+
+        int u = rand() % g->active_nodes.size();
 
         // choose any other random vertex as new cluster for u
         int v = rand() % g->active_nodes.size();
