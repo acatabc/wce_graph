@@ -1,0 +1,34 @@
+file;vertices;edges;time;solsize;recsteps;finished;verified
+/home/users/j/julhen/algEng/test-3/3-actionseq/a001.dimacs;10;8;59.01;44;;1;>>BAD COST<< ;3
+/home/users/j/julhen/algEng/test-3/3-actionseq/a003.dimacs;10;7;59.01;142;;1;correct;
+/home/users/j/julhen/algEng/test-3/3-actionseq/a005.dimacs;10;14;59.01;229;;1;correct;
+/home/users/j/julhen/algEng/test-3/3-actionseq/a007.dimacs;10;3;59.01;0;;1;correct;
+/home/users/j/julhen/algEng/test-3/3-actionseq/a009.dimacs;10;3;59.01;28;;1;correct;
+/home/users/j/julhen/algEng/test-3/3-actionseq/a011.dimacs;20;8;59.01;24;;1;correct;
+/home/users/j/julhen/algEng/test-3/3-actionseq/a013.dimacs;20;20;59.01;204;;1;correct;
+/home/users/j/julhen/algEng/test-3/3-actionseq/a015.dimacs;20;15;59.01;259;;1;correct;
+/home/users/j/julhen/algEng/test-3/3-actionseq/a017.dimacs;20;23;59.01;333;;1;>>BAD COST<< ;5
+/home/users/j/julhen/algEng/test-3/3-actionseq/a019.dimacs;20;10;59.01;252;;1;correct;
+/home/users/j/julhen/algEng/test-3/3-actionseq/a021.dimacs;50;68;59.01;1495;;1;>>BAD COST<< ;129
+/home/users/j/julhen/algEng/test-3/3-actionseq/a023.dimacs;50;97;59.01;2579;;1;>>BAD COST<< ;56
+/home/users/j/julhen/algEng/test-3/3-actionseq/a025.dimacs;50;170;59.01;4913;;1;>>BAD COST<< ;89
+/home/users/j/julhen/algEng/test-3/3-actionseq/a027.dimacs;75;200;59.01;5106;;1;>>BAD COST<< ;567
+/home/users/j/julhen/algEng/test-3/3-actionseq/a029.dimacs;75;262;59.02;7913;;1;>>BAD COST<< ;621
+/home/users/j/julhen/algEng/test-3/3-actionseq/a031.dimacs;100;390;59.01;11269;;1;>>BAD COST<< ;925
+/home/users/j/julhen/algEng/test-3/3-actionseq/a033.dimacs;100;371;59.00;10895;;1;>>BAD COST<< ;958
+/home/users/j/julhen/algEng/test-3/3-actionseq/a035.dimacs;100;335;59.00;9854;;1;>>BAD COST<< ;933
+/home/users/j/julhen/algEng/test-3/3-actionseq/a037.dimacs;100;375;59.00;10839;;1;>>BAD COST<< ;526
+/home/users/j/julhen/algEng/test-3/3-actionseq/a039.dimacs;100;372;59.00;12095;;1;>>BAD COST<< ;1069
+/home/users/j/julhen/algEng/test-3/3-actionseq/a041.dimacs;100;418;59.00;13242;;1;>>BAD COST<< ;1054
+/home/users/j/julhen/algEng/test-3/3-actionseq/a043.dimacs;150;857;59.00;30059;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a045.dimacs;150;1469;59.00;56805;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a047.dimacs;150;848;59.00;31587;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a049.dimacs;150;1395;59.00;51371;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a051.dimacs;150;758;59.00;25743;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a053.dimacs;150;925;59.00;31409;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a055.dimacs;200;1657;59.01;60704;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a057.dimacs;200;1668;59.01;65591;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a059.dimacs;200;1373;59.01;45949;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a061.dimacs;200;1706;59.02;62870;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a063.dimacs;200;1387;59.01;49996;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-3/3-actionseq/a065.dimacs;200;1553;59.01;56346;;1;our own cost is weird

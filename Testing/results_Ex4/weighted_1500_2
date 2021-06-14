@@ -1,0 +1,92 @@
+file;vertices;edges;time;solsize;recsteps;finished;verified
+/home/users/j/julhen/algEng/test-2/2-real-world/w001.dimacs;4;3;59.00;0;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w003.dimacs;6;8;59.01;21;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w005.dimacs;16;118;59.01;4;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w007.dimacs;16;107;59.01;7;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w009.dimacs;13;77;59.01;8;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w011.dimacs;14;88;59.01;10;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w013.dimacs;15;48;59.01;14;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w015.dimacs;10;14;59.01;16;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w017.dimacs;14;60;59.01;20;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w019.dimacs;16;112;59.01;22;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w021.dimacs;11;22;59.01;24;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w023.dimacs;16;39;59.01;80;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w025.dimacs;16;95;59.01;84;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w027.dimacs;16;84;59.01;88;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w029.dimacs;16;68;59.01;92;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w031.dimacs;13;75;59.01;102;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w033.dimacs;16;48;59.00;105;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w035.dimacs;16;45;59.00;122;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w037.dimacs;15;45;59.00;140;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w039.dimacs;18;139;59.00;7;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w041.dimacs;17;40;59.00;16;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w043.dimacs;16;92;59.00;21;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w045.dimacs;15;86;59.00;27;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w047.dimacs;15;81;59.00;38;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w049.dimacs;18;143;59.00;46;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w051.dimacs;17;115;59.00;53;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w053.dimacs;15;82;59.01;56;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w055.dimacs;43;268;59.01;1064;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w057.dimacs;44;893;59.01;216;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w059.dimacs;44;784;59.01;1196;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w061.dimacs;44;634;59.01;1463;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w063.dimacs;44;759;59.01;280;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w065.dimacs;44;304;59.01;345;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w067.dimacs;44;554;59.01;787;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w069.dimacs;44;910;59.00;153;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w071.dimacs;45;313;59.00;226;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w073.dimacs;45;926;59.00;158;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w075.dimacs;45;438;59.00;774;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w077.dimacs;45;635;59.00;1321;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w079.dimacs;42;470;59.00;1462;;1;>>BAD COST<< ;1
+/home/users/j/julhen/algEng/test-2/2-real-world/w081.dimacs;45;833;59.00;840;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w083.dimacs;45;811;59.00;774;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w085.dimacs;45;782;59.00;1031;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w087.dimacs;46;927;59.00;343;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w089.dimacs;49;515;59.00;1739;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w091.dimacs;64;902;59.00;1760;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w093.dimacs;62;1785;59.00;645;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w095.dimacs;64;1632;59.00;1801;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w097.dimacs;60;805;59.00;3313;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w099.dimacs;65;2023;59.00;428;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w101.dimacs;65;1254;59.00;3157;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w103.dimacs;62;1166;59.00;2031;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w105.dimacs;65;1441;59.00;2820;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w107.dimacs;57;917;59.00;2828;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w109.dimacs;77;618;59.00;1470;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w111.dimacs;78;1837;59.00;4685;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w113.dimacs;79;861;59.00;1808;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w115.dimacs;80;2387;59.00;772;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w117.dimacs;81;531;59.00;485;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w119.dimacs;82;1278;59.00;2056;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w121.dimacs;119;2717;59.00;3546;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w123.dimacs;119;2029;59.00;6518;;1;>>BAD COST<< ;4
+/home/users/j/julhen/algEng/test-2/2-real-world/w125.dimacs;128;4088;59.00;2008;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w127.dimacs;123;2155;59.00;5080;;1;>>BAD COST<< ;35
+/home/users/j/julhen/algEng/test-2/2-real-world/w129.dimacs;130;7692;59.00;1399;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w131.dimacs;137;1525;59.00;6106;;1;>>BAD COST<< ;34
+/home/users/j/julhen/algEng/test-2/2-real-world/w133.dimacs;127;1443;59.00;4412;;1;>>BAD COST<< ;41
+/home/users/j/julhen/algEng/test-2/2-real-world/w135.dimacs;108;2811;59.00;11381;;1;>>BAD COST<< ;357
+/home/users/j/julhen/algEng/test-2/2-real-world/w137.dimacs;146;3495;59.00;1784;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w139.dimacs;154;5117;59.00;7945;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w141.dimacs;152;3960;59.00;9095;;1;>>BAD COST<< ;238
+/home/users/j/julhen/algEng/test-2/2-real-world/w143.dimacs;159;1751;59.00;7222;;1;>>BAD COST<< ;107
+/home/users/j/julhen/algEng/test-2/2-real-world/w145.dimacs;160;1673;59.00;5624;;1;>>BAD COST<< ;641
+/home/users/j/julhen/algEng/test-2/2-real-world/w147.dimacs;163;1322;59.00;4776;;1;>>BAD COST<< ;362
+/home/users/j/julhen/algEng/test-2/2-real-world/w149.dimacs;202;10730;59.00;416;;1;correct;
+/home/users/j/julhen/algEng/test-2/2-real-world/w151.dimacs;216;7190;59.00;20798;;1;>>BAD COST<< ;64
+/home/users/j/julhen/algEng/test-2/2-real-world/w153.dimacs;204;938;59.00;3341;;1;>>BAD COST<< ;176
+/home/users/j/julhen/algEng/test-2/2-real-world/w155.dimacs;126;1469;59.00;4758;;1;>>BAD COST<< ;102
+/home/users/j/julhen/algEng/test-2/2-real-world/w157.dimacs;449;8631;59.01;25045;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w159.dimacs;551;18828;59.01;79500;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w161.dimacs;276;5142;59.00;19166;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w163.dimacs;361;18009;59.00;38628;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w165.dimacs;252;10967;59.00;40413;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w167.dimacs;296;22208;59.00;62307;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w169.dimacs;216;2403;59.00;14199;;1;>>BAD COST<< ;1797
+/home/users/j/julhen/algEng/test-2/2-real-world/w171.dimacs;3387;237398;13.56;10706307;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w173.dimacs;2362;72462;6.35;3086751;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w175.dimacs;264;29164;59.00;29825;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w177.dimacs;276;3501;59.00;8866;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w179.dimacs;263;30527;59.00;26519;;1;our own cost is weird
+/home/users/j/julhen/algEng/test-2/2-real-world/w181.dimacs;298;6088;59.00;29941;;1;our own cost is weird
