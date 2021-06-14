@@ -13,11 +13,11 @@
 class Solver {
 private:
     unsigned int rec_steps = 0;
-    WCE_Graph *g;
 public:
     Solver();
     virtual ~Solver();
     WCE_Graph *parse_and_build_graph();
+    WCE_Graph *g;
 
     //solving
     void solve();
