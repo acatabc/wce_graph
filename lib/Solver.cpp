@@ -5,8 +5,8 @@
 #include "../include/utils.h"
 #include <math.h>
 
-const char* FILENAME = "../wce-students/specialTests/w163.dimacs";
-//const char* FILENAME = "../wce-students/3-actionseq/a055.dimacs";
+//const char* FILENAME = "../wce-students/specialTests/w27.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w003.dimacs";
 //const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 

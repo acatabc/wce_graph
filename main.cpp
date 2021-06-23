@@ -15,10 +15,11 @@ void signal_handler(int signal){
 int main() {
     std::signal(SIGALRM, signal_handler);
 
-    alarm(59);
+//    alarm(2);
 
     s = new Solver();
-    s->run_heuristic();
+//    s->run_heuristic();
+    s->deepS();
 //    s->solve();
     return 0;
 }

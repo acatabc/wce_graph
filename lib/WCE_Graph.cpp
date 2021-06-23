@@ -166,7 +166,7 @@ int WCE_Graph::merge(int u, int v) {
 
     int idx = this->adj_matrix.size();
 
-    graph_mod_stack.push(stack_elem{.type = MERGE, .v1 = -1, .v2 = -1, .weight = -1, .uv = idx, .clique = std::vector<int>()});
+    graph_mod_stack.push(stack_elem{.type = MERGE, .v1 = u, .v2 = v, .weight = -1, .uv = idx, .clique = std::vector<int>()});
 
     // setup adjacency matrix for new vertex
     this->adj_matrix.push_back(std::vector<matrix_entry>());

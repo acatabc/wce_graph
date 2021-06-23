@@ -5,6 +5,27 @@
 // ----------------------------
 // ------- data reduction  --------
 
+
+int Solver::deep_data_reduction(int k, int layer){
+    int k_before = k;
+
+//    if(layer %5 ==  0 && layer >= 10){
+////      this->dataRed_heavy_non_edge();
+////      k = dataRed_heavy_edge_single_end(k);
+//      k = dataRed_heavy_non_edge_branch(k);
+//      k = dataRed_heavy_edge_single_end_branch(k);
+//      k = dataRed_large_neighbourhood_I(k);
+//      k = dataRed_heavy_edge_both_ends(k);
+//    }
+
+    k = dataRed_weight_larger_k(k);
+    if(k == -1) return -1;
+
+//    if(k != k_before)
+//        printDebug("Data reduction reduced k to " + std::to_string(k));
+    return k_before - k;
+}
+
 int Solver::data_reduction(int k, int layer){
     int k_before = k;
 
@@ -361,21 +382,24 @@ int Solver::dataRed_remove_existing_clique() {
             }
         }
         if(is_clique){
-//            std:: cout << " is a clique" << std::endl;
-            for(auto i = g->active_nodes.begin(); i != g->active_nodes.end(); ++i){
-                for(int j : component){
-                    if(*i == j){
-                        i = g->active_nodes.erase(i);
-                        i--;
-                    }
-                }
-            }
-            g->graph_mod_stack.push(WCE_Graph::stack_elem{.type = CLIQUE, .v1 = -1, .v2 = -1, .weight = -1, .uv = -1, .clique = component});
+            remove_clique(component);
         }
     }
 
     delete[] visited;
     return 0;
+}
+
+void Solver::remove_clique(std::vector<int> &component){
+    for(auto i = g->active_nodes.begin(); i != g->active_nodes.end(); ++i){
+        for(int j : component){
+            if(*i == j){
+                i = g->active_nodes.erase(i);
+                i--;
+            }
+        }
+    }
+    g->graph_mod_stack.push(WCE_Graph::stack_elem{.type = CLIQUE, .v1 = -1, .v2 = -1, .weight = -1, .uv = -1, .clique = component});
 }
 
 

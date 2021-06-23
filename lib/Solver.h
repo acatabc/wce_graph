@@ -20,6 +20,20 @@ public:
     WCE_Graph *g;
 
     //solving
+    void deepS();
+    int deepB(int c, int layer);
+    int deep_data_reduction(int k, int layer);
+    int get_lower_bound();
+
+    int upperBound = 2000;
+    int get_upper_bound();
+
+    std::stack<WCE_Graph::stack_elem> best_solution_stack = std::stack<WCE_Graph::stack_elem>();
+    void save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem> current_stack);
+    void output_from_best_solution_stack();
+
+
+
     void solve();
     int branch(int k, int layer);
     int branch_old(int k, int layer);
@@ -52,6 +66,7 @@ public:
     int dataRed_heavy_edge_single_end_branch(int k);
     int dataRed_heavy_edge_both_ends(int k);
     int dataRed_remove_existing_clique();
+    void remove_clique(std::vector<int> &component);
     void DFS(int , bool *, std::vector<int>&);
     int dataRed_merge_dnd(int k);
 
@@ -79,7 +94,6 @@ public:
     void heuristic2();
 
     void localSearch();
-    void localSearch_weighted();
 
     void random_cluster_graph();
     int clusterMove(int u, int v);
@@ -88,7 +102,7 @@ public:
     int best_k = INT32_MAX;
     std::vector<std::pair<int,int>> best_solution;
     void save_best_solution();
-    void output_best_solution();
+    void output_heuristic_solution();
     void verify_best_solution();
 
     void output_modified_edges();

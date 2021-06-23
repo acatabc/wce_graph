@@ -30,7 +30,7 @@ void Solver::heuristic1() {
         save_best_solution();    // save computed solution if its better than the best one
 //        verify_clusterGraph();
     }
-    output_best_solution();
+    output_heuristic_solution();
     verify_best_solution();
 }
 
@@ -58,7 +58,7 @@ void Solver::heuristic2() {
 
         g->reset_graph();        // reset graph to its original
         random_cluster_graph();  // greedy cluster graph initialization
-        localSearch_weighted();  // local search until minimum is reached
+        localSearch();  // local search until minimum is reached
         save_best_solution();    // save computed solution if its better than the best one
 
 //        verify_clusterGraph();
@@ -69,36 +69,14 @@ void Solver::heuristic2() {
 //            no_improvement_count += 1;
     }
 
-    output_best_solution();
+    output_heuristic_solution();
 //    verify_best_solution();
 }
 
 
-// iteratively pics a random vertex and moves it to a random different cluster if this results in lower cost k
-void Solver::localSearch() {
-    printDebug("Random cluster graph k: " + std::to_string(compute_modified_edge_cost()));
-
-    int count = 100; // pick maximum number of iterations
-
-    while(!terminate && count > 0){
-        count -= 1;
-
-        // pick random vertex and its random new cluster
-        int u = rand() % g->active_nodes.size();
-        int v = rand() % g->active_nodes.size();
-
-        if(v == u || g->get_weight(u,v) > 0) continue;
-
-        // move u to cluster of v if this results in a lower cost k
-        clusterMove(u,v);
-    }
-}
-
-
-
 // see localSearch()
 // pick random vertex u based on distribution of vertex costs
-void Solver::localSearch_weighted() {
+void Solver::localSearch() {
     std::default_random_engine generator;
 
     printDebug("Random cluster graph k: " + std::to_string(compute_modified_edge_cost()));
@@ -130,6 +108,8 @@ void Solver::localSearch_weighted() {
 
         // move u to cluster of v if this results in a lower cost k
         int k = clusterMove(u,v);
+
+        printDebug(std::to_string(k));
 
         if(k < 0)
             no_improvement_count = 0;
@@ -284,7 +264,7 @@ void Solver::save_best_solution(){
 }
 
 // outputs edges in "best_solution"
-void Solver::output_best_solution(){
+void Solver::output_heuristic_solution(){
     for(auto edge: best_solution){
         std::cout << edge.first + 1 << " " << edge.second + 1 << "\n";
     }
