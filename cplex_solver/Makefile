@@ -84,7 +84,7 @@ abstractSolver_dataReduction.o: $(EXLIB)/abstractSolver_dataReduction.cpp
 solver_P3Search.o: $(EXLIB)/solver_P3Search.cpp
 	$(CCC) -c $(EXLIB)/solver_P3Search.cpp -o solver_P3Search.o
 
-Solver.o: $(EXLIB)/Solver.cpp WCE_Graph.o abstractSolver_dataReduction.o p3_search.o utils.o
-	$(CCC) -c  WCE_Graph.o abstractSolver_dataReduction.o p3_search.o utils.o $(EXLIB)/Solver.cpp -o Solver.o
+Solver.o: $(EXLIB)/Solver.cpp WCE_Graph.o abstractSolver_dataReduction.o solver_P3Search.o utils.o
+	$(CCC) -c  WCE_Graph.o abstractSolver_dataReduction.o solver_P3Search.o utils.o $(EXLIB)/Solver.cpp -o Solver.o
 
 
