@@ -36,7 +36,7 @@ int main(){
         int node_u = s->g->active_nodes.at(u);
         int node_v = s->g->active_nodes.at(v);
         //std::cout << node_u << " " << node_v << std::endl;
-        var.add(IloNumVar(env, 0,1,ILOINT));
+        var.add(IloNumVar(env, 0.0,1.0,ILOFLOAT));
        // std::cout <<"size "<< var.getSize() << std::endl;
         lookup_table.push_back(std::make_pair(node_u,node_v));
        
@@ -45,17 +45,16 @@ int main(){
         //expression building: function to minimize
         int weight = s->g->get_weight(node_u, node_v);
         if(weight > 0){
-            expr += (-var[num_edges-1])*weight;
+            expr += (1-var[num_edges-1])*weight;
         }else{
             if(weight == DO_NOT_ADD)
               expr += var[num_edges-1]*DO_NOT_DELETE;
             else
                 expr += var[num_edges-1]*abs(weight);
         }
-  //  std::cout << expr << std::endl;
       }
     }
-   // std::cout << expr << std::endl;
+
     //adding constraints
 
     for(int u = 0; u < num_edges ; ++u){
@@ -83,13 +82,8 @@ int main(){
 	IloCplex cplex(model);
     cplex.setOut(env.getNullStream());
 	cplex.solve();
-        /*std::cout <<"active nodes" << std::endl;
-        for(int i : s->g->active_nodes){
-            std::cout << i << std::endl;
-        }
-        std::cout <<"end active nodes" << std::endl;
-*/
 
+/*+++++++++++++++++ output start +++++++++++++++++++++++
     for(int i = 0; i  < num_edges ; ++i){
         //auto b = cplex.getValue(var[i]);
         auto val = cplex.getIntValue(var[i]);
@@ -114,7 +108,11 @@ int main(){
         }
     }
     s->clear_stack_and_output();
+    ++++++++++++++++++ output end +++++++++++++++++++++++++*/
 
-	env.end();
-	return 0;
+    int lower_bound = cplex.getObjValue();
+    std::cout << "# " << lower_bound<< std::endl;
+
+    env.end();
+	return lower_bound;
 }
