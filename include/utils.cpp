@@ -2,8 +2,8 @@
 
 #include <iostream>
 #include <tuple>
-#include "WCE_Graph.h"
-#include "../include/utils.h"
+#include "../lib/WCE_Graph.h"
+#include "utils.h"
 
 void printList(std::list<std::tuple<int, int, int, int>> mylist){
 #ifdef DEBUG

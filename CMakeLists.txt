@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 add_executable(
         algeng_wce_solver
         main.cpp
-        lib/utils.cpp include/utils.h
+        include/utils.cpp include/utils.h
         lib/WCE_Graph.cpp lib/WCE_Graph.h
         lib/AbstractSolver.h lib/AbstractSolver.cpp
         lib/HeuristicSolver.h lib/HeuristicSolver.cpp
