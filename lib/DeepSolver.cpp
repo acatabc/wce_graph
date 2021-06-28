@@ -11,17 +11,19 @@ void DeepSolver::solve() {
 
     int dataRed_cost = data_reduction_before_branching();
 
-    upperBound =  get_upper_bound() + dataRed_cost; // TODO improvem upper bound, define search time
+    int k_heuristic =  get_upper_bound() + dataRed_cost; // TODO improvem upper bound, define search time
 
-    int c = branch(dataRed_cost,0);
+    upperBound = k_heuristic;
+
+    int k = branch(dataRed_cost,0);
     g->recover_graph(0);
 
     output_best_solution();
     g->verify_cluster_graph();
 
     std::cout << "#recursive steps: " << rec_steps << std::endl;
-
-    printDebug("final k:" + std::to_string(c) + "\n");
+    std::cout << "#heuristic k:     " << k_heuristic << std::endl;
+    std::cout << "#final k:         " << k << std::endl;
 }
 
 
@@ -43,7 +45,7 @@ int DeepSolver::branch(int c, int layer){
         return upperBound;
     }
 
-    auto p3 = get_max_cost_p3(); // TODO mincost p3
+    auto p3 = get_min_edge_p3();
 
     if(p3.i == -1){
         printDebug("FOUND CLUSTER GRAPH");
@@ -54,19 +56,47 @@ int DeepSolver::branch(int c, int layer){
 
     rec_steps++;
 
-    int u = p3.i; // it holds w(u,v) >= 0
-    int v = p3.j;
-    int w = p3.k;
+    printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(p3.i) + "," + std::to_string(p3.j) + ","+ std::to_string(p3.k) + ")");
 
-    printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+    // choose first Merge vs Delete depending on which one is cheaper
+    // get min cost edge uv
+    // a) uv == ij --> 1) delete ij 2) merge ij
+    // b) uv != ij --> 1) merge ij  2) delete ij
+    if(get_idx_min_edge(p3) == 0) upperBound = branch_edge_first_delete(c, p3.i, p3.j, layer);
+    else upperBound = branch_edge_first_merge(c, p3.i, p3.j, layer);
 
-    // TODO choose which edge of p3 to branch on
-    // TODO choose first Merge vs Delete depending on which one is cheaper
+    g->recover_graph(stack_size_0);
+
+    return upperBound;
+}
+
+
+
+int DeepSolver::get_idx_min_edge(DeepSolver::p3 &p3){
+    std::vector<int> weights = std::vector<int>();
+    weights.push_back(g->get_weight(p3.i, p3.j));
+    weights.push_back(g->get_weight(p3.i, p3.k));
+    weights.push_back(g->get_weight(p3.j, p3.k));
+    int min_idx = -1;
+    int min = INT32_MAX;
+    int i = 0;
+    for(int w : weights){
+        if(w != DO_NOT_ADD && abs(w) < min){
+            min_idx = i;
+            min = abs(w);
+        }
+        i++;
+    }
+    return min_idx;
+}
+
+int DeepSolver::branch_edge_first_delete(int c, int u, int  v, int layer){
+    // first delete, then merge
+    int stack_size_1 = g->graph_mod_stack.size();
 
     // 1. Branch DELETE (u,v)
     printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
     int weight_uv = g->get_weight(u,v);
-    int stack_size_1 = g->graph_mod_stack.size();
     g->set_non_edge(u, v);
     upperBound = this->branch(c + weight_uv, layer + 1);
     g->recover_graph(stack_size_1);
@@ -75,13 +105,37 @@ int DeepSolver::branch(int c, int layer){
     printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
     int merge_cost = g->merge(u,v);
     if(merge_cost == -1) {  // both (delete/merge) failed -> no solution for this k exists
-        g->recover_graph(stack_size_0);
-        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
+        g->recover_graph(stack_size_1);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) +  ")");
         return upperBound;
     }
     upperBound = this->branch(c + merge_cost, layer + 1); // do not add weight(u,v) since (u,v) already exists
-    g->recover_graph(stack_size_0);
+    g->recover_graph(stack_size_1);
+    return upperBound;
+}
 
+
+int DeepSolver::branch_edge_first_merge(int c, int u, int  v, int layer){
+    // first merge, then delete
+    int stack_size_1 = g->graph_mod_stack.size();
+
+    // 1. Branch MERGE (u,v)
+    printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
+    int merge_cost = g->merge(u,v);
+    if(merge_cost == -1) {  // both (delete/merge) failed -> no solution for this k exists
+        g->recover_graph(stack_size_1);
+        printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) +  ")");
+        return upperBound;
+    }
+    upperBound = this->branch(c + merge_cost, layer + 1); // do not add weight(u,v) since (u,v) already exists
+    g->recover_graph(stack_size_1);
+
+    // 1. Branch DELETE (u,v)
+    printDebug("Branch DELETE (" + std::to_string(u) + "," + std::to_string(v) + ")");
+    int weight_uv = g->get_weight(u,v);
+    g->set_non_edge(u, v);
+    upperBound = this->branch(c + weight_uv, layer + 1);
+    g->recover_graph(stack_size_1);
     return upperBound;
 }
 
@@ -95,7 +149,6 @@ int DeepSolver::get_lower_bound(){
 
 
 int DeepSolver::get_upper_bound(){
-
     HeuristicSolver h = HeuristicSolver(g);
     return h.compute_upper_bound();
 }
@@ -115,18 +168,13 @@ void DeepSolver::save_current_solution(std::stack<WCE_Graph::stack_elem> current
 
 // outputs edges in "best_solution_heuristic"
 void DeepSolver::output_best_solution(){
+    // recover graph from best_solution_stack
     while(!best_solution_stack.empty()){
         WCE_Graph::stack_elem el = best_solution_stack.top();
         if(el.type == MERGE) {
-//            if(g->get_weight_original(el.v1, el.v2) <= 0){
-//                final_output(el.v1, el.v2);
-//            }
             g->merge(el.v1, el.v2);
         }
         else if(el.type == SET_INF) {
-//            if(g->get_weight_original(el.v1, el.v2) > 0){
-//                final_output(el.v1, el.v2);
-//            }
             g->set_non_edge(el.v1, el.v2);
         }
         else if(el.type == CLIQUE){
@@ -140,15 +188,11 @@ void DeepSolver::output_best_solution(){
 }
 
 
+// iterates over all vertex tuples and returns min_min_edge p3
+DeepSolver::p3 DeepSolver::get_min_cost_p3(){
 
-
-// iterates over all vertex tuples and returns max_cost p3
-DeepSolver::p3 DeepSolver::get_max_cost_p3(){
-
-    int u = -1;
-    int v = -1;
-    int w = -1;
-    int max_cost = INT32_MIN;
+    DeepSolver::p3 best_p3 = {.i = -1, .j = -1, .k = -1, .cost_sum = -1 ,.min_cost = -1};
+    int min_cost = INT32_MAX;
     for(int i: this->g->active_nodes){
         for(int j: this->g->active_nodes){
             for(int k : this->g->active_nodes){
@@ -164,18 +208,64 @@ DeepSolver::p3 DeepSolver::get_max_cost_p3(){
                     if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) current_cost += abs(weight_i_j);
                     if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) current_cost += abs(weight_j_k);
 
-                    // update maximum cost and corresponding p3
-                    if(current_cost > max_cost) {
-                        max_cost = current_cost;
-                        u = i;
-                        v = j;
-                        w = k;
+                    // update minimum cost and corresponding p3
+                    if(current_cost < min_cost) {
+                        min_cost = current_cost;
+                        best_p3.i = i;
+                        best_p3.j = j;
+                        best_p3.k = k;
+                        best_p3.cost_sum = current_cost;
                     }
                 }
             }
 
         }
     }
-    return DeepSolver::p3{.i = u, .j = v, .k = w, .cost_sum = -1 ,.min_cost = -1};
+    return best_p3;
+}
+
+
+// iterates over all vertex tuples and returns min_min_edge p3
+DeepSolver::p3 DeepSolver::get_min_edge_p3(){
+
+    DeepSolver::p3 best_p3 = {.i = -1, .j = -1, .k = -1, .cost_sum = -1 ,.min_cost = -1};
+    int min_cost = INT32_MAX;
+    for(int i: this->g->active_nodes){
+        for(int j: this->g->active_nodes){
+            for(int k : this->g->active_nodes){
+                if(i == j || i == k || k == j) continue;
+                int weight_i_j = g->get_weight(i,j);
+                int weight_i_k = g->get_weight(i,k);
+                int weight_j_k = g->get_weight(j,k);
+                if(weight_i_j > 0 && weight_i_k > 0 && weight_j_k <= 0){
+
+                    // consider edges for update min_cost (only edges that are allowed to be modified)
+                    bool improved = false;
+                    if(!improved && weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD && abs(weight_i_k) < min_cost) {
+                        min_cost = abs(weight_i_k);
+                        improved = true;
+                    }
+                    if(!improved && weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD && abs(weight_i_j) < min_cost) {
+                        min_cost = abs(weight_i_j);
+                        improved = true;
+                    }
+                    if(!improved && weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD && abs(weight_j_k) < min_cost) {
+                        min_cost = abs(weight_j_k);
+                        improved = true;
+                    }
+
+                    // update minimum cost and corresponding p3
+                    if(improved) {
+                        best_p3.i = i;
+                        best_p3.j = j;
+                        best_p3.k = k;
+                        best_p3.min_cost = min_cost;
+                    }
+                }
+            }
+
+        }
+    }
+    return best_p3;
 }
 

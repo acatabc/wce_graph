@@ -68,7 +68,6 @@ int HeuristicSolver::compute_upper_bound() {
 
 int HeuristicSolver::local_search() {
 
-
     int no_improvement_count = 0; // counts the number of iterations without improvement
     int dk = 0;
 
@@ -91,9 +90,8 @@ int HeuristicSolver::local_search() {
         // move u to cluster of cluster if this results in a lower cost k
         int k = move_to_cluster(u, cluster);
 
-        printDebug(std::to_string(k));
-
         if(k < 0) {
+            printDebug("improvement k: " + std::to_string(k));
             no_improvement_count = 0;
             dk += k;
         }else
@@ -111,20 +109,27 @@ int HeuristicSolver::move_to_cluster(int u, int v) {
     int dk = 0;
     for(int neigh_u : neighborhood_u.first){
         if(neigh_u == u) continue;
-        int weight = g->get_weight_original(u, neigh_u);
         // delete all neighbors of u
+        int weight = g->get_weight_original(u, neigh_u);
+        if(weight == DO_NOT_ADD) continue;
         if(weight > 0)
             dk += abs(weight); // add cost for deleting edge
         else
             dk -= abs(weight); // subtract cost since deleting recovers original connection
+
     }
+
+    // at this point dk is the cost for making u a single cluster
+    int cost_u_alone = dk;
+
+    // compute cost for adding u to cluster v
     std::pair<std::list<int>, std::list<int>> neighborhood_v = g->closed_neighbourhood(v);
     for(int neigh_v : neighborhood_v.first){
         if(neigh_v == u) continue;
         // add u to cluster of v
         int weight = g->get_weight_original(u, neigh_v);
         if(weight == DO_NOT_ADD) { // not allowed to add u to cluster of v
-            dk = INT32_MAX;
+            dk = 0;
             break;
         }
         if(weight < 0)
@@ -133,17 +138,27 @@ int HeuristicSolver::move_to_cluster(int u, int v) {
             dk -= abs(weight); // subtract cost since adding recovers original connection
     }
 
-    // move u to the new cluster
-    if(dk < 0){
+    // it is best to make u a single cluster
+    if(cost_u_alone < dk && cost_u_alone < 0){
         printDebug("found dk: " + std::to_string(dk));
+        // delete all neighbors of u
         for(int neigh_u : neighborhood_u.first){
             if(neigh_u == u) continue;
-            // delete all neighbors of u
             g->delete_edge(u, neigh_u);
         }
+        return cost_u_alone;
+    }
+    // it is best to move u to cluster of v
+    else if(dk < 0){
+        printDebug("found dk: " + std::to_string(dk));
+        // delete all neighbors of u
+        for(int neigh_u : neighborhood_u.first){
+            if(neigh_u == u) continue;
+            g->delete_edge(u, neigh_u);
+        }
+        // add u to cluster of v
         for(int neigh_v : neighborhood_v.first){
             if(neigh_v == u) continue;
-            // add u to v of v
             g->add_edge(u, neigh_v);
         }
     }
@@ -154,13 +169,23 @@ int HeuristicSolver::move_to_cluster(int u, int v) {
 // randomly chooses a vertex and makes its neighborhood a cluster until no vertices are left
 int HeuristicSolver::greedy_cluster_graph() {
     std::vector<int> vertices = g->active_nodes;
-//    srand(21);
 
     int k = 0;
     while (vertices.size() != 0) {
+        restart:
         // choose a random vertex and get its neighborhood
         int u = vertices[rand() % vertices.size()];
         std::pair<std::list<int>, std::list<int>> neighborhood = g->closed_neighbourhood(u);
+
+        // check for DNA edges between neighbors
+        for(int neigh1 : neighborhood.first) {
+            for (int neigh2 : neighborhood.first) {
+                if (neigh1 == neigh2) continue;
+                if (g->get_weight(neigh1, neigh2) == DO_NOT_ADD) {
+                    goto restart;
+                }
+            }
+        }
 
         // make cluster C = {u} + N(u)
         for(int neigh1 : neighborhood.first){
@@ -185,17 +210,6 @@ int HeuristicSolver::greedy_cluster_graph() {
         // delete C = {u} + N(u) from V
         // all vertices in C form a cluster and can now be disregarded
         for(int neigh : neighborhood.first){
-//            int dneigh1 = 119;
-//            int dneigh2 = 101;
-//            int dneigh3 = 151;
-//            if(neigh == dneigh1 ||  neigh == dneigh2 || neigh == dneigh3 ){
-//                printList_int(neighborhood.first);
-//                printList_int(neighborhood.second);
-//                std::cout << "(" << dneigh1 << "," << dneigh2 << "):" << g->get_weight(dneigh1,dneigh2) << "/" << g->get_weight_original(dneigh2,dneigh1) << "\n";
-//                std::cout << "(" << dneigh2 << "," << dneigh3 << "):" << g->get_weight(dneigh2,dneigh3) << "/" << g->get_weight_original(dneigh2,dneigh3) << "\n";
-//                std::cout << "(" << dneigh3 << "," << dneigh1 << "):" << g->get_weight(dneigh3,dneigh1) << "/" << g->get_weight_original(dneigh3,dneigh1) << "\n";
-//                printDebug("stop");
-//            }
             std::vector<int>::iterator it;
             for(it=vertices.begin(); it != vertices.end(); ++it){
                 if(*it == neigh){
@@ -207,7 +221,6 @@ int HeuristicSolver::greedy_cluster_graph() {
     }
 
     printDebug("Greedy cluster graph k: " + std::to_string(k));
-
 
     return k;
 }

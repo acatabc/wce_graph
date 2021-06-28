@@ -166,7 +166,9 @@ int WCE_Graph::get_cost(int u, int v, int w) {
 // returns -1 if merging is not possible because of conflicting edges (DO_NOT_DELETE/DO_NOT_ADD)
 int WCE_Graph::merge(int u, int v) {
 
-    if(get_weight(u,v) == DO_NOT_ADD) throwError("Cannot merge edge which is DNA ");
+    if(get_weight(u,v) == DO_NOT_ADD) {
+        return -1;
+    }
 
     int idx = this->adj_matrix.size();
 
