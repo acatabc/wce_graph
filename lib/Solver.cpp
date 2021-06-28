@@ -6,12 +6,14 @@
 #include <math.h>
 
 //const char* FILENAME = "../wce-students/specialTests/w27.dimacs";
-const char* FILENAME = "../wce-students/2-real-world/w003.dimacs";
+const char* FILENAME = "../wce-students/2-real-world/w005.dimacs";
 //const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
 //const char* FILENAME = "../test_data/w001.dimacs";
 
 #define NONE (-1)
 #define CLUSTER_GRAPH (-2)
+
+
 
 Solver::Solver(){
     this->g = this->parse_and_build_graph();
@@ -25,7 +27,7 @@ void Solver::solve() {
     int stack_before_branching = g->graph_mod_stack.size();
 
     // compute lower bound iterating over all existent p3s
-    int lower_bound_k = std::get<1>(get_best_p3_and_lowerBound_improved());
+    int lower_bound_k = std::get<1>(get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_FAST));
 
     int k = lower_bound_k + cost_before_branching;
 
@@ -44,7 +46,7 @@ void Solver::solve() {
         k++;
     }
 
-    verify_clusterGraph(); // only used in debug
+    verify_cluster_graph(); // only used in debug
 
     std::cout << "#recursive steps: " << rec_steps << std::endl;
 
@@ -67,8 +69,8 @@ int Solver::branch(int k, int layer){
     }
 
     // get best p3 and compute a lower bound
-    std::tuple<std::tuple<int, int, int>, int> tuple;
-    tuple = get_best_p3_and_lowerBound_improved();
+    std::tuple<Solver::p3, int> tuple;
+    tuple = get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_FAST);
     auto p3 = std::get<0>(tuple);
     int lower_bound_k = std::get<1>(tuple);
     if(lower_bound_k > k) {
@@ -76,16 +78,16 @@ int Solver::branch(int k, int layer){
         return NONE;
     }
 
-    if(std::get<0>(p3) == -1){
+    if(p3.i == -1){
         printDebug("FOUND CLUSTER GRAPH");
         return CLUSTER_GRAPH;
     }
 
     rec_steps++;
 
-    int u = std::get<0>(p3);
-    int v = std::get<1>(p3);
-    int w = std::get<2>(p3);
+    int u = p3.i;
+    int v = p3.j;
+    int w = p3.k;
 
     printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
 
@@ -95,7 +97,7 @@ int Solver::branch(int k, int layer){
     int stack_size_1 = g->graph_mod_stack.size();
     g->set_non_edge(u, v);
     if(this->branch(k - weight_uv, layer + 1) == CLUSTER_GRAPH){
-        final_output(u,v);
+//        final_output(u,v);
         return CLUSTER_GRAPH;
     }
     else undo_data_reduction(stack_size_1);
@@ -134,13 +136,23 @@ void Solver::clear_stack_and_output(){
     while (g->graph_mod_stack.size() != 0){
         WCE_Graph::stack_elem el = g->graph_mod_stack.top();
         if(el.type == MERGE) {
-            int uv = el.uv;
-            printDebug("unmerge " + std::to_string(uv));
-            int dk = unmerge_and_output(uv);
-            k += dk;
+            printDebug("unmerge " + std::to_string(el.uv));
+            if(el.v1 < g->num_vertices && el.v2 < g->num_vertices){
+                if(g->get_weight(el.v1, el.v2) <= 0){
+                    final_output(el.v1, el.v2);
+                }
+            }
+            g->add_edge(el.v1, el.v2);
+            k += unmerge_and_propagate(el.uv);
+
         }
         else if(el.type == SET_INF) {
             g->graph_mod_stack.pop();
+            if(el.v1 < g->num_vertices && el.v2 < g->num_vertices){
+                if(g->get_weight_original(el.v1, el.v2) > 0){
+                    final_output(el.v1, el.v2);
+                }
+            }
         }
         else if(el.type == CLIQUE){
             for(int i: el.clique){
@@ -153,15 +165,10 @@ void Solver::clear_stack_and_output(){
 }
 
 // unmerges vertex uv and outputs all edges {x,u} and {x,v} that had to be modified for merging
-int Solver::unmerge_and_output(int uv){
+int Solver::unmerge_and_propagate(int uv){
     std::vector<int> uv_children = g->merge_map[uv];
 
     printDebug("Output for unmerging " + std::to_string(uv) + " -> (" + std::to_string(uv_children[0]) + "," + std::to_string(uv_children[1]) + ")");
-    if(g->get_weight(uv_children[0],uv_children[1]) <= 0){
-        if(uv_children[0] < g->num_vertices && uv_children[1] < g->num_vertices)
-            final_output(uv_children[0],uv_children[1]);
-    }
-    g->add_edge(uv_children[0],uv_children[1]);
 
     int dk = 0;
     for(int x : g->active_nodes) {
@@ -269,7 +276,7 @@ WCE_Graph *Solver::parse_and_build_graph(){
 
 
 // verify that the current graph is now a cluster graph
-void Solver::verify_clusterGraph(){
+void Solver::verify_cluster_graph(){
 #ifdef DEBUG
     printDebug("\nVerifying solution...");
     auto p3 = this->get_max_cost_p3_naive();

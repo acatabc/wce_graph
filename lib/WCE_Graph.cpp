@@ -283,6 +283,20 @@ void WCE_Graph::set_non_edge(int u, int v) {
 //    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ")");
 }
 
+
+void WCE_Graph::remove_clique(std::vector<int> &component){
+    for(auto i = active_nodes.begin(); i != active_nodes.end(); ++i){
+        for(int j : component){
+            if(*i == j){
+                i = active_nodes.erase(i);
+                i--;
+            }
+        }
+    }
+    graph_mod_stack.push(WCE_Graph::stack_elem{.type = CLIQUE, .v1 = -1, .v2 = -1, .weight = -1, .uv = -1, .clique = component});
+}
+
+
 void WCE_Graph::undo_final_modification(){
     stack_elem el = graph_mod_stack.top();
     if(el.type == MERGE)
@@ -299,6 +313,82 @@ void WCE_Graph::undo_final_modification(){
         graph_mod_stack.pop();
     }
 }
+
+
+void WCE_Graph::DFS(int i, bool *visited, std::vector<int>& component) {
+    visited[i] = true;
+//    std::cout << i+1 << " ";
+    component.push_back(i);
+    for(int j : active_nodes){
+        if(i == j) continue;
+        // for {i,j} = 0 we consider i,j as not adjacent (we delete {i,j} later in unmerging)
+        // thus, i and j are in different components if {i,j} <= 0
+        if(get_weight(i,j) > 0){
+            if(visited[j] == false){
+                DFS(j, visited, component);
+            }
+        }
+    }
+    return;
+}
+
+
+// param: u is the index of the vertex of which the neighbours are collected
+// return: - pair for neighbourhood(first item in pair) - all the vertices that are adjacent to u,
+//         - not_neighbours(second item in pair) - all vertices that are not adjacent to u
+//
+std::pair<std::list<int>, std::list<int>> WCE_Graph::closed_neighbourhood(int u) {
+    std::list<int> neighbours;
+    std::list<int> not_neighbours;
+    for(int i : active_nodes){
+        if(i == u) continue;
+        if(get_weight(u,i) > 0){
+            neighbours.push_back(i);
+        }else if(get_weight(u,i) <= 0){  // 0-edge = non-edge
+            not_neighbours.push_back(i);
+        }
+    }
+    neighbours.push_back(u);
+    return std::make_pair(neighbours, not_neighbours);
+}
+
+//calculates the costs to make the neighbourhood a clique
+int WCE_Graph::deficiency(std::list<int> neighbours) {
+    int costs = 0;
+    while (!neighbours.empty()) {
+        int i = neighbours.front();
+        neighbours.pop_front();
+        for (int j : neighbours) {
+            if ( i == j) continue;
+            if (get_weight(i, j) < 0) {
+                if(get_weight(i,j) == DO_NOT_ADD){
+                    return DO_NOT_DELETE; // abs(DO_NOT_ADD) is DO_NOT_ADD again but a high value should be returned
+                }
+                costs += abs(get_weight(i, j));
+            }
+        }
+    }
+    return costs;
+}
+
+//calculates the cost to cut of the neighbourhood(neighbourhood) from the rest of the graph(rest_graph)
+int WCE_Graph::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph) {
+    int cut_costs = 0;
+    for(int i : neighbourhood){
+        for(int j : rest_graph){
+            if(i == j)continue;
+            int weight = get_weight(i,j);
+            if(weight > 0){
+                if(weight == DO_NOT_DELETE){
+                    return DO_NOT_DELETE;
+                }
+                cut_costs += weight;
+            }
+        }
+    }
+    return cut_costs;
+}
+
 
 
 // ---------------------------------------

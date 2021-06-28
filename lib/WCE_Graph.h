@@ -46,6 +46,7 @@ public:
     std::vector<std::vector<int>> merge_map;
     int merge(int, int);
     void set_non_edge(int u, int v);
+    void remove_clique(std::vector<int> &component);
     void undo_final_modification();
 
     struct stack_elem{
@@ -57,6 +58,12 @@ public:
         std::vector<int> clique; // remove clique
     };
     std::stack<stack_elem> graph_mod_stack;
+
+
+    void DFS(int , bool *, std::vector<int>&);
+    std::pair<std::list<int>, std::list<int>> closed_neighbourhood(int u);
+    int deficiency(std::list<int> neighbours);
+    int cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph);
 
     void printGraph(std::ostream &os);
     void print_active_graph(std::ostream &os);

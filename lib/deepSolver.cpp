@@ -19,7 +19,7 @@ void Solver::deepS() {
     }
     else{
         output_from_best_solution_stack();
-        verify_clusterGraph();
+        verify_cluster_graph();
     }
 
     std::cout << "#recursive steps: " << rec_steps << std::endl;
@@ -46,9 +46,9 @@ int Solver::deepB(int c, int layer){
         return upperBound;
     }
 
-    auto p3 = get_max_cost_p3_naive(); // TODO mincost p3
+    auto p3 = get_max_cost_p3(); // TODO mincost p3
 
-    if(std::get<0>(p3) == -1){
+    if(p3.i == -1){
         printDebug("FOUND CLUSTER GRAPH");
         save_into_best_solution_stack(g->graph_mod_stack);
         undo_data_reduction(stack_size_0);
@@ -57,9 +57,9 @@ int Solver::deepB(int c, int layer){
 
     rec_steps++;
 
-    int u = std::get<0>(p3); // it holds w(u,v) >= 0
-    int v = std::get<1>(p3);
-    int w = std::get<2>(p3);
+    int u = p3.i; // it holds w(u,v) >= 0
+    int v = p3.j;
+    int w = p3.k;
 
     printDebug("Layer " + std::to_string(layer) + " P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
 
@@ -90,7 +90,7 @@ int Solver::deepB(int c, int layer){
 
 
 int Solver::get_lower_bound(){
-    std::tuple<std::tuple<int, int, int>, int> tuple = get_best_p3_and_lowerBound_improved();
+    std::tuple<Solver::p3, int> tuple = get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_FAST);
     int lowerBound = std::get<1>(tuple);
     return lowerBound;
 }
@@ -133,24 +133,24 @@ void Solver::output_from_best_solution_stack(){
     while(!best_solution_stack.empty()){
         WCE_Graph::stack_elem el = best_solution_stack.top();
         if(el.type == MERGE) {
-            if(g->get_weight_original(el.v1, el.v2) <= 0){
-                final_output(el.v1, el.v2);
-            }
+//            if(g->get_weight_original(el.v1, el.v2) <= 0){
+//                final_output(el.v1, el.v2);
+//            }
             g->merge(el.v1, el.v2);
         }
         else if(el.type == SET_INF) {
-            if(g->get_weight_original(el.v1, el.v2) > 0){
-                final_output(el.v1, el.v2);
-            }
+//            if(g->get_weight_original(el.v1, el.v2) > 0){
+//                final_output(el.v1, el.v2);
+//            }
             g->set_non_edge(el.v1, el.v2);
         }
         else if(el.type == CLIQUE){
-            remove_clique(el.clique);
+            g->remove_clique(el.clique);
         }
         best_solution_stack.pop();
 
     }
-    verify_clusterGraph();
+    verify_cluster_graph();
     clear_stack_and_output();
 }
 

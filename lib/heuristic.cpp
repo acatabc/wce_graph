@@ -15,7 +15,7 @@ void Solver::heuristic0() {
     random_cluster_graph();
     localSearch();
     output_modified_edges();
-    verify_clusterGraph();
+    verify_cluster_graph();
 }
 
 void Solver::heuristic1() {
@@ -28,7 +28,7 @@ void Solver::heuristic1() {
         random_cluster_graph();  // greedy cluster graph initialization
         localSearch();           // local search until minimum is reached
         save_best_solution();    // save computed solution if its better than the best one
-//        verify_clusterGraph();
+//        verify_cluster_graph();
     }
     output_heuristic_solution();
     verify_best_solution();
@@ -61,7 +61,7 @@ void Solver::heuristic2() {
         localSearch();  // local search until minimum is reached
         save_best_solution();    // save computed solution if its better than the best one
 
-//        verify_clusterGraph();
+//        verify_cluster_graph();
 
 //        if(old_k != best_k)
 //            no_improvement_count = 0;
@@ -104,7 +104,10 @@ void Solver::localSearch() {
         // choose any other random vertex as new cluster for u
         int v = rand() % g->active_nodes.size();
 
-        if(v == u || g->get_weight(u,v) > 0) continue;
+        if(v == u || g->get_weight(u,v) > 0) {
+            no_improvement_count += 1;
+            continue;
+        }
 
         // move u to cluster of v if this results in a lower cost k
         int k = clusterMove(u,v);
@@ -123,7 +126,7 @@ void Solver::localSearch() {
 int Solver::clusterMove(int u, int v) {
     int k = 0;
 
-    std::pair<std::list<int>, std::list<int>> neighborhood_u = closed_neighbourhood(u);
+    std::pair<std::list<int>, std::list<int>> neighborhood_u = g->closed_neighbourhood(u);
     for(int neigh_u : neighborhood_u.first){
         if(neigh_u == u) continue;
         // delete all neighbors of u
@@ -132,7 +135,7 @@ int Solver::clusterMove(int u, int v) {
         else
             k -= abs(g->get_weight_original(u,neigh_u));
     }
-    std::pair<std::list<int>, std::list<int>> neighborhood_v = closed_neighbourhood(v);
+    std::pair<std::list<int>, std::list<int>> neighborhood_v = g->closed_neighbourhood(v);
     for(int neigh_v : neighborhood_v.first){
         if(neigh_v == u) continue;
         // add u to cluster of v
@@ -167,7 +170,7 @@ void Solver::random_cluster_graph() {
     while (vertices.size() != 0) {
         // choose a random vertex and get its neighborhood
         int u = vertices[rand() % vertices.size()];
-        std::pair<std::list<int>, std::list<int>> neighborhood = closed_neighbourhood(u);
+        std::pair<std::list<int>, std::list<int>> neighborhood = g->closed_neighbourhood(u);
 
         // make cluster C = {u} + N(u)
         for(int neigh1 : neighborhood.first){
@@ -322,15 +325,15 @@ void Solver::verify_best_solution(){
     }
 
     printDebug("\n#Verifying best solution...");
-    auto p3 = this->get_max_cost_p3_naive();
-    if(std::get<0>(p3) == -1){
+    auto p3 = this->get_max_cost_p3();
+    if(p3.i == -1){
         printDebug("#VERIFICATION SUCCESS\n");
     } else {
         printDebug("#VERIFICATION FAIL:");
-        print_tuple(p3);
-        int u = std::get<0>(p3);
-        int v = std::get<1>(p3);
-        int w = std::get<2>(p3);
+//        print_tuple(p3);
+        int u = p3.i;
+        int v = p3.j;
+        int w = p3.k;
         std::cout << "(" << u << "," << v << "):" << g->get_weight(u,v) << "/" << g->get_weight_original(u,v) << "\n";
         std::cout << "(" << v << "," << w << "):" << g->get_weight(w,v) << "/" << g->get_weight_original(w,v) << "\n";
         std::cout << "(" << u << "," << w << "):" << g->get_weight(u,w) << "/" << g->get_weight_original(u,w) << "\n";

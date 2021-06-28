@@ -19,7 +19,7 @@ int main() {
 
     s = new Solver();
 //    s->run_heuristic();
-    s->deepS();
-//    s->solve();
+//    s->deepS();
+    s->solve();
     return 0;
 }
