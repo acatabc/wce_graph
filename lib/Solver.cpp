@@ -46,7 +46,7 @@ void Solver::solve() {
         k++;
     }
 
-    verify_cluster_graph(); // only used in debug
+    g->verify_cluster_graph(); // only used in debug
 
     std::cout << "#recursive steps: " << rec_steps << std::endl;
 
@@ -252,6 +252,7 @@ WCE_Graph *Solver::parse_and_build_graph(){
     }
 
     WCE_Graph *g = new WCE_Graph(num_vertices);
+
     int v, w, weight;
     while(std::cin){
         std::cin >> v >> w >> weight;
@@ -262,11 +263,6 @@ WCE_Graph *Solver::parse_and_build_graph(){
             g->set_weight_original(v, w, weight);
         }
     }
-    for(int i = 0; i< g->num_vertices; i++){
-        std::vector<int> u = {i};
-        g->merge_map.push_back(u);
-        g->active_nodes.push_back(i);
-    }
     return g;
 }
 
@@ -274,24 +270,4 @@ WCE_Graph *Solver::parse_and_build_graph(){
 
 
 // ------ Debug ----
-
-
-// verify that the current graph is now a cluster graph
-void Solver::verify_cluster_graph(){
-#ifdef DEBUG
-    printDebug("\nVerifying solution...");
-    auto p3 = this->get_max_cost_p3();
-    if(p3.i == -1){
-        printDebug("VERIFICATION SUCCESS\n");
-    } else {
-        printDebug("\nVERIFICATION FAIL:");
-        int u = p3.i;
-        int v = p3.j;
-        int w = p3.k;
-        std::cout << "(" << u << "," << v << "):" << g->get_weight(u,v) << "/" << g->get_weight_original(u,v) << "\n";
-        std::cout << "(" << v << "," << w << "):" << g->get_weight(w,v) << "/" << g->get_weight_original(w,v) << "\n";
-        std::cout << "(" << u << "," << w << "):" << g->get_weight(u,w) << "/" << g->get_weight_original(u,w) << "\n";
-    }
-#endif
-}
 

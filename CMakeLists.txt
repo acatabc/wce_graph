@@ -10,6 +10,7 @@ add_executable(
         lib/utils.cpp include/utils.h
         lib/WCE_Graph.cpp lib/WCE_Graph.h
         lib/AbstractSolver.h lib/AbstractSolver.cpp
+        lib/HeuristicSolver.h lib/HeuristicSolver.cpp
         lib/Solver.h
-        lib/Solver.cpp lib/deepSolver.cpp  lib/dataReduction.cpp lib/p3_search.cpp lib/heuristic.cpp
+        lib/Solver.cpp lib/deepSolver.cpp  lib/dataReduction.cpp lib/p3_search.cpp
 )

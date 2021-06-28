@@ -14,6 +14,10 @@ WCE_Graph::WCE_Graph(int n): num_vertices(n){
             matrix_entry entry = {.weight = 0, .valid_entry = true, .weight_original = 0};
             adj_matrix[i][j] = entry;
         }
+
+        std::vector<int> u = {i};
+        merge_map.push_back(u);
+        active_nodes.push_back(i);
     }
 }
 
@@ -612,3 +616,25 @@ void WCE_Graph::reset_graph(){
         }
     }
 }
+
+
+
+// verify that the current graph is now a cluster graph
+void WCE_Graph::verify_cluster_graph(){
+#ifdef DEBUG
+    printDebug("\nVerifying solution...");
+    auto p3 = this->get_max_cost_p3();
+    if(p3.i == -1){
+        printDebug("VERIFICATION SUCCESS\n");
+    } else {
+        printDebug("\nVERIFICATION FAIL:");
+        int u = p3.i;
+        int v = p3.j;
+        int w = p3.k;
+        std::cout << "(" << u << "," << v << "):" << g->get_weight(u,v) << "/" << g->get_weight_original(u,v) << "\n";
+        std::cout << "(" << v << "," << w << "):" << g->get_weight(w,v) << "/" << g->get_weight_original(w,v) << "\n";
+        std::cout << "(" << u << "," << w << "):" << g->get_weight(u,w) << "/" << g->get_weight_original(u,w) << "\n";
+    }
+#endif
+}
+

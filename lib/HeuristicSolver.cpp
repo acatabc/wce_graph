@@ -1,24 +1,67 @@
+//
+// Created by Julia Henkel on 28.06.21.
+//
 
-#include "Solver.h"
+#include "HeuristicSolver.h"
+#include "WCE_Graph.h"
+#include <iostream>
 #include "../include/utils.h"
 #include <random>
 
 
-void Solver::run_heuristic() {
-    if(g->num_vertices > MAX_NUM_VERTICES) return;
+
+HeuristicSolver::HeuristicSolver(WCE_Graph &input_graph){
+    int num_vertices = input_graph.active_nodes.size();
+
+    WCE_Graph *g = new WCE_Graph(num_vertices);
+    for(int i = 0; i < input_graph.active_nodes.size(); i++){
+        for(int j = i+1; j < input_graph.active_nodes.size(); j++) {
+            int weight = input_graph.get_weight(input_graph.active_nodes[i], input_graph.active_nodes[j]);
+            g->set_weight(i, j, weight);
+            g->set_weight_original(i, j, weight);
+        }
+
+    }
+}
+
+
+
+
+int HeuristicSolver::upper_bound() {
+
+    srand(time(NULL));
+
+    int num_iterations = 1;
+
+    while(num_iterations > 0){
+        printDebug("start heuristic iteration... ");
+        g->reset_graph();        // reset graph to its original
+        random_cluster_graph();  // greedy cluster graph initialization, returns solution size k
+        localSearch();  // local search until minimum is reached, returns improvement in k
+        save_best_solution();    // save computed solution if its better than the best one
+        num_iterations --;
+    }
+    g->reset_graph();
+    return best_k;
+}
+
+
+
+void HeuristicSolver::run_heuristic() {
+//    if(g->num_vertices > MAX_NUM_VERTICES) return;
 
     heuristic2();
 }
 
 
-void Solver::heuristic0() {
+void HeuristicSolver::heuristic0() {
     random_cluster_graph();
     localSearch();
     output_modified_edges();
-    verify_cluster_graph();
+    g->verify_cluster_graph();
 }
 
-void Solver::heuristic1() {
+void HeuristicSolver::heuristic1() {
 
     srand(time(NULL));
     g->printGraph(std::cout);
@@ -36,7 +79,7 @@ void Solver::heuristic1() {
 
 
 
-void Solver::heuristic2() {
+void HeuristicSolver::heuristic2() {
     std::cout << "# Heuristic 2...\n";
 
     srand(time(NULL));
@@ -76,7 +119,7 @@ void Solver::heuristic2() {
 
 // see localSearch()
 // pick random vertex u based on distribution of vertex costs
-void Solver::localSearch() {
+void HeuristicSolver::localSearch() {
     std::default_random_engine generator;
 
     printDebug("Random cluster graph k: " + std::to_string(compute_modified_edge_cost()));
@@ -123,7 +166,7 @@ void Solver::localSearch() {
 
 // moves vertex u to cluster v if this results in lower cost k
 // returns the difference in k to the previous solution
-int Solver::clusterMove(int u, int v) {
+int HeuristicSolver::clusterMove(int u, int v) {
     int k = 0;
 
     std::pair<std::list<int>, std::list<int>> neighborhood_u = g->closed_neighbourhood(u);
@@ -162,7 +205,7 @@ int Solver::clusterMove(int u, int v) {
 
 // greedily transforms the current graph into a cluster graph
 // randomly chooses a vertex and makes its neighborhood a cluster until no vertices are left
-void Solver::random_cluster_graph() {
+void HeuristicSolver::random_cluster_graph() {
     std::vector<int> vertices = g->active_nodes;
 //    srand(21);
 
@@ -218,7 +261,7 @@ void Solver::random_cluster_graph() {
 }
 
 // outputs all modified edges based on the current graph
-void Solver::output_modified_edges(){
+void HeuristicSolver::output_modified_edges(){
     for(int i = 0; i < g->num_vertices; ++i){
         for(int j = 0; j < g->num_vertices; ++j){
             if(i >= j) continue;
@@ -238,7 +281,7 @@ void Solver::output_modified_edges(){
 
 
 // saves the modified edges for the current graph in "best_solution" if this results in a lower k than current best_solution
-void Solver::save_best_solution(){
+void HeuristicSolver::save_best_solution(){
     std::vector<std::pair<int,int>> modified_edges = std::vector<std::pair<int,int>>();
     int k = 0;
     for(int i = 0; i < g->num_vertices; ++i){
@@ -267,7 +310,7 @@ void Solver::save_best_solution(){
 }
 
 // outputs edges in "best_solution"
-void Solver::output_heuristic_solution(){
+void HeuristicSolver::output_heuristic_solution(){
     for(auto edge: best_solution){
         std::cout << edge.first + 1 << " " << edge.second + 1 << "\n";
     }
@@ -275,7 +318,7 @@ void Solver::output_heuristic_solution(){
 }
 
 // computes the total cost of all modified edges based on the current graph
-int Solver::compute_modified_edge_cost(){
+int HeuristicSolver::compute_modified_edge_cost(){
     int k = 0;
     for(int i = 0; i < g->num_vertices; ++i){
         for(int j = 0; j < g->num_vertices; ++j){
@@ -293,7 +336,7 @@ int Solver::compute_modified_edge_cost(){
 
 // returns an array with "vertex-cost" for every vertex in the graph
 // cost(v) = sum |weight(v,x)| for all modified edges (v,x)
-std::vector<int>  Solver::compute_vertex_cost(){
+std::vector<int>  HeuristicSolver::compute_vertex_cost(){
     std::vector<int> vertex_cost = std::vector<int>(g->num_vertices);
     for(int i = 0; i < g->num_vertices; ++i) {
         for (int j = 0; j < g->num_vertices; ++j) {
@@ -316,7 +359,7 @@ std::vector<int>  Solver::compute_vertex_cost(){
 
 
 // generates graph from modified edges in best_solution and verifies that this graph is a cluster graph
-void Solver::verify_best_solution(){
+void HeuristicSolver::verify_best_solution(){
     g->reset_graph();
 
     for(auto edge: best_solution){
@@ -324,20 +367,7 @@ void Solver::verify_best_solution(){
         else g->add_edge(edge.first, edge.second);
     }
 
-    printDebug("\n#Verifying best solution...");
-    auto p3 = this->get_max_cost_p3();
-    if(p3.i == -1){
-        printDebug("#VERIFICATION SUCCESS\n");
-    } else {
-        printDebug("#VERIFICATION FAIL:");
-//        print_tuple(p3);
-        int u = p3.i;
-        int v = p3.j;
-        int w = p3.k;
-        std::cout << "(" << u << "," << v << "):" << g->get_weight(u,v) << "/" << g->get_weight_original(u,v) << "\n";
-        std::cout << "(" << v << "," << w << "):" << g->get_weight(w,v) << "/" << g->get_weight_original(w,v) << "\n";
-        std::cout << "(" << u << "," << w << "):" << g->get_weight(u,w) << "/" << g->get_weight_original(u,w) << "\n";
-    }
+    g->verify_cluster_graph();
 
     return;
 }

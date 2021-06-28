@@ -75,6 +75,7 @@ public:
 
     // heuristics
     void reset_graph();
+    void verify_cluster_graph();
 };
 
 #endif //ALGENG_WCE_SOLVER_WCE_GRAPH_H

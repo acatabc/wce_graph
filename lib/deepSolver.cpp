@@ -2,6 +2,7 @@
 
 #include "iostream"
 #include "../include/utils.h"
+#include "HeuristicSolver.h"
 
 void Solver::deepS() {
 
@@ -15,11 +16,11 @@ void Solver::deepS() {
 
     if(c == heuristic_k){  // best solution is the one found by the heuristic
         printDebug("Output heuristic solution");
-        output_heuristic_solution();
+//        output_heuristic_solution();
     }
     else{
         output_from_best_solution_stack();
-        verify_cluster_graph();
+        g->verify_cluster_graph();
     }
 
     std::cout << "#recursive steps: " << rec_steps << std::endl;
@@ -99,20 +100,8 @@ int Solver::get_lower_bound(){
 
 int Solver::get_upper_bound(){
 
-    srand(time(NULL));
-
-    int num_iterations = 1;
-
-    while(num_iterations > 0){
-        printDebug("start heuristic iteration... ");
-        g->reset_graph();        // reset graph to its original
-        random_cluster_graph();  // greedy cluster graph initialization, returns solution size k
-        localSearch();  // local search until minimum is reached, returns improvement in k
-        save_best_solution();    // save computed solution if its better than the best one
-        num_iterations --;
-    }
-    g->reset_graph();
-    return best_k;
+    HeuristicSolver h = HeuristicSolver(*g);
+    return h.upper_bound();
 }
 
 
@@ -150,7 +139,7 @@ void Solver::output_from_best_solution_stack(){
         best_solution_stack.pop();
 
     }
-    verify_cluster_graph();
+    g->verify_cluster_graph();
     clear_stack_and_output();
 }
 

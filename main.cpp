@@ -8,7 +8,7 @@
 Solver *s;
 
 void signal_handler(int signal){
-    s->terminate = true;
+//    s->terminate = true;
     std::cout << "#ALARM" << "\n";
 }
 

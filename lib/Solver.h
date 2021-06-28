@@ -71,33 +71,6 @@ public:
     void clear_stack_and_output();
     void final_output(int u, int v);
 
-
-    // debug
-    void verify_cluster_graph();
-
-
-    // heuristics
-    bool terminate = false;
-    void run_heuristic();
-    void heuristic0();
-    void heuristic1();
-    void heuristic2();
-
-    void localSearch();
-
-    void random_cluster_graph();
-    int clusterMove(int u, int v);
-    std::vector<int> compute_vertex_cost();
-
-    int best_k = INT32_MAX;
-    std::vector<std::pair<int,int>> best_solution;
-    void save_best_solution();
-    void output_heuristic_solution();
-    void verify_best_solution();
-
-    void output_modified_edges();
-    int compute_modified_edge_cost();
-
 };
 
 
