@@ -12,7 +12,7 @@ int main() {
     DeepSolver *d = new DeepSolver(g);
     HeuristicSolver *h = new HeuristicSolver(g);
 
-    s->solve();
+    h->solve();
     return 0;
 }
 

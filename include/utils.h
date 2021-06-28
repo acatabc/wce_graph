@@ -14,6 +14,12 @@
 #define PRINTDEBUG true
 
 
+//const char* FILENAME = "../wce-students/specialTests/w27.dimacs";
+#define FILENAME  "../wce-students/2-real-world/w005.dimacs"
+//const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
+//const char* FILENAME = "../test_data/w001.dimacs";
+
+
 
 void printDebug(std::string line);
 

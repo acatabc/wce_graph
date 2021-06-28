@@ -623,17 +623,40 @@ void WCE_Graph::reset_graph(){
 void WCE_Graph::verify_cluster_graph(){
 #ifdef DEBUG
     printDebug("\nVerifying solution...");
-    auto p3 = this->get_max_cost_p3();
-    if(p3.i == -1){
+
+    std::tuple<int, int, int> p3;
+    int u = -1;
+    int v = -1;
+    int w = -1;
+    int max_cost = INT32_MIN;
+    for(int i: active_nodes){
+        for(int j: active_nodes){
+            for(int k : active_nodes){
+                if(i == j || i == k || k == j) continue;
+                int weight_i_j = get_weight(i,j);
+                int weight_i_k = get_weight(i,k);
+                int weight_j_k = get_weight(j,k);
+                if(weight_i_j > 0 && weight_i_k > 0 && weight_j_k <= 0){
+                    p3 = std::make_tuple(i,j,k);
+                    goto end_p3_search;
+                }
+            }
+
+        }
+    }
+
+    end_p3_search:
+    if(std::get<0>(p3) == -1){
         printDebug("VERIFICATION SUCCESS\n");
     } else {
         printDebug("\nVERIFICATION FAIL:");
-        int u = p3.i;
-        int v = p3.j;
-        int w = p3.k;
-        std::cout << "(" << u << "," << v << "):" << g->get_weight(u,v) << "/" << g->get_weight_original(u,v) << "\n";
-        std::cout << "(" << v << "," << w << "):" << g->get_weight(w,v) << "/" << g->get_weight_original(w,v) << "\n";
-        std::cout << "(" << u << "," << w << "):" << g->get_weight(u,w) << "/" << g->get_weight_original(u,w) << "\n";
+        print_tuple(p3);
+        int u = std::get<0>(p3);
+        int v = std::get<1>(p3);
+        int w = std::get<2>(p3);
+        std::cout << "(" << u << "," << v << "):" << get_weight(u,v) << "/" << get_weight_original(u,v) << "\n";
+        std::cout << "(" << v << "," << w << "):" << get_weight(w,v) << "/" << get_weight_original(w,v) << "\n";
+        std::cout << "(" << u << "," << w << "):" << get_weight(u,w) << "/" << get_weight_original(u,w) << "\n";
     }
 #endif
 }

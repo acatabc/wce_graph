@@ -14,7 +14,7 @@ static bool terminate = false;
 HeuristicSolver::HeuristicSolver(WCE_Graph *input_graph){
     int num_vertices = input_graph->active_nodes.size();
 
-    WCE_Graph *g = new WCE_Graph(num_vertices);
+    g = new WCE_Graph(num_vertices);
     for(int i = 0; i < input_graph->active_nodes.size(); i++){
         for(int j = i+1; j < input_graph->active_nodes.size(); j++) {
             int weight = input_graph->get_weight(input_graph->active_nodes[i], input_graph->active_nodes[j]);
@@ -26,12 +26,17 @@ HeuristicSolver::HeuristicSolver(WCE_Graph *input_graph){
 }
 
 
+void HeuristicSolver::solve() {
+//    if(g->num_vertices > MAX_NUM_VERTICES) return;
+    std::signal(SIGALRM, signal_handler);
 
-void HeuristicSolver::signal_handler(int signal){
-    terminate = true;
-    std::cout << "#ALARM" << "\n";
+    alarm(2);
+
+    heuristic2();
+
+
+    output_heuristic_solution();
 }
-
 
 
 int HeuristicSolver::upper_bound() {
@@ -54,14 +59,6 @@ int HeuristicSolver::upper_bound() {
 
 
 
-void HeuristicSolver::run_heuristic() {
-//    if(g->num_vertices > MAX_NUM_VERTICES) return;
-    std::signal(SIGALRM, signal_handler);
-
-    alarm(2);
-
-    heuristic2();
-}
 
 
 void HeuristicSolver::heuristic0() {
@@ -122,7 +119,6 @@ void HeuristicSolver::heuristic2() {
 //            no_improvement_count += 1;
     }
 
-    output_heuristic_solution();
 //    verify_best_solution();
 }
 
@@ -380,4 +376,11 @@ void HeuristicSolver::verify_best_solution(){
     g->verify_cluster_graph();
 
     return;
+}
+
+
+
+void HeuristicSolver::signal_handler(int signal){
+    terminate = true;
+    std::cout << "#ALARM" << "\n";
 }

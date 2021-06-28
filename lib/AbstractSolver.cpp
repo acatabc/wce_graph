@@ -6,12 +6,6 @@
 #include <math.h>
 
 
-//const char* FILENAME = "../wce-students/specialTests/w27.dimacs";
-const char* FILENAME = "../wce-students/2-real-world/w005.dimacs";
-//const char* FILENAME = "../../wce-students-real/2-real-world/w061.dimacs";
-//const char* FILENAME = "../test_data/w001.dimacs";
-
-
 
 AbstractSolver::AbstractSolver(WCE_Graph *g):g(g){
 }
