@@ -5,7 +5,7 @@
 int main(){
   Solver *s = new Solver();
   int initial_number_of_nodes = s->g->active_nodes.size();
-  s->data_reduction_before_branching();
+  //s->data_reduction_before_branching();
 
   std::vector<int> original_graph;
   unsigned int active_nodes_size = s->g->active_nodes.size();
