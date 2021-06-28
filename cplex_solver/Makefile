@@ -75,8 +75,8 @@ AbstractSolver.o : $(EXLIB)/AbstractSolver.cpp
 WCE_Graph.o: $(EXLIB)/WCE_Graph.cpp
 	$(CCC) -c $(EXLIB)/WCE_Graph.cpp -o WCE_Graph.o
 
-utils.o: $(EXLIB)/utils.cpp
-	$(CCC) -c $(EXLIB)/utils.cpp -o utils.o
+utils.o: $(EXINC)/utils.cpp
+	$(CCC) -c $(EXINC)/utils.cpp -o utils.o
 
 abstractSolver_dataReduction.o: $(EXLIB)/dataReduction.cpp
 	$(CCC) -c $(EXLIB)/abstractSolver_dataReduction.cpp -o abstractSolver_dataReduction.o
