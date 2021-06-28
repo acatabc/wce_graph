@@ -3,7 +3,8 @@
 #include "../include/utils.h"
 
 int main(){
-  Solver *s = new Solver();
+    WCE_Graph *g = parse_and_build_graph();
+  Solver *s = new Solver(g);
   int initial_number_of_nodes = s->g->active_nodes.size();
   //s->data_reduction_before_branching();
 
@@ -111,7 +112,7 @@ int main(){
     ++++++++++++++++++ output end +++++++++++++++++++++++++*/
 
     int lower_bound = cplex.getObjValue();
-    std::cout << "# " << lower_bound<< std::endl;
+    std::cout << "# lower bound" << lower_bound<< std::endl;
 
     env.end();
 	return lower_bound;
