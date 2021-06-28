@@ -78,7 +78,7 @@ WCE_Graph.o: $(EXLIB)/WCE_Graph.cpp
 utils.o: $(EXINC)/utils.cpp
 	$(CCC) -c $(EXINC)/utils.cpp -o utils.o
 
-abstractSolver_dataReduction.o: $(EXLIB)/dataReduction.cpp
+abstractSolver_dataReduction.o: $(EXLIB)/abstractSolver_dataReduction.cpp
 	$(CCC) -c $(EXLIB)/abstractSolver_dataReduction.cpp -o abstractSolver_dataReduction.o
 
 solver_P3Search.o: $(EXLIB)/solver_P3Search.cpp
