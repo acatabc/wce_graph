@@ -62,12 +62,6 @@ int Solver::data_reduction_before_branching(){
 }
 
 
-void Solver::undo_data_reduction(int prev_stack_size){
-    while (g->graph_mod_stack.size() != prev_stack_size){
-        g->undo_final_modification();
-    }
-
-}
 
 
 // continuously merges all vertices whose edge weight exceeds the available costs (set edges = -inf analogously)

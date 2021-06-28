@@ -57,7 +57,6 @@ public:
     // data reduction
     int data_reduction(int k, int layer);
     int data_reduction_before_branching();
-    void undo_data_reduction(int final);
 
     int dataRed_weight_larger_k(int k);
     int dataRed_heavy_non_edge(int k);

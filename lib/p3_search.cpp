@@ -43,7 +43,7 @@ Solver::p3 Solver::get_max_cost_p3(){
 
         }
     }
-    return Solver::p3{.i = u, .j = v, .k = w, .min_cost = -1, .cost_sum = -1};
+    return Solver::p3{.i = u, .j = v, .k = w, .cost_sum = -1 ,.min_cost = -1};
 }
 
 
@@ -61,7 +61,7 @@ bool compareP3_sum_cost(Solver::p3& a, Solver::p3& b){
 std::tuple<Solver::p3, int> Solver::get_best_p3_and_lower_bound(int heuristic, int version){
     int lower_bound = 0;
 
-    Solver::p3 best_p3 = Solver::p3{.i = -1, .j = -1, .k = -1, .min_cost = -1, .cost_sum = -1};
+    Solver::p3 best_p3 = Solver::p3{.i = -1, .j = -1, .k = -1, .cost_sum = -1, .min_cost = -1};
 
     // init edge disjoint map: 1 means edge is contained in some p3 whose min edge has been counted (0 not)
     std::vector<std::vector<int>> edge_disjoint_map = std::vector<std::vector<int>>(g->merge_map.size());
@@ -178,9 +178,9 @@ std::tuple<Solver::p3, int> Solver::get_best_p3_and_lower_bound(int heuristic, i
             // 1: max_min_edge_cost p3
 
             if (heuristic == MAX_SUM_P3)
-                best_p3 = Solver::p3{.i = allP3[arg_max].i, .j = allP3[arg_max].j, .k = allP3[arg_max].k, .min_cost = -1, .cost_sum = -1};
+                best_p3 = Solver::p3{.i = allP3[arg_max].i, .j = allP3[arg_max].j, .k = allP3[arg_max].k, .cost_sum = -1, .min_cost = -1};
             if (heuristic == MAX_MIN_EDGE_P3)
-                best_p3 = Solver::p3{.i = (allP3)[0].i, .j = (allP3)[0].j, .k = (allP3)[0].k, .min_cost = -1, .cost_sum = -1};
+                best_p3 = Solver::p3{.i = (allP3)[0].i, .j = (allP3)[0].j, .k = (allP3)[0].k, .cost_sum = -1, .min_cost = -1 };
             break;
     }
     return std::make_tuple(best_p3, lower_bound);

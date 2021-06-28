@@ -42,7 +42,7 @@ void Solver::solve() {
             clear_stack_and_output();
             break;
         }
-        undo_data_reduction(stack_before_branching);
+        g->recover_graph(stack_before_branching);
         k++;
     }
 
@@ -63,7 +63,7 @@ int Solver::branch(int k, int layer){
     int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
     k = data_reduction(k, layer);
     if(k == -1){ // data reduction shows that no solution for this k exists
-        undo_data_reduction(stack_size_0);
+        g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
         return NONE;
     }
@@ -100,7 +100,7 @@ int Solver::branch(int k, int layer){
 //        final_output(u,v);
         return CLUSTER_GRAPH;
     }
-    else undo_data_reduction(stack_size_1);
+    else g->recover_graph(stack_size_1);
 
     // 2. Branch MERGE (u,v)
     // since deleting failed any solution must contain (u,v)
@@ -109,7 +109,7 @@ int Solver::branch(int k, int layer){
     int cost = g->merge(u,v);
     k -= cost;
     if(cost == -1) {  // both (delete/merge) failed -> no solution for this k exists
-        undo_data_reduction(stack_size_0);
+        g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
         return NONE;
     }
@@ -119,7 +119,7 @@ int Solver::branch(int k, int layer){
     }
 
     // both branches (delete/merge) failed, no solution for this k exists, recover graph before branching
-    undo_data_reduction(stack_size_0);
+    g->recover_graph(stack_size_0);
     printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
     return NONE;
 }
@@ -208,7 +208,8 @@ int Solver::unmerge_and_propagate(int uv){
         }
     }
 
-    g->undo_final_modification();
+    g->unmerge(uv);
+
     printDebug("Unmerged " +  std::to_string(uv) + " -> (" + std::to_string(uv_children[0]) + "," + std::to_string(uv_children[1]) + ")" + " with cost " + std::to_string(dk));
 
     return dk;
@@ -279,15 +280,14 @@ WCE_Graph *Solver::parse_and_build_graph(){
 void Solver::verify_cluster_graph(){
 #ifdef DEBUG
     printDebug("\nVerifying solution...");
-    auto p3 = this->get_max_cost_p3_naive();
-    if(std::get<0>(p3) == -1){
+    auto p3 = this->get_max_cost_p3();
+    if(p3.i == -1){
         printDebug("VERIFICATION SUCCESS\n");
     } else {
         printDebug("\nVERIFICATION FAIL:");
-        print_tuple(p3);
-        int u = std::get<0>(p3);
-        int v = std::get<1>(p3);
-        int w = std::get<2>(p3);
+        int u = p3.i;
+        int v = p3.j;
+        int w = p3.k;
         std::cout << "(" << u << "," << v << "):" << g->get_weight(u,v) << "/" << g->get_weight_original(u,v) << "\n";
         std::cout << "(" << v << "," << w << "):" << g->get_weight(w,v) << "/" << g->get_weight_original(w,v) << "\n";
         std::cout << "(" << u << "," << w << "):" << g->get_weight(u,w) << "/" << g->get_weight_original(u,w) << "\n";

@@ -21,7 +21,6 @@ private:
         int weight_original;
     };
     std::vector<std::vector<matrix_entry>> adj_matrix;
-    void unmerge(int);
 
 public:
     WCE_Graph(int);
@@ -47,6 +46,8 @@ public:
     int merge(int, int);
     void set_non_edge(int u, int v);
     void remove_clique(std::vector<int> &component);
+    void recover_graph(int prev_stack_size);
+    void unmerge(int);
     void undo_final_modification();
 
     struct stack_elem{

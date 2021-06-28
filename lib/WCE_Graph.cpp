@@ -314,6 +314,25 @@ void WCE_Graph::undo_final_modification(){
     }
 }
 
+void WCE_Graph::recover_graph(int prev_stack_size){
+    while (graph_mod_stack.size() != prev_stack_size){
+        stack_elem el = graph_mod_stack.top();
+        if(el.type == MERGE)
+            unmerge(el.uv);
+        if(el.type == SET_INF){
+            set_weight(el.v1, el.v2, el.weight);
+            graph_mod_stack.pop();
+//        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
+        }
+        if(el.type == CLIQUE){
+            for(int i: el.clique){
+                active_nodes.push_back(i);
+            }
+            graph_mod_stack.pop();
+        }
+    }
+
+}
 
 void WCE_Graph::DFS(int i, bool *visited, std::vector<int>& component) {
     visited[i] = true;

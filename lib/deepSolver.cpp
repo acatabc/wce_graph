@@ -34,14 +34,14 @@ int Solver::deepB(int c, int layer){
     int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
     int cost = deep_data_reduction(upperBound - c, layer);
     if(cost == -1){ // data reduction shows that no solution for this k exists
-        undo_data_reduction(stack_size_0);
+        g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
         return upperBound;
     }
     else c += cost;
 
     if(c + get_lower_bound() >= upperBound) {
-        undo_data_reduction(stack_size_0);
+        g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (upper bound)");
         return upperBound;
     }
@@ -51,7 +51,7 @@ int Solver::deepB(int c, int layer){
     if(p3.i == -1){
         printDebug("FOUND CLUSTER GRAPH");
         save_into_best_solution_stack(g->graph_mod_stack);
-        undo_data_reduction(stack_size_0);
+        g->recover_graph(stack_size_0);
         return c;
     }
 
@@ -72,18 +72,18 @@ int Solver::deepB(int c, int layer){
     int stack_size_1 = g->graph_mod_stack.size();
     g->set_non_edge(u, v);
     upperBound = this->deepB(c + weight_uv, layer + 1);
-    undo_data_reduction(stack_size_1);
+    g->recover_graph(stack_size_1);
 
     // 2. Branch MERGE (u,v)
     printDebug("Branch MERGE (" + std::to_string(u) + "," + std::to_string(v) + ") -> " + std::to_string(g->merge_map.size()) );
     int merge_cost = g->merge(u,v);
     if(merge_cost == -1) {  // both (delete/merge) failed -> no solution for this k exists
-        undo_data_reduction(stack_size_0);
+        g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
         return upperBound;
     }
     upperBound = this->deepB(c + merge_cost, layer + 1); // do not add weight(u,v) since (u,v) already exists
-    undo_data_reduction(stack_size_0);
+    g->recover_graph(stack_size_0);
 
     return upperBound;
 }
