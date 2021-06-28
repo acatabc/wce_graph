@@ -10,6 +10,7 @@
 
 
 
+#define MAX_NUM_VERTICES 1000
 #define PRINTDEBUG true
 
 
@@ -29,6 +30,8 @@ void printVector_int(std::vector<int> myVec);
 
 void throwError(std::string msg);
 
+
+WCE_Graph *parse_and_build_graph();
 
 #endif //ALGENG_WCE_SOLVER_UTILS_H
 

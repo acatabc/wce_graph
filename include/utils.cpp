@@ -82,3 +82,41 @@ void throwError(std::string text){
     throw std::invalid_argument( text );
 //#endif
 }
+
+
+
+
+WCE_Graph *parse_and_build_graph(){
+
+#ifdef DEBUG
+    //    freopen("../wce-students/2-real-world/w027.dimacs", "r", stdin);
+//    freopen("../test_data/r049.dimacs", "r", stdin);
+    auto x = freopen(FILENAME, "r", stdin);
+    if (!x) printDebug("Cannot open file");
+#endif
+    int num_vertices = 0;
+    std::cin >> num_vertices;
+
+    if(num_vertices > MAX_NUM_VERTICES){  // greedy-greedy: output all positive edges if too many vertices in input graph
+        int v, w, weight;
+        while(std::cin) {
+            std::cin >> v >> w >> weight;
+            if(weight > 0) std::cout << v << " " << w << "\n";
+        }
+        return new WCE_Graph(num_vertices);
+    }
+
+    WCE_Graph *g = new WCE_Graph(num_vertices);
+
+    int v, w, weight;
+    while(std::cin){
+        std::cin >> v >> w >> weight;
+        v -= 1;
+        w -= 1;
+        if(!std::cin.fail()) {
+            g->set_weight(v, w, weight);
+            g->set_weight_original(v, w, weight);
+        }
+    }
+    return g;
+}

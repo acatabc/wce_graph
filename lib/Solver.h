@@ -17,7 +17,7 @@
 
 class Solver : public AbstractSolver {
 public:
-    Solver();
+    Solver(WCE_Graph *);
 
     void solve();
     int branch(int k, int layer);

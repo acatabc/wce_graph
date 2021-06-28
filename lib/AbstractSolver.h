@@ -9,7 +9,6 @@
 #include "WCE_Graph.h"
 
 
-#define MAX_NUM_VERTICES 1000
 #define NONE (-1)
 #define CLUSTER_GRAPH (-2)
 
@@ -17,9 +16,8 @@ class AbstractSolver {
 
 private:
 public:
-    AbstractSolver();
+    AbstractSolver(WCE_Graph *);
     virtual ~AbstractSolver();
-    WCE_Graph *parse_and_build_graph();
     WCE_Graph *g;
 
     virtual void solve() = 0;

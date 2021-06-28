@@ -8,8 +8,9 @@
 #endif //ALGENG_WCE_SOLVER_DEEPSOLVER_H
 
 
-class SeepSolver : AbstractSolver {
-    SeepSolver();
+class DeepSolver : AbstractSolver {
+public:
+    DeepSolver(WCE_Graph *);
 
     void solve();
     int branch(int k, int layer);

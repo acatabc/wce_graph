@@ -5,11 +5,11 @@
 #include "HeuristicSolver.h"
 
 
-SeepSolver::SeepSolver() : AbstractSolver(){
+DeepSolver::DeepSolver(WCE_Graph *g) : AbstractSolver(g){
 }
 
 
-void SeepSolver::solve() {
+void DeepSolver::solve() {
 
     // TODO data reduction before upper bound
 
@@ -34,7 +34,7 @@ void SeepSolver::solve() {
 }
 
 
-int SeepSolver::branch(int c, int layer){
+int DeepSolver::branch(int c, int layer){
 
     // data reduction
     int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
@@ -95,7 +95,7 @@ int SeepSolver::branch(int c, int layer){
 }
 
 
-int SeepSolver::get_lower_bound(){
+int DeepSolver::get_lower_bound(){
 //    std::tuple<Solver::p3, int> tuple = get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_FAST);
 //    int lowerBound = std::get<1>(tuple);
     return 0;
@@ -103,15 +103,15 @@ int SeepSolver::get_lower_bound(){
 
 
 
-int SeepSolver::get_upper_bound(){
+int DeepSolver::get_upper_bound(){
 
-    HeuristicSolver h = HeuristicSolver(*g);
+    HeuristicSolver h = HeuristicSolver(g);
     return h.upper_bound();
 }
 
 
 
-void SeepSolver::save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem> current_stack){
+void DeepSolver::save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem> current_stack){
     while(!best_solution_stack.empty()){
         best_solution_stack.pop();
     }
@@ -123,7 +123,7 @@ void SeepSolver::save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem>
 
 
 // outputs edges in "best_solution_heuristic"
-void SeepSolver::output_from_best_solution_stack(){
+void DeepSolver::output_from_best_solution_stack(){
     while(!best_solution_stack.empty()){
         WCE_Graph::stack_elem el = best_solution_stack.top();
         if(el.type == MERGE) {
@@ -149,7 +149,7 @@ void SeepSolver::output_from_best_solution_stack(){
 }
 
 
-int SeepSolver::data_reduction(int k, int layer){
+int DeepSolver::data_reduction(int k, int layer){
     int k_before = k;
 
 //    if(layer %5 ==  0 && layer >= 10){
@@ -172,7 +172,7 @@ int SeepSolver::data_reduction(int k, int layer){
 
 
 // iterates over all vertex tuples and returns max_cost p3
-SeepSolver::p3 SeepSolver::get_max_cost_p3(){
+DeepSolver::p3 DeepSolver::get_max_cost_p3(){
 
     int u = -1;
     int v = -1;
@@ -205,6 +205,6 @@ SeepSolver::p3 SeepSolver::get_max_cost_p3(){
 
         }
     }
-    return SeepSolver::p3{.i = u, .j = v, .k = w, .cost_sum = -1 ,.min_cost = -1};
+    return DeepSolver::p3{.i = u, .j = v, .k = w, .cost_sum = -1 ,.min_cost = -1};
 }
 

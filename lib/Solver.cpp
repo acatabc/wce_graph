@@ -6,7 +6,7 @@
 #include <math.h>
 
 
-Solver::Solver() : AbstractSolver(){
+Solver::Solver(WCE_Graph *g) : AbstractSolver(g){
 }
 
 void Solver::solve() {

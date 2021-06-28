@@ -7,16 +7,17 @@
 #include <iostream>
 #include "../include/utils.h"
 #include <random>
+#include <csignal>
+#include <unistd.h>
+static bool terminate = false;
 
-
-
-HeuristicSolver::HeuristicSolver(WCE_Graph &input_graph){
-    int num_vertices = input_graph.active_nodes.size();
+HeuristicSolver::HeuristicSolver(WCE_Graph *input_graph){
+    int num_vertices = input_graph->active_nodes.size();
 
     WCE_Graph *g = new WCE_Graph(num_vertices);
-    for(int i = 0; i < input_graph.active_nodes.size(); i++){
-        for(int j = i+1; j < input_graph.active_nodes.size(); j++) {
-            int weight = input_graph.get_weight(input_graph.active_nodes[i], input_graph.active_nodes[j]);
+    for(int i = 0; i < input_graph->active_nodes.size(); i++){
+        for(int j = i+1; j < input_graph->active_nodes.size(); j++) {
+            int weight = input_graph->get_weight(input_graph->active_nodes[i], input_graph->active_nodes[j]);
             g->set_weight(i, j, weight);
             g->set_weight_original(i, j, weight);
         }
@@ -24,6 +25,12 @@ HeuristicSolver::HeuristicSolver(WCE_Graph &input_graph){
     }
 }
 
+
+
+void HeuristicSolver::signal_handler(int signal){
+    terminate = true;
+    std::cout << "#ALARM" << "\n";
+}
 
 
 
@@ -49,6 +56,9 @@ int HeuristicSolver::upper_bound() {
 
 void HeuristicSolver::run_heuristic() {
 //    if(g->num_vertices > MAX_NUM_VERTICES) return;
+    std::signal(SIGALRM, signal_handler);
+
+    alarm(2);
 
     heuristic2();
 }

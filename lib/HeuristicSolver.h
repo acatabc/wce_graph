@@ -9,16 +9,17 @@
 class HeuristicSolver {
     WCE_Graph *g;
 public:
-    HeuristicSolver(WCE_Graph &input_graph);
+    HeuristicSolver(WCE_Graph *);
 
 
     // heuristics
-    bool terminate = false;
+    //bool terminate = false;
     void run_heuristic();
     void heuristic0();
     void heuristic1();
     void heuristic2();
     int upper_bound();
+    static void signal_handler(int signal);
 
     void localSearch();
 
