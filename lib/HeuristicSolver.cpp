@@ -48,8 +48,8 @@ int HeuristicSolver::upper_bound() {
     while(num_iterations > 0){
         printDebug("start heuristic iteration... ");
         g->reset_graph();        // reset graph to its original
-        random_cluster_graph();  // greedy cluster graph initialization, returns solution size k
-        localSearch();  // local search until minimum is reached, returns improvement in k
+        greedy_cluster_graph();  // greedy cluster graph initialization, returns solution size k
+        local_search();  // local search until minimum is reached, returns improvement in k
         save_best_solution();    // save computed solution if its better than the best one
         num_iterations --;
     }
@@ -62,8 +62,8 @@ int HeuristicSolver::upper_bound() {
 
 
 void HeuristicSolver::heuristic0() {
-    random_cluster_graph();
-    localSearch();
+    greedy_cluster_graph();
+    local_search();
     output_modified_edges();
     g->verify_cluster_graph();
 }
@@ -75,8 +75,8 @@ void HeuristicSolver::heuristic1() {
 
     while(!terminate){
         g->reset_graph();        // reset graph to its original
-        random_cluster_graph();  // greedy cluster graph initialization
-        localSearch();           // local search until minimum is reached
+        greedy_cluster_graph();  // greedy cluster graph initialization
+        local_search();           // local search until minimum is reached
         save_best_solution();    // save computed solution if its better than the best one
 //        verify_cluster_graph();
     }
@@ -107,8 +107,8 @@ void HeuristicSolver::heuristic2() {
 //        int old_k = best_k;
 
         g->reset_graph();        // reset graph to its original
-        random_cluster_graph();  // greedy cluster graph initialization
-        localSearch();  // local search until minimum is reached
+        greedy_cluster_graph();  // greedy cluster graph initialization
+        local_search();  // local search until minimum is reached
         save_best_solution();    // save computed solution if its better than the best one
 
 //        verify_cluster_graph();
@@ -123,43 +123,32 @@ void HeuristicSolver::heuristic2() {
 }
 
 
-// see localSearch()
+// see local_search()
 // pick random vertex u based on distribution of vertex costs
-void HeuristicSolver::localSearch() {
-    std::default_random_engine generator;
+void HeuristicSolver::local_search() {
 
     printDebug("Random cluster graph k: " + std::to_string(compute_modified_edge_cost()));
 
-    int count = 100; // pick maximum number of iterations
     int no_improvement_count = 0; // counts the number of iterations without improvement
 
     while(!terminate){
-        count -= 1;
-
         // stop local search when we had no improvement for x iterations
         if(no_improvement_count >= 1500){
             printDebug("Stop local search (no improvement for " + std::to_string(no_improvement_count) + " iterations)");
             break;
         }
 
-//        // u is random random vertex according to distribution of costs
-//        // vertices resulting in high costs are more likely to be chosen
-//        std::vector<int> vertex_costs = compute_vertex_cost();
-//        std::discrete_distribution<int> distribution (vertex_costs.begin(), vertex_costs.end());
-//        int u = distribution(generator);
-
+        // choose random vertex and cluster
         int u = rand() % g->active_nodes.size();
+        int cluster = rand() % g->active_nodes.size();
 
-        // choose any other random vertex as new cluster for u
-        int v = rand() % g->active_nodes.size();
-
-        if(v == u || g->get_weight(u,v) > 0) {
+        if(cluster == u || g->get_weight(u, cluster) > 0) {
             no_improvement_count += 1;
             continue;
         }
 
-        // move u to cluster of v if this results in a lower cost k
-        int k = clusterMove(u,v);
+        // move u to cluster of cluster if this results in a lower cost k
+        int k = move_to_cluster(u, cluster);
 
         printDebug(std::to_string(k));
 
@@ -172,7 +161,7 @@ void HeuristicSolver::localSearch() {
 
 // moves vertex u to cluster v if this results in lower cost k
 // returns the difference in k to the previous solution
-int HeuristicSolver::clusterMove(int u, int v) {
+int HeuristicSolver::move_to_cluster(int u, int v) {
     int k = 0;
 
     std::pair<std::list<int>, std::list<int>> neighborhood_u = g->closed_neighbourhood(u);
@@ -211,7 +200,7 @@ int HeuristicSolver::clusterMove(int u, int v) {
 
 // greedily transforms the current graph into a cluster graph
 // randomly chooses a vertex and makes its neighborhood a cluster until no vertices are left
-void HeuristicSolver::random_cluster_graph() {
+void HeuristicSolver::greedy_cluster_graph() {
     std::vector<int> vertices = g->active_nodes;
 //    srand(21);
 
@@ -339,29 +328,6 @@ int HeuristicSolver::compute_modified_edge_cost(){
     }
     return k;
 }
-
-// returns an array with "vertex-cost" for every vertex in the graph
-// cost(v) = sum |weight(v,x)| for all modified edges (v,x)
-std::vector<int>  HeuristicSolver::compute_vertex_cost(){
-    std::vector<int> vertex_cost = std::vector<int>(g->num_vertices);
-    for(int i = 0; i < g->num_vertices; ++i) {
-        for (int j = 0; j < g->num_vertices; ++j) {
-            if (i >= j) continue;
-            if (g->get_weight(i, j) > 0 && g->get_weight_original(i, j) < 0) {
-                int dk = abs(g->get_weight_original(i, j));
-                vertex_cost[i] += dk;
-                vertex_cost[j] += dk;
-            }
-            if (g->get_weight(i, j) < 0 && g->get_weight_original(i, j) > 0) {
-                int dk = abs(g->get_weight_original(i, j));
-                vertex_cost[i] += dk;
-                vertex_cost[j] += dk;
-            }
-        }
-    }
-    return vertex_cost;
-}
-
 
 
 // generates graph from modified edges in best_solution and verifies that this graph is a cluster graph

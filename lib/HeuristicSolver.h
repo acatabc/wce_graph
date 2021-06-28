@@ -21,10 +21,10 @@ public:
     int upper_bound();
     static void signal_handler(int signal);
 
-    void localSearch();
+    void local_search();
 
-    void random_cluster_graph();
-    int clusterMove(int u, int v);
+    void greedy_cluster_graph();
+    int move_to_cluster(int u, int cluster);
     std::vector<int> compute_vertex_cost();
 
     int best_k = INT32_MAX;
