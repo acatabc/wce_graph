@@ -5,28 +5,19 @@
 #include "HeuristicSolver.h"
 
 
-DeepSolver::DeepSolver(WCE_Graph *g) : AbstractSolver(g){
-}
-
+DeepSolver::DeepSolver(WCE_Graph *g) : AbstractSolver(g){}
 
 void DeepSolver::solve() {
 
-    // TODO data reduction before upper bound
+    int dataRed_cost = data_reduction_before_branching();
 
-    int heuristic_k = 500; //  get_upper_bound(); // TODO improvem upper bound, define search time
-    upperBound =  heuristic_k;
+    upperBound =  get_upper_bound() + dataRed_cost; // TODO improvem upper bound, define search time
 
-    int c = branch(0,0);
+    int c = branch(dataRed_cost,0);
+    g->recover_graph(0);
 
-
-    if(c == heuristic_k){  // best solution is the one found by the heuristic
-        printDebug("Output heuristic solution");
-//        output_heuristic_solution();
-    }
-    else{
-        output_from_best_solution_stack();
-        g->verify_cluster_graph();
-    }
+    output_best_solution();
+    g->verify_cluster_graph();
 
     std::cout << "#recursive steps: " << rec_steps << std::endl;
 
@@ -46,7 +37,7 @@ int DeepSolver::branch(int c, int layer){
     }
     else c += cost;
 
-    if(c + get_lower_bound() >= upperBound) {
+    if(c + get_lower_bound() > upperBound || (c + get_lower_bound() == upperBound && !best_solution_stack.empty())) {
         g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (upper bound)");
         return upperBound;
@@ -56,7 +47,7 @@ int DeepSolver::branch(int c, int layer){
 
     if(p3.i == -1){
         printDebug("FOUND CLUSTER GRAPH");
-        save_into_best_solution_stack(g->graph_mod_stack);
+        save_current_solution(g->graph_mod_stack);
         g->recover_graph(stack_size_0);
         return c;
     }
@@ -106,12 +97,12 @@ int DeepSolver::get_lower_bound(){
 int DeepSolver::get_upper_bound(){
 
     HeuristicSolver h = HeuristicSolver(g);
-    return h.upper_bound();
+    return h.compute_upper_bound();
 }
 
 
 
-void DeepSolver::save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem> current_stack){
+void DeepSolver::save_current_solution(std::stack<WCE_Graph::stack_elem> current_stack){
     while(!best_solution_stack.empty()){
         best_solution_stack.pop();
     }
@@ -123,7 +114,7 @@ void DeepSolver::save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem>
 
 
 // outputs edges in "best_solution_heuristic"
-void DeepSolver::output_from_best_solution_stack(){
+void DeepSolver::output_best_solution(){
     while(!best_solution_stack.empty()){
         WCE_Graph::stack_elem el = best_solution_stack.top();
         if(el.type == MERGE) {
@@ -148,26 +139,6 @@ void DeepSolver::output_from_best_solution_stack(){
     clear_stack_and_output();
 }
 
-
-int DeepSolver::data_reduction(int k, int layer){
-    int k_before = k;
-
-//    if(layer %5 ==  0 && layer >= 10){
-////      this->dataRed_heavy_non_edge();
-////      k = dataRed_heavy_edge_single_end(k);
-//      k = dataRed_heavy_non_edge(k);
-//      k = dataRed_heavy_edge_single_end(k);
-//      k = dataRed_large_neighbourhood_I(k);
-//      k = dataRed_heavy_edge_both_ends(k);
-//    }
-
-    k = dataRed_weight_larger_k(k);
-    if(k == -1) return -1;
-
-//    if(k != k_before)
-//        printDebug("Data reduction reduced k to " + std::to_string(k));
-    return k_before - k;
-}
 
 
 

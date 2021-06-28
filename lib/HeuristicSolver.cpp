@@ -1,14 +1,10 @@
-//
-// Created by Julia Henkel on 28.06.21.
-//
-
 #include "HeuristicSolver.h"
 #include "WCE_Graph.h"
 #include <iostream>
 #include "../include/utils.h"
-#include <random>
 #include <csignal>
 #include <unistd.h>
+
 static bool terminate = false;
 
 HeuristicSolver::HeuristicSolver(WCE_Graph *input_graph){
@@ -27,19 +23,29 @@ HeuristicSolver::HeuristicSolver(WCE_Graph *input_graph){
 
 
 void HeuristicSolver::solve() {
-//    if(g->num_vertices > MAX_NUM_VERTICES) return;
+    if(g->num_vertices == 0) return;
     std::signal(SIGALRM, signal_handler);
 
-    alarm(2);
+    alarm(1);
 
-    heuristic2();
+    srand(time(NULL));
 
-
-    output_heuristic_solution();
+    while(!terminate){
+        g->reset_graph();
+        int k = greedy_cluster_graph();
+        int dk = local_search();
+        if(k - dk < best_k){
+            save_current_solution();
+            best_k = k - dk;
+        }
+    }
+    output_best_solution();
+    verify_best_solution();
 }
 
 
-int HeuristicSolver::upper_bound() {
+int HeuristicSolver::compute_upper_bound() {
+    if(g->num_vertices == 0) return 0;
 
     srand(time(NULL));
 
@@ -47,89 +53,24 @@ int HeuristicSolver::upper_bound() {
 
     while(num_iterations > 0){
         printDebug("start heuristic iteration... ");
-        g->reset_graph();        // reset graph to its original
-        greedy_cluster_graph();  // greedy cluster graph initialization, returns solution size k
-        local_search();  // local search until minimum is reached, returns improvement in k
-        save_best_solution();    // save computed solution if its better than the best one
+        g->reset_graph();
+        int k = greedy_cluster_graph();
+        int dk = local_search();
+        if(k - dk < best_k){
+            save_current_solution();
+            best_k = k - dk;
+        }
         num_iterations --;
     }
-    g->reset_graph();
     return best_k;
 }
 
 
+int HeuristicSolver::local_search() {
 
-
-
-void HeuristicSolver::heuristic0() {
-    greedy_cluster_graph();
-    local_search();
-    output_modified_edges();
-    g->verify_cluster_graph();
-}
-
-void HeuristicSolver::heuristic1() {
-
-    srand(time(NULL));
-    g->printGraph(std::cout);
-
-    while(!terminate){
-        g->reset_graph();        // reset graph to its original
-        greedy_cluster_graph();  // greedy cluster graph initialization
-        local_search();           // local search until minimum is reached
-        save_best_solution();    // save computed solution if its better than the best one
-//        verify_cluster_graph();
-    }
-    output_heuristic_solution();
-    verify_best_solution();
-}
-
-
-
-void HeuristicSolver::heuristic2() {
-    std::cout << "# Heuristic 2...\n";
-
-    srand(time(NULL));
-
-//    int count = 0;
-//    int no_improvement_count = 0;
-    while(!terminate){
-//        count += 1;
-
-//        std::cout << "#Heuristic iteration " << count << "\n";
-//        printDebug("\nHeuristic iteration " + std::to_string(count));
-
-        // stop heuristic search if there is no improvement for x iterations
-//        if(no_improvement_count > 10){
-//            printDebug("Stop heuristic search (no improvement for " + std::to_string(no_improvement_count) + " iterations)");
-//            break;
-//        }
-//        int old_k = best_k;
-
-        g->reset_graph();        // reset graph to its original
-        greedy_cluster_graph();  // greedy cluster graph initialization
-        local_search();  // local search until minimum is reached
-        save_best_solution();    // save computed solution if its better than the best one
-
-//        verify_cluster_graph();
-
-//        if(old_k != best_k)
-//            no_improvement_count = 0;
-//        else
-//            no_improvement_count += 1;
-    }
-
-//    verify_best_solution();
-}
-
-
-// see local_search()
-// pick random vertex u based on distribution of vertex costs
-void HeuristicSolver::local_search() {
-
-    printDebug("Random cluster graph k: " + std::to_string(compute_modified_edge_cost()));
 
     int no_improvement_count = 0; // counts the number of iterations without improvement
+    int dk = 0;
 
     while(!terminate){
         // stop local search when we had no improvement for x iterations
@@ -152,38 +93,49 @@ void HeuristicSolver::local_search() {
 
         printDebug(std::to_string(k));
 
-        if(k < 0)
+        if(k < 0) {
             no_improvement_count = 0;
-        else
+            dk += k;
+        }else
             no_improvement_count += 1;
     }
+    return -dk;
 }
 
-// moves vertex u to cluster v if this results in lower cost k
+// moves vertex u to v v if this results in lower cost k
 // returns the difference in k to the previous solution
 int HeuristicSolver::move_to_cluster(int u, int v) {
-    int k = 0;
-
     std::pair<std::list<int>, std::list<int>> neighborhood_u = g->closed_neighbourhood(u);
+
+    // compute difference in cost for changing the cluster
+    int dk = 0;
     for(int neigh_u : neighborhood_u.first){
         if(neigh_u == u) continue;
+        int weight = g->get_weight_original(u, neigh_u);
         // delete all neighbors of u
-        if(g->get_weight_original(u,neigh_u) > 0)
-            k += abs(g->get_weight_original(u,neigh_u));
+        if(weight > 0)
+            dk += abs(weight); // add cost for deleting edge
         else
-            k -= abs(g->get_weight_original(u,neigh_u));
+            dk -= abs(weight); // subtract cost since deleting recovers original connection
     }
     std::pair<std::list<int>, std::list<int>> neighborhood_v = g->closed_neighbourhood(v);
     for(int neigh_v : neighborhood_v.first){
         if(neigh_v == u) continue;
         // add u to cluster of v
-        if(g->get_weight_original(u,neigh_v) < 0)
-            k += abs(g->get_weight_original(u,neigh_v));
+        int weight = g->get_weight_original(u, neigh_v);
+        if(weight == DO_NOT_ADD) { // not allowed to add u to cluster of v
+            dk = INT32_MAX;
+            break;
+        }
+        if(weight < 0)
+            dk += abs(weight); // add cost for adding edge
         else
-            k -= abs(g->get_weight_original(u,neigh_v));
+            dk -= abs(weight); // subtract cost since adding recovers original connection
     }
-    if(k < 0){
-        printDebug("found k: " + std::to_string(k));
+
+    // move u to the new cluster
+    if(dk < 0){
+        printDebug("found dk: " + std::to_string(dk));
         for(int neigh_u : neighborhood_u.first){
             if(neigh_u == u) continue;
             // delete all neighbors of u
@@ -191,16 +143,16 @@ int HeuristicSolver::move_to_cluster(int u, int v) {
         }
         for(int neigh_v : neighborhood_v.first){
             if(neigh_v == u) continue;
-            // add u to cluster of v
+            // add u to v of v
             g->add_edge(u, neigh_v);
         }
     }
-    return k;
+    return dk;
 }
 
 // greedily transforms the current graph into a cluster graph
 // randomly chooses a vertex and makes its neighborhood a cluster until no vertices are left
-void HeuristicSolver::greedy_cluster_graph() {
+int HeuristicSolver::greedy_cluster_graph() {
     std::vector<int> vertices = g->active_nodes;
 //    srand(21);
 
@@ -253,84 +205,55 @@ void HeuristicSolver::greedy_cluster_graph() {
             }
         }
     }
-}
 
-// outputs all modified edges based on the current graph
-void HeuristicSolver::output_modified_edges(){
-    for(int i = 0; i < g->num_vertices; ++i){
-        for(int j = 0; j < g->num_vertices; ++j){
-            if(i >= j) continue;
-            if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) < 0 ){
-                std::cout << i +1 << " " << j+1 << "\n";
-            }
-            if(g->get_weight(i,j) < 0  && g->get_weight_original(i,j) > 0 ){
-                std::cout << i +1 << " " << j+1 << "\n";
-            }
-            // original 0 means the edge does not exist
-            if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) == 0 ){
-                std::cout << i +1 << " " << j+1 << "\n";
-            }
-        }
-    }
+    printDebug("Greedy cluster graph k: " + std::to_string(k));
+
+
+    return k;
 }
 
 
-// saves the modified edges for the current graph in "best_solution" if this results in a lower k than current best_solution
-void HeuristicSolver::save_best_solution(){
-    std::vector<std::pair<int,int>> modified_edges = std::vector<std::pair<int,int>>();
+
+// saves the modified edges for the current graph in "best_solution_stack" if this results in a lower k than current best_solution_stack
+void HeuristicSolver::save_current_solution(){
+    int prev_sol_size = best_solution.size();
+
+    best_solution.clear();
     int k = 0;
     for(int i = 0; i < g->num_vertices; ++i){
         for(int j = 0; j < g->num_vertices; ++j){
             if(i >= j) continue;
             if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) < 0 ){
                 k += abs(g->get_weight_original(i,j));
-                modified_edges.push_back(std::make_pair(i,j));
+                best_solution.push_back(std::make_pair(i,j));
             }
             if(g->get_weight(i,j) < 0  && g->get_weight_original(i,j) > 0 ){
                 k += abs(g->get_weight_original(i,j));
-                modified_edges.push_back(std::make_pair(i,j));
+                best_solution.push_back(std::make_pair(i,j));
             }
             // original 0 means the edge does not exist
             if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) == 0 ){
-                modified_edges.push_back(std::make_pair(i,j));
+                best_solution.push_back(std::make_pair(i,j));
             }
         }
     }
-    if (k < best_k){
-        best_k = k;
-        best_solution = modified_edges;
-    }
-    printDebug("Current/Best solution k: " + std::to_string(k) + "/" + std::to_string(best_k) + " size: " + std::to_string(modified_edges.size()) + "/" + std::to_string(best_solution.size()));
+
+    printDebug("New/Prev solution (k: " + std::to_string(k) + "/" + std::to_string(best_k) + "), (size: " + std::to_string(best_solution.size()) + "/" + std::to_string(prev_sol_size) + ")");
+
     return;
 }
 
-// outputs edges in "best_solution"
-void HeuristicSolver::output_heuristic_solution(){
+
+// outputs edges in "best_solution_stack"
+void HeuristicSolver::output_best_solution(){
     for(auto edge: best_solution){
         std::cout << edge.first + 1 << " " << edge.second + 1 << "\n";
     }
     std::cout << "#k: " << best_k << "\n";
 }
 
-// computes the total cost of all modified edges based on the current graph
-int HeuristicSolver::compute_modified_edge_cost(){
-    int k = 0;
-    for(int i = 0; i < g->num_vertices; ++i){
-        for(int j = 0; j < g->num_vertices; ++j){
-            if(i >= j) continue;
-            if(g->get_weight(i,j) > 0  && g->get_weight_original(i,j) < 0 ){
-                k += abs(g->get_weight_original(i,j));
-            }
-            if(g->get_weight(i,j) < 0  && g->get_weight_original(i,j) > 0 ){
-                k += abs(g->get_weight_original(i,j));
-            }
-        }
-    }
-    return k;
-}
 
-
-// generates graph from modified edges in best_solution and verifies that this graph is a cluster graph
+// generates graph from modified edges in best_solution_stack and verifies that this graph is a cluster graph
 void HeuristicSolver::verify_best_solution(){
     g->reset_graph();
 

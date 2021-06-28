@@ -7,14 +7,13 @@
 
 
 
-AbstractSolver::AbstractSolver(WCE_Graph *g):g(g){
-}
+AbstractSolver::AbstractSolver(WCE_Graph *g):g(g){}
 
 AbstractSolver::~AbstractSolver() = default;
 
 
 
-// ----------------------------
+// -------------------------------
 // ------- output related --------
 
 
@@ -120,33 +119,40 @@ void AbstractSolver::final_output(int u, int v)
 }
 
 
-AbstractSolver::p3 AbstractSolver::generate_p3_struct(int i, int j, int k) {
-    int weight_i_j = g->get_weight(i,j);
-    int weight_i_k = g->get_weight(i, k);
-    int weight_j_k = g->get_weight(j, k);
-    if (weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0) {
 
+
+// ---------------------------
+// ------- p3 related --------
+
+
+AbstractSolver::p3 AbstractSolver::generate_p3_struct(int i, int j, int k) {
+    int weight_ij = g->get_weight(i, j);
+    int weight_ik = g->get_weight(i, k);
+    int weight_jk = g->get_weight(j, k);
+
+    if (weight_ij >= 0 && weight_ik >= 0 && weight_jk <= 0) {
         // sum up costs of all three edges (only edges that are allowed to be modified)
         int cost_sum = 0;
-        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) cost_sum += abs(weight_i_k);
-        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) cost_sum += abs(weight_i_j);
-        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) cost_sum += abs(weight_j_k);
+        if (weight_ik != DO_NOT_DELETE && weight_ik != DO_NOT_ADD) cost_sum += abs(weight_ik);
+        if (weight_ij != DO_NOT_DELETE && weight_ij != DO_NOT_ADD) cost_sum += abs(weight_ij);
+        if (weight_jk != DO_NOT_DELETE && weight_jk != DO_NOT_ADD) cost_sum += abs(weight_jk);
 
         // get minimum edge cost
         int min_cost = INT32_MAX;
-        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
-            abs(weight_i_k) < min_cost)
-            min_cost = abs(weight_i_k);
-        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
-            abs(weight_i_j) < min_cost)
-            min_cost = abs(weight_i_j);
-        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
-            abs(weight_j_k) < min_cost)
-            min_cost = abs(weight_j_k);
+        if (weight_ik != DO_NOT_DELETE && weight_ik != DO_NOT_ADD &&
+            abs(weight_ik) < min_cost)
+            min_cost = abs(weight_ik);
+        if (weight_ij != DO_NOT_DELETE && weight_ij != DO_NOT_ADD &&
+            abs(weight_ij) < min_cost)
+            min_cost = abs(weight_ij);
+        if (weight_jk != DO_NOT_DELETE && weight_jk != DO_NOT_ADD &&
+            abs(weight_jk) < min_cost)
+            min_cost = abs(weight_jk);
 
         AbstractSolver::p3 newP3 = {.i = i, .j = j, .k = k, .cost_sum = cost_sum, .min_cost = min_cost};
         return newP3;
-    }else{
+    }
+    else{
         AbstractSolver::p3 no_p3 = {.i = -1, .j = -1, .k = -1, .cost_sum = -1, .min_cost = -1};
         return no_p3;
     }

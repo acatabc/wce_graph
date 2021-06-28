@@ -7,34 +7,27 @@
 #include "WCE_Graph.h"
 
 class HeuristicSolver {
+private:
     WCE_Graph *g;
-public:
-    HeuristicSolver(WCE_Graph *);
 
-
-    // heuristics
-    //bool terminate = false;
-    void solve();
-    void heuristic0();
-    void heuristic1();
-    void heuristic2();
-    int upper_bound();
-    static void signal_handler(int signal);
-
-    void local_search();
-
-    void greedy_cluster_graph();
-    int move_to_cluster(int u, int cluster);
-    std::vector<int> compute_vertex_cost();
+    int greedy_cluster_graph();
+    int move_to_cluster(int u, int v);
+    int local_search();
 
     int best_k = INT32_MAX;
     std::vector<std::pair<int,int>> best_solution;
-    void save_best_solution();
-    void output_heuristic_solution();
+
+    void save_current_solution();
+    void output_best_solution();
     void verify_best_solution();
 
-    void output_modified_edges();
-    int compute_modified_edge_cost();
+    static void signal_handler(int signal);
+
+public:
+    HeuristicSolver(WCE_Graph *);
+
+    void solve();
+    int compute_upper_bound();
 
 };
 

@@ -46,9 +46,9 @@ public:
     int merge(int, int);
     void set_non_edge(int u, int v);
     void remove_clique(std::vector<int> &component);
+    void reset_graph();
     void recover_graph(int prev_stack_size);
     void unmerge(int);
-    void undo_final_modification();
 
     struct stack_elem{
         int type; // 1 is merge, 2 is set_inf, 3 is clique
@@ -73,8 +73,7 @@ public:
     void print_graph_mod_stack();
     void print_graph_mod_stack_rec();
 
-    // heuristics
-    void reset_graph();
+    // debug
     void verify_cluster_graph();
 };
 

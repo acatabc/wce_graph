@@ -301,23 +301,6 @@ void WCE_Graph::remove_clique(std::vector<int> &component){
 }
 
 
-void WCE_Graph::undo_final_modification(){
-    stack_elem el = graph_mod_stack.top();
-    if(el.type == MERGE)
-        unmerge(el.uv);
-    if(el.type == SET_INF){
-        set_weight(el.v1, el.v2, el.weight);
-        graph_mod_stack.pop();
-//        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
-    }
-    if(el.type == CLIQUE){
-        for(int i: el.clique){
-            active_nodes.push_back(i);
-        }
-        graph_mod_stack.pop();
-    }
-}
-
 void WCE_Graph::recover_graph(int prev_stack_size){
     while (graph_mod_stack.size() != prev_stack_size){
         stack_elem el = graph_mod_stack.top();
@@ -335,8 +318,18 @@ void WCE_Graph::recover_graph(int prev_stack_size){
             graph_mod_stack.pop();
         }
     }
-
 }
+
+
+void WCE_Graph::reset_graph(){
+    recover_graph(0);
+    for(int i = 0; i < this->adj_matrix.size(); ++i){
+        for(int j = i+1; j < this->adj_matrix.size(); ++j){
+            set_weight(i,j, get_weight_original(i,j));
+        }
+    }
+}
+
 
 void WCE_Graph::DFS(int i, bool *visited, std::vector<int>& component) {
     visited[i] = true;
@@ -609,34 +602,22 @@ void WCE_Graph::printGraph(std::ostream& os) {
 
 
 
-void WCE_Graph::reset_graph(){
-    for(int i = 0; i < this->adj_matrix.size(); ++i){
-        for(int j = i+1; j < this->adj_matrix.size(); ++j){
-            set_weight(i,j, get_weight_original(i,j));
-        }
-    }
-}
-
-
 
 // verify that the current graph is now a cluster graph
 void WCE_Graph::verify_cluster_graph(){
 #ifdef DEBUG
     printDebug("\nVerifying solution...");
 
-    std::tuple<int, int, int> p3;
-    int u = -1;
-    int v = -1;
-    int w = -1;
+    std::tuple<int, int, int> p3 = std::make_tuple(-1,-1,-1);
     int max_cost = INT32_MIN;
     for(int i: active_nodes){
         for(int j: active_nodes){
             for(int k : active_nodes){
                 if(i == j || i == k || k == j) continue;
-                int weight_i_j = get_weight(i,j);
-                int weight_i_k = get_weight(i,k);
-                int weight_j_k = get_weight(j,k);
-                if(weight_i_j > 0 && weight_i_k > 0 && weight_j_k <= 0){
+                int weight_ij = get_weight(i, j);
+                int weight_ik = get_weight(i, k);
+                int weight_jk = get_weight(j, k);
+                if(weight_ij > 0 && weight_ik > 0 && weight_jk <= 0){
                     p3 = std::make_tuple(i,j,k);
                     goto end_p3_search;
                 }
