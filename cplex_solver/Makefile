@@ -64,10 +64,13 @@ CFLAGS  = $(COPT)  -I$(CPLEXINCDIR)
 CCFLAGS = $(CCOPT) -I$(CPLEXINCDIR) -I$(CONCERTINCDIR) 
 JCFLAGS = $(JOPT)
 
-cplex_solver: cplex_solver.o Solver.o WCE_Graph.o utils.o dataReduction.o p3_search.o
-	$(CCC) $(CCFLAGS) $(CCLNDIRS) -o cplex_solver WCE_Graph.o utils.o p3_search.o dataReduction.o Solver.o cplex_solver.o  $(CCLNFLAGS)
+cplex_solver: cplex_solver.o Solver.o WCE_Graph.o utils.o abstractSolver_dataReduction.o solver_P3Search.o
+	$(CCC) $(CCFLAGS) $(CCLNDIRS) -o cplex_solver WCE_Graph.o utils.o solver_P3Search.o abstractSolver_dataReduction.o Solver.o cplex_solver.o  $(CCLNFLAGS)
 cplex_solver.o: cplex_solver.cpp
 	$(CCC) -c $(CCFLAGS) cplex_solver.cpp -o cplex_solver.o
+
+AbstractSolver.o : $(EXLIB)/AbstractSolver.cpp
+	$(CCC) -c $(EXLIB)/AbstractSolver.cpp -o AbstractSolver.o
 
 WCE_Graph.o: $(EXLIB)/WCE_Graph.cpp
 	$(CCC) -c $(EXLIB)/WCE_Graph.cpp -o WCE_Graph.o
@@ -75,11 +78,11 @@ WCE_Graph.o: $(EXLIB)/WCE_Graph.cpp
 utils.o: $(EXLIB)/utils.cpp
 	$(CCC) -c $(EXLIB)/utils.cpp -o utils.o
 
-dataReduction.o: $(EXLIB)/dataReduction.cpp
-	$(CCC) -c $(EXLIB)/dataReduction.cpp -o dataReduction.o
+abstractSolver_dataReduction.o: $(EXLIB)/dataReduction.cpp
+	$(CCC) -c $(EXLIB)/abstractSolver_dataReduction.cpp -o abstractSolver_dataReduction.o
 
-p3_search.o: $(EXLIB)/p3_search.cpp
-	$(CCC) -c $(EXLIB)/p3_search.cpp -o p3_search.o
+solver_P3Search.o: $(EXLIB)/solver_P3Search.cpp
+	$(CCC) -c $(EXLIB)/solver_P3Search.cpp -o solver_P3Search.o
 
 Solver.o: $(EXLIB)/Solver.cpp WCE_Graph.o dataReduction.o p3_search.o utils.o 
 	$(CCC) -c  WCE_Graph.o dataReduction.o p3_search.o utils.o $(EXLIB)/Solver.cpp -o Solver.o 
