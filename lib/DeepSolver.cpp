@@ -1,17 +1,22 @@
-#include "Solver.h"
+#include "DeepSolver.h"
 
 #include "iostream"
 #include "../include/utils.h"
 #include "HeuristicSolver.h"
 
-void Solver::deepS() {
+
+SeepSolver::SeepSolver() : AbstractSolver(){
+}
+
+
+void SeepSolver::solve() {
 
     // TODO data reduction before upper bound
 
     int heuristic_k = 500; //  get_upper_bound(); // TODO improvem upper bound, define search time
     upperBound =  heuristic_k;
 
-    int c = deepB(0,0);
+    int c = branch(0,0);
 
 
     if(c == heuristic_k){  // best solution is the one found by the heuristic
@@ -29,11 +34,11 @@ void Solver::deepS() {
 }
 
 
-int Solver::deepB(int c, int layer){
+int SeepSolver::branch(int c, int layer){
 
     // data reduction
     int stack_size_0 = g->graph_mod_stack.size(); // save stack size to recover current graph after data reduction
-    int cost = deep_data_reduction(upperBound - c, layer);
+    int cost = data_reduction(upperBound - c, layer);
     if(cost == -1){ // data reduction shows that no solution for this k exists
         g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (data red)");
@@ -72,7 +77,7 @@ int Solver::deepB(int c, int layer){
     int weight_uv = g->get_weight(u,v);
     int stack_size_1 = g->graph_mod_stack.size();
     g->set_non_edge(u, v);
-    upperBound = this->deepB(c + weight_uv, layer + 1);
+    upperBound = this->branch(c + weight_uv, layer + 1);
     g->recover_graph(stack_size_1);
 
     // 2. Branch MERGE (u,v)
@@ -83,22 +88,22 @@ int Solver::deepB(int c, int layer){
         printDebug("=== fail layer " + std::to_string(layer) + " with P3 (" + std::to_string(u) + "," + std::to_string(v) + ","+ std::to_string(w) + ")");
         return upperBound;
     }
-    upperBound = this->deepB(c + merge_cost, layer + 1); // do not add weight(u,v) since (u,v) already exists
+    upperBound = this->branch(c + merge_cost, layer + 1); // do not add weight(u,v) since (u,v) already exists
     g->recover_graph(stack_size_0);
 
     return upperBound;
 }
 
 
-int Solver::get_lower_bound(){
-    std::tuple<Solver::p3, int> tuple = get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_FAST);
-    int lowerBound = std::get<1>(tuple);
-    return lowerBound;
+int SeepSolver::get_lower_bound(){
+//    std::tuple<Solver::p3, int> tuple = get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_FAST);
+//    int lowerBound = std::get<1>(tuple);
+    return 0;
 }
 
 
 
-int Solver::get_upper_bound(){
+int SeepSolver::get_upper_bound(){
 
     HeuristicSolver h = HeuristicSolver(*g);
     return h.upper_bound();
@@ -106,7 +111,7 @@ int Solver::get_upper_bound(){
 
 
 
-void Solver::save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem> current_stack){
+void SeepSolver::save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem> current_stack){
     while(!best_solution_stack.empty()){
         best_solution_stack.pop();
     }
@@ -118,7 +123,7 @@ void Solver::save_into_best_solution_stack(std::stack<WCE_Graph::stack_elem> cur
 
 
 // outputs edges in "best_solution_heuristic"
-void Solver::output_from_best_solution_stack(){
+void SeepSolver::output_from_best_solution_stack(){
     while(!best_solution_stack.empty()){
         WCE_Graph::stack_elem el = best_solution_stack.top();
         if(el.type == MERGE) {
@@ -141,5 +146,65 @@ void Solver::output_from_best_solution_stack(){
     }
     g->verify_cluster_graph();
     clear_stack_and_output();
+}
+
+
+int SeepSolver::data_reduction(int k, int layer){
+    int k_before = k;
+
+//    if(layer %5 ==  0 && layer >= 10){
+////      this->dataRed_heavy_non_edge();
+////      k = dataRed_heavy_edge_single_end(k);
+//      k = dataRed_heavy_non_edge(k);
+//      k = dataRed_heavy_edge_single_end(k);
+//      k = dataRed_large_neighbourhood_I(k);
+//      k = dataRed_heavy_edge_both_ends(k);
+//    }
+
+    k = dataRed_weight_larger_k(k);
+    if(k == -1) return -1;
+
+//    if(k != k_before)
+//        printDebug("Data reduction reduced k to " + std::to_string(k));
+    return k_before - k;
+}
+
+
+
+// iterates over all vertex tuples and returns max_cost p3
+SeepSolver::p3 SeepSolver::get_max_cost_p3(){
+
+    int u = -1;
+    int v = -1;
+    int w = -1;
+    int max_cost = INT32_MIN;
+    for(int i: this->g->active_nodes){
+        for(int j: this->g->active_nodes){
+            for(int k : this->g->active_nodes){
+                if(i == j || i == k || k == j) continue;
+                int weight_i_j = g->get_weight(i,j);
+                int weight_i_k = g->get_weight(i,k);
+                int weight_j_k = g->get_weight(j,k);
+                if(weight_i_j > 0 && weight_i_k > 0 && weight_j_k <= 0){
+
+                    // sum up costs of all three edges (only edges that are allowed to be modified)
+                    int current_cost = 0;
+                    if(weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) current_cost += abs(weight_i_k);
+                    if(weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) current_cost += abs(weight_i_j);
+                    if(weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) current_cost += abs(weight_j_k);
+
+                    // update maximum cost and corresponding p3
+                    if(current_cost > max_cost) {
+                        max_cost = current_cost;
+                        u = i;
+                        v = j;
+                        w = k;
+                    }
+                }
+            }
+
+        }
+    }
+    return SeepSolver::p3{.i = u, .j = v, .k = w, .cost_sum = -1 ,.min_cost = -1};
 }
 

@@ -187,37 +187,6 @@ std::tuple<Solver::p3, int> Solver::get_best_p3_and_lower_bound(int heuristic, i
 }
 
 
-Solver::p3 Solver::generate_p3_struct(int i, int j, int k) {
-    int weight_i_j = g->get_weight(i,j);
-    int weight_i_k = g->get_weight(i, k);
-    int weight_j_k = g->get_weight(j, k);
-    if (weight_i_j >= 0 && weight_i_k >= 0 && weight_j_k <= 0) {
-
-        // sum up costs of all three edges (only edges that are allowed to be modified)
-        int cost_sum = 0;
-        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD) cost_sum += abs(weight_i_k);
-        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD) cost_sum += abs(weight_i_j);
-        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD) cost_sum += abs(weight_j_k);
-
-        // get minimum edge cost
-        int min_cost = INT32_MAX;
-        if (weight_i_k != DO_NOT_DELETE && weight_i_k != DO_NOT_ADD &&
-            abs(weight_i_k) < min_cost)
-            min_cost = abs(weight_i_k);
-        if (weight_i_j != DO_NOT_DELETE && weight_i_j != DO_NOT_ADD &&
-            abs(weight_i_j) < min_cost)
-            min_cost = abs(weight_i_j);
-        if (weight_j_k != DO_NOT_DELETE && weight_j_k != DO_NOT_ADD &&
-            abs(weight_j_k) < min_cost)
-            min_cost = abs(weight_j_k);
-
-        Solver::p3 newP3 = {.i = i, .j = j, .k = k, .cost_sum = cost_sum, .min_cost = min_cost};
-        return newP3;
-    }else{
-        Solver::p3 no_p3 = {.i = -1, .j = -1, .k = -1, .cost_sum = -1, .min_cost = -1};
-        return no_p3;
-    }
-}
 
 std::vector<Solver::p3> Solver::find_all_p3() {
 

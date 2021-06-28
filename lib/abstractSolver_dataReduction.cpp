@@ -1,52 +1,14 @@
 
-#include "Solver.h"
+#include "AbstractSolver.h"
 #include "../include/utils.h"
 
 // ----------------------------
 // ------- data reduction  --------
 
 
-int Solver::deep_data_reduction(int k, int layer){
-    int k_before = k;
-
-//    if(layer %5 ==  0 && layer >= 10){
-////      this->dataRed_heavy_non_edge();
-////      k = dataRed_heavy_edge_single_end(k);
-//      k = dataRed_heavy_non_edge(k);
-//      k = dataRed_heavy_edge_single_end(k);
-//      k = dataRed_large_neighbourhood_I(k);
-//      k = dataRed_heavy_edge_both_ends(k);
-//    }
-
-    k = dataRed_weight_larger_k(k);
-    if(k == -1) return -1;
-
-//    if(k != k_before)
-//        printDebug("Data reduction reduced k to " + std::to_string(k));
-    return k_before - k;
-}
-
-int Solver::data_reduction(int k, int layer){
-    int k_before = k;
-
-//    if(layer %5 ==  0 && layer >= 10){
-////      this->dataRed_heavy_non_edge();
-////      k = dataRed_heavy_edge_single_end(k);
-//      k = dataRed_heavy_non_edge(k);
-//      k = dataRed_heavy_edge_single_end(k);
-//      k = dataRed_large_neighbourhood_I(k);
-//      k = dataRed_heavy_edge_both_ends(k);
-//    }
-
-    k = dataRed_weight_larger_k(k);
-
-//    if(k != k_before)
-//        printDebug("Data reduction reduced k to " + std::to_string(k));
-    return k;
-}
 
 // applies data reduction on current graph and data reduction cost (only used before branching)
-int Solver::data_reduction_before_branching(){
+int AbstractSolver::data_reduction_before_branching(){
     int k_tmp = INT32_MAX;
     int k_before = 0;
     dataRed_remove_existing_clique();
@@ -67,7 +29,7 @@ int Solver::data_reduction_before_branching(){
 // continuously merges all vertices whose edge weight exceeds the available costs (set edges = -inf analogously)
 // returns remaining costs k after merging
 // if k<0 no solution for the graph and input k exists
-int Solver::dataRed_weight_larger_k(int k){
+int AbstractSolver::dataRed_weight_larger_k(int k){
 //    printDebug("Data reduction (weight > k=" + std::to_string(k) + "):");
     int k_before = k;
 
@@ -94,7 +56,7 @@ int Solver::dataRed_weight_larger_k(int k){
     return k;
 }
 
-int Solver::dataRed_heavy_non_edge(int k) {
+int AbstractSolver::dataRed_heavy_non_edge(int k) {
     redo:
     if(k < 0) {
         return -1;
@@ -134,7 +96,7 @@ int Solver::dataRed_heavy_non_edge(int k) {
     return k;
 }
 
-int Solver::dataRed_heavy_edge_single_end(int k) {
+int AbstractSolver::dataRed_heavy_edge_single_end(int k) {
     redo:
     if(k < 0) {
 //        printDebug("Fail: maximum cost exceeded");
@@ -207,7 +169,7 @@ int Solver::dataRed_heavy_edge_single_end(int k) {
 }
 
 
-int Solver::dataRed_heavy_edge_both_ends(int k) {
+int AbstractSolver::dataRed_heavy_edge_both_ends(int k) {
     int cost = 0;
     redo:
     if(k < 0) {
@@ -275,7 +237,7 @@ int Solver::dataRed_heavy_edge_both_ends(int k) {
     return k;
 }
 
-int Solver::dataRed_remove_existing_clique() {
+int AbstractSolver::dataRed_remove_existing_clique() {
     int N = g->merge_map.size();
     bool *visited = new bool[N];
 
@@ -316,7 +278,7 @@ int Solver::dataRed_remove_existing_clique() {
 
 
 //is doing the large Neighbourhood Rule for all vertices in the graph TODO
-int Solver::dataRed_large_neighbourhood_I(int k) {
+int AbstractSolver::dataRed_large_neighbourhood_I(int k) {
 
     int merge_costs = 0;
     rerun_after_merge:
