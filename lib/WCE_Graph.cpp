@@ -14,6 +14,10 @@ WCE_Graph::WCE_Graph(int n): num_vertices(n){
             matrix_entry entry = {.weight = 0, .valid_entry = true, .weight_original = 0};
             adj_matrix[i][j] = entry;
         }
+
+        std::vector<int> u = {i};
+        merge_map.push_back(u);
+        active_nodes.push_back(i);
     }
 }
 
@@ -162,7 +166,9 @@ int WCE_Graph::get_cost(int u, int v, int w) {
 // returns -1 if merging is not possible because of conflicting edges (DO_NOT_DELETE/DO_NOT_ADD)
 int WCE_Graph::merge(int u, int v) {
 
-    if(get_weight(u,v) == DO_NOT_ADD) throwError("Cannot merge edge which is DNA ");
+    if(get_weight(u,v) == DO_NOT_ADD) {
+        return -1;
+    }
 
     int idx = this->adj_matrix.size();
 
@@ -283,22 +289,124 @@ void WCE_Graph::set_non_edge(int u, int v) {
 //    printDebug("Heavy non edge (" + std::to_string(u) + "," + std::to_string(v) + ")");
 }
 
-void WCE_Graph::undo_final_modification(){
-    stack_elem el = graph_mod_stack.top();
-    if(el.type == MERGE)
-        unmerge(el.uv);
-    if(el.type == SET_INF){
-        set_weight(el.v1, el.v2, el.weight);
-        graph_mod_stack.pop();
-//        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
-    }
-    if(el.type == CLIQUE){
-        for(int i: el.clique){
-            active_nodes.push_back(i);
+
+void WCE_Graph::remove_clique(std::vector<int> &component){
+    for(auto i = active_nodes.begin(); i != active_nodes.end(); ++i){
+        for(int j : component){
+            if(*i == j){
+                i = active_nodes.erase(i);
+                i--;
+            }
         }
-        graph_mod_stack.pop();
+    }
+    graph_mod_stack.push(WCE_Graph::stack_elem{.type = CLIQUE, .v1 = -1, .v2 = -1, .weight = -1, .uv = -1, .clique = component});
+}
+
+
+void WCE_Graph::recover_graph(int prev_stack_size){
+    while (graph_mod_stack.size() != prev_stack_size){
+        stack_elem el = graph_mod_stack.top();
+        if(el.type == MERGE)
+            unmerge(el.uv);
+        if(el.type == SET_INF){
+            set_weight(el.v1, el.v2, el.weight);
+            graph_mod_stack.pop();
+//        printDebug("undo non-edge (" + std::to_string(el.v1) + ","+ std::to_string(el.v2) + ")" );
+        }
+        if(el.type == CLIQUE){
+            for(int i: el.clique){
+                active_nodes.push_back(i);
+            }
+            graph_mod_stack.pop();
+        }
     }
 }
+
+
+void WCE_Graph::reset_graph(){
+    recover_graph(0);
+    for(int i = 0; i < this->adj_matrix.size(); ++i){
+        for(int j = i+1; j < this->adj_matrix.size(); ++j){
+            set_weight(i,j, get_weight_original(i,j));
+        }
+    }
+}
+
+
+void WCE_Graph::DFS(int i, bool *visited, std::vector<int>& component) {
+    visited[i] = true;
+//    std::cout << i+1 << " ";
+    component.push_back(i);
+    for(int j : active_nodes){
+        if(i == j) continue;
+        // for {i,j} = 0 we consider i,j as not adjacent (we delete {i,j} later in unmerging)
+        // thus, i and j are in different components if {i,j} <= 0
+        if(get_weight(i,j) > 0){
+            if(visited[j] == false){
+                DFS(j, visited, component);
+            }
+        }
+    }
+    return;
+}
+
+
+// param: u is the index of the vertex of which the neighbours are collected
+// return: - pair for neighbourhood(first item in pair) - all the vertices that are adjacent to u,
+//         - not_neighbours(second item in pair) - all vertices that are not adjacent to u
+//
+std::pair<std::list<int>, std::list<int>> WCE_Graph::closed_neighbourhood(int u) {
+    std::list<int> neighbours;
+    std::list<int> not_neighbours;
+    for(int i : active_nodes){
+        if(i == u) continue;
+        if(get_weight(u,i) > 0){
+            neighbours.push_back(i);
+        }else if(get_weight(u,i) <= 0){  // 0-edge = non-edge
+            not_neighbours.push_back(i);
+        }
+    }
+    neighbours.push_back(u);
+    return std::make_pair(neighbours, not_neighbours);
+}
+
+//calculates the costs to make the neighbourhood a clique
+int WCE_Graph::deficiency(std::list<int> neighbours) {
+    int costs = 0;
+    while (!neighbours.empty()) {
+        int i = neighbours.front();
+        neighbours.pop_front();
+        for (int j : neighbours) {
+            if ( i == j) continue;
+            if (get_weight(i, j) < 0) {
+                if(get_weight(i,j) == DO_NOT_ADD){
+                    return DO_NOT_DELETE; // abs(DO_NOT_ADD) is DO_NOT_ADD again but a high value should be returned
+                }
+                costs += abs(get_weight(i, j));
+            }
+        }
+    }
+    return costs;
+}
+
+//calculates the cost to cut of the neighbourhood(neighbourhood) from the rest of the graph(rest_graph)
+int WCE_Graph::cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph) {
+    int cut_costs = 0;
+    for(int i : neighbourhood){
+        for(int j : rest_graph){
+            if(i == j)continue;
+            int weight = get_weight(i,j);
+            if(weight > 0){
+                if(weight == DO_NOT_DELETE){
+                    return DO_NOT_DELETE;
+                }
+                cut_costs += weight;
+            }
+        }
+    }
+    return cut_costs;
+}
+
 
 
 // ---------------------------------------
@@ -496,10 +604,43 @@ void WCE_Graph::printGraph(std::ostream& os) {
 
 
 
-void WCE_Graph::reset_graph(){
-    for(int i = 0; i < this->adj_matrix.size(); ++i){
-        for(int j = i+1; j < this->adj_matrix.size(); ++j){
-            set_weight(i,j, get_weight_original(i,j));
+
+// verify that the current graph is now a cluster graph
+void WCE_Graph::verify_cluster_graph(){
+#ifdef DEBUG
+    printDebug("\nVerifying solution...");
+
+    std::tuple<int, int, int> p3 = std::make_tuple(-1,-1,-1);
+    int max_cost = INT32_MIN;
+    for(int i: active_nodes){
+        for(int j: active_nodes){
+            for(int k : active_nodes){
+                if(i == j || i == k || k == j) continue;
+                int weight_ij = get_weight(i, j);
+                int weight_ik = get_weight(i, k);
+                int weight_jk = get_weight(j, k);
+                if(weight_ij > 0 && weight_ik > 0 && weight_jk <= 0){
+                    p3 = std::make_tuple(i,j,k);
+                    goto end_p3_search;
+                }
+            }
+
         }
     }
+
+    end_p3_search:
+    if(std::get<0>(p3) == -1){
+        printDebug("VERIFICATION SUCCESS\n");
+    } else {
+        printDebug("\nVERIFICATION FAIL:");
+        print_tuple(p3);
+        int u = std::get<0>(p3);
+        int v = std::get<1>(p3);
+        int w = std::get<2>(p3);
+        std::cout << "(" << u << "," << v << "):" << get_weight(u,v) << "/" << get_weight_original(u,v) << "\n";
+        std::cout << "(" << v << "," << w << "):" << get_weight(w,v) << "/" << get_weight_original(w,v) << "\n";
+        std::cout << "(" << u << "," << w << "):" << get_weight(u,w) << "/" << get_weight_original(u,w) << "\n";
+    }
+#endif
 }
+

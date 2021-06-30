@@ -1,25 +1,18 @@
 #include "lib/Solver.h"
-#include <csignal>
-#include <unistd.h>
+#include "lib/HeuristicSolver.h"
+#include "lib/DeepSolver.h"
+#include "include/utils.h"
 
-#include <iostream>
-
-
-Solver *s;
-
-void signal_handler(int signal){
-    s->terminate = true;
-    std::cout << "#ALARM" << "\n";
-}
 
 int main() {
-    std::signal(SIGALRM, signal_handler);
 
-//    alarm(2);
+    WCE_Graph *g = parse_and_build_graph();
 
-    s = new Solver();
-//    s->run_heuristic();
-    s->deepS();
-//    s->solve();
+//    Solver *s = new Solver(g);
+    DeepSolver *d = new DeepSolver(g);
+//    HeuristicSolver *h = new HeuristicSolver(g);
+
+    d->solve();
     return 0;
 }
+

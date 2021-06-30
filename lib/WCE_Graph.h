@@ -21,7 +21,6 @@ private:
         int weight_original;
     };
     std::vector<std::vector<matrix_entry>> adj_matrix;
-    void unmerge(int);
 
 public:
     WCE_Graph(int);
@@ -46,7 +45,10 @@ public:
     std::vector<std::vector<int>> merge_map;
     int merge(int, int);
     void set_non_edge(int u, int v);
-    void undo_final_modification();
+    void remove_clique(std::vector<int> &component);
+    void reset_graph();
+    void recover_graph(int prev_stack_size);
+    void unmerge(int);
 
     struct stack_elem{
         int type; // 1 is merge, 2 is set_inf, 3 is clique
@@ -58,6 +60,12 @@ public:
     };
     std::stack<stack_elem> graph_mod_stack;
 
+
+    void DFS(int , bool *, std::vector<int>&);
+    std::pair<std::list<int>, std::list<int>> closed_neighbourhood(int u);
+    int deficiency(std::list<int> neighbours);
+    int cut_weight(std::list<int>& neighbourhood, std::list<int>& rest_graph);
+
     void printGraph(std::ostream &os);
     void print_active_graph(std::ostream &os);
     void print_active_nodes();
@@ -65,8 +73,8 @@ public:
     void print_graph_mod_stack();
     void print_graph_mod_stack_rec();
 
-    // heuristics
-    void reset_graph();
+    // debug
+    void verify_cluster_graph();
 };
 
 #endif //ALGENG_WCE_SOLVER_WCE_GRAPH_H
