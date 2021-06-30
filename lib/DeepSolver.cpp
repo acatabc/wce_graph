@@ -3,6 +3,8 @@
 #include "iostream"
 #include "../include/utils.h"
 #include "HeuristicSolver.h"
+#include <ilcplex/ilocplex.h>
+
 
 
 DeepSolver::DeepSolver(WCE_Graph *g) : AbstractSolver(g){}
@@ -141,9 +143,62 @@ int DeepSolver::branch_edge_first_merge(int c, int u, int  v, int layer){
 
 
 int DeepSolver::get_lower_bound(){
-//    std::tuple<Solver::p3, int> tuple = get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_FAST);
-//    int lowerBound = std::get<1>(tuple);
-    return 0;
+    unsigned int active_nodes_size = this->g->active_nodes.size();
+    //Model creation
+    IloEnv env;
+    IloModel model(env);
+    IloNumVarArray var(env);
+    IloRangeArray c(env);
+    IloExpr expr(env);
+
+    //adding variables e_uv to the model
+    unsigned int num_edges = 0;
+    std::vector<std::pair<int,int>> edge_table;
+    for(int u = 0; u < active_nodes_size; ++u){
+        for(int v = u+1; v < active_nodes_size; ++v){
+            int node_u = this->g->active_nodes.at(u);
+            int node_v = this->g->active_nodes.at(v);
+            var.add(IloNumVar(env, 0.0,1.0,ILOFLOAT));
+            ++num_edges;
+
+            //expression building: function to minimize
+            int weight = this->g->get_weight(node_u, node_v);
+            if(weight > 0){
+                expr += (1.0-var[num_edges-1])*weight;
+            }else{
+                if(weight == DO_NOT_ADD)
+                    expr += var[num_edges-1]*DO_NOT_DELETE;
+                else
+                    expr += var[num_edges-1]*abs(weight);
+            }
+        }
+    }
+
+    //adding constraints
+
+    for(int u = 0; u < active_nodes_size; ++u){
+        for(int v = u+1; v < active_nodes_size; ++v){
+            for(int w = v+1; w < active_nodes_size; ++w){
+                int uv = u*active_nodes_size - (u*(u-1))/2 + (v-u)-1 ;
+                int vw = v*active_nodes_size - (v*(v-1))/2 + (w-v)-1 ;
+                int uw = u*active_nodes_size - (u*(u-1))/2 + (w-u)-1 ;
+                c.add(1.0*var[u]+1.0*var[v]-1.0*var[w] <= 1.0);
+                c.add(1.0*var[u]-1.0*var[v]+1.0*var[w] <= 1.0);
+                c.add(-1.0*var[u]+1.0*var[v]+1.0*var[w] <= 1.0);
+
+            }
+        }
+    }
+    model.add(IloMinimize(env, expr));
+    model.add(c);
+    IloCplex cplex(model);
+    cplex.setOut(env.getNullStream());
+    cplex.solve();
+    int lower_bound = cplex.getObjValue();
+    std::cout << "# lower bound" << lower_bound<< std::endl;
+
+    env.end();
+    return lower_bound;
 }
 
 
