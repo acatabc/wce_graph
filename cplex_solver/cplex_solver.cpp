@@ -2,25 +2,15 @@
 #include "../lib/Solver.h"
 #include "../include/utils.h"
 
+
+
 int main(){
     WCE_Graph *g = parse_and_build_graph();
   Solver *s = new Solver(g);
-  int initial_number_of_nodes = s->g->active_nodes.size();
   s->data_reduction_before_branching();
-
-  std::vector<int> original_graph;
   unsigned int active_nodes_size = s->g->active_nodes.size();
-  for(int i = 0; i < active_nodes_size; ++i){
-    for(int j = i +1; j < active_nodes_size;++j){
-        int node_u = s->g->active_nodes.at(i);
-        int node_v = s->g->active_nodes.at(j);
-        if(s->g->get_weight(node_u, node_v) > 0){
-            original_graph.push_back(1);
-        }else{
-            original_graph.push_back(0);
-        }
-    }
-  }
+
+
 
   //Model creation
 	IloEnv env;
@@ -39,7 +29,7 @@ int main(){
         //std::cout << node_u << " " << node_v << std::endl;
         var.add(IloNumVar(env, 0.0,1.0,ILOFLOAT));
        // std::cout <<"size "<< var.getSize() << std::endl;
-        edge_table.push_back(std::make_pair(node_u,node_v));
+//        edge_table.push_back(std::make_pair(node_u,node_v));
        
         ++num_edges;
 
@@ -58,19 +48,16 @@ int main(){
 
     //adding constraints
 
-    for(int u = 0; u < num_edges ; ++u){
-      for(int v = u+1; v < num_edges; ++v){
-        for(int w = v+1; w < num_edges; ++w){
-          auto x = edge_table.at(u);
-          auto y = edge_table.at(v);
-          auto z = edge_table.at(w);
-          if(x.first == y.first && x.second == z.first && z.second == y.second){
+    for(int u = 0; u < active_nodes_size; ++u){
+      for(int v = u+1; v < active_nodes_size; ++v){
+        for(int w = v+1; w < active_nodes_size; ++w){
+            int uv = u*active_nodes_size - (u*(u-1))/2 + (v-u)-1 ;
+            int vw = v*active_nodes_size - (v*(v-1))/2 + (w-v)-1 ;
+            int uw = u*active_nodes_size - (u*(u-1))/2 + (w-u)-1 ;
             c.add(1.0*var[u]+1.0*var[v]-1.0*var[w] <= 1.0);
-//            c.add(1.0*var[u]-1.0*var[v]+1.0*var[w] <= 1.0);
-//           c.add(-1.0*var[u]+1.0*var[v]+1.0*var[w] <= 1.0);
+            c.add(1.0*var[u]-1.0*var[v]+1.0*var[w] <= 1.0);
+           c.add(-1.0*var[u]+1.0*var[v]+1.0*var[w] <= 1.0);
             
-          }
-        
         }
       }
     }
@@ -117,9 +104,9 @@ int main(){
  //       std::cout << i << " " << val<< std::endl;
    // }
 
-    double lower_bound = cplex.getObjValue();
-    std::cout << "# lower bound" << lower_bound<< std::endl;
+//    double lower_bound = cplex.getObjValue();
+//    std::cout << "# lower bound" << lower_bound<< std::endl;
 
-    env.end();
+   env.end();
 	return 0;
 }
