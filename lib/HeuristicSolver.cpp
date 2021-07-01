@@ -19,6 +19,7 @@ HeuristicSolver::HeuristicSolver(WCE_Graph *input_graph){
         }
 
     }
+    srand(time(NULL));
 }
 
 
@@ -26,11 +27,11 @@ void HeuristicSolver::solve() {
     if(g->num_vertices == 0) return;
     std::signal(SIGALRM, signal_handler);
 
-    alarm(1);
+    alarm(15);
 
-    srand(time(NULL));
+    int num_iterations = 10;
 
-    while(!terminate){
+    while(!terminate && num_iterations > 0){
         g->reset_graph();
         int k = greedy_cluster_graph();
         int dk = local_search();
@@ -38,20 +39,24 @@ void HeuristicSolver::solve() {
             save_current_solution();
             best_k = k - dk;
         }
+        num_iterations --;
     }
     output_best_solution();
     verify_best_solution();
+
+    std::cout << "#rem_iter: " << num_iterations << "\n";
 }
 
 
 int HeuristicSolver::compute_upper_bound() {
     if(g->num_vertices == 0) return 0;
 
-    srand(time(NULL));
 
-    int num_iterations = 1;
+    alarm(15);
 
-    while(num_iterations > 0){
+    int num_iterations = 10;
+
+    while(!terminate && num_iterations > 0){
         printDebug("start heuristic iteration... ");
         g->reset_graph();
         int k = greedy_cluster_graph();
