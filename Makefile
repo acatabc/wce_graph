@@ -65,7 +65,7 @@ CCFLAGS = $(CCOPT) -I$(CPLEXINCDIR) -I$(CONCERTINCDIR)
 JCFLAGS = $(JOPT)
 
 
-SOURCES = main.cpp lib/AbstractSolver.cpp lib/abstractSolver_dataReduction.cpp lib/DeepSolver.cpp lib/HeuristicSolver.cpp lib/Solver.cpp lib/solver_P3Search.cpp lib/WCE_Graph.cpp include/utils.cpp
+SOURCES = main.cpp lib/AbstractSolver.cpp lib/abstractSolver_dataReduction.cpp lib/DeepSolver.cpp lib/HeuristicSolver.cpp lib/Solver.cpp lib/abstractSolver_P3Search.cpp lib/WCE_Graph.cpp include/utils.cpp
 
 
 all:

@@ -42,7 +42,7 @@ int DeepSolver::branch(int c, int layer){
     else c += cost;
     int lower_bound = get_lower_bound();
 
-    if(c + lower_bound > upperBound) {
+    if(c + lower_bound >= upperBound ) {
         g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (upper bound)");
         return upperBound;
@@ -65,9 +65,10 @@ int DeepSolver::branch(int c, int layer){
     // get min cost edge uv
     // a) uv == ij --> 1) delete ij 2) merge ij
     // b) uv != ij --> 1) merge ij  2) delete ij
-    if(get_idx_min_edge(p3) == 0) upperBound = branch_edge_first_delete(c, p3.i, p3.j, layer);
-    else upperBound = branch_edge_first_merge(c, p3.i, p3.j, layer);
+    /*if(get_idx_min_edge(p3) == 0) upperBound = branch_edge_first_delete(c, p3.i, p3.j, layer);
+    else upperBound = branch_edge_first_merge(c, p3.i, p3.j, layer);*/
 
+   upperBound = branch_edge_first_merge(c, p3.i, p3.j, layer);
     g->recover_graph(stack_size_0);
 
     return upperBound;
@@ -355,6 +356,7 @@ int DeepSolver::get_lower_bound_cplex(){
     model.add(c);
     IloCplex cplex(model);
     cplex.setOut(env.getNullStream());
+    cplex.setWarning(env.getNullStream());
     cplex.solve();
     int lower_bound = cplex.getObjValue();
     std::cout << "# lower bound" << lower_bound<< std::endl;

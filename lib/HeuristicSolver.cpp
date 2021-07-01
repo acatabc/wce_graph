@@ -49,9 +49,9 @@ int HeuristicSolver::compute_upper_bound() {
     if(g->num_vertices == 0) return 0;
     std::signal(SIGALRM, signal_handler);
 
-    alarm(20);
+    alarm(60);
 
-    int num_iterations = 10;
+    int num_iterations = 30;
 
     while(!terminate && num_iterations > 0){
         printDebug("start heuristic iteration... ");

@@ -12,11 +12,12 @@ int AbstractSolver::data_reduction(int k, int layer){
 //    if(layer %5 ==  0 && layer >= 10){
 //      k = dataRed_heavy_non_edge(k);
 //      k = dataRed_heavy_edge_single_end(k);
-//      k = dataRed_large_neighbourhood_I(k);
-//      k = dataRed_heavy_edge_both_ends(k);
 //    }
 
     k = dataRed_weight_k(k);
+    k = dataRed_heavy_edge_both_ends(k);
+    k = dataRed_large_neighbourhood_I(k);
+    dataRed_remove_clique();
     if(k == -1) return -1;
 
     return k_before - k;
