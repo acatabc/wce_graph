@@ -41,7 +41,14 @@ public:
     int dataRed_heavy_edge_both_ends(int k);
     int dataRed_remove_clique();
     int dataRed_large_neighbourhood_I(int);
-
+    std::pair<std::list<int>, std::list<int>> closed_neighbourhood(int u);
+    int deficiency(std::list<int>);
+    int cut_weight(std::list<int>&, std::list<int>&);
+    int min_cut(const std::list<int>&);
+    int min_cut_phase
+            (std::vector<std::vector<std::pair<int,int>>>& , bool *, std::vector<int>& , unsigned int);
+    std::pair<int,int> get_most_tightly_connected
+            (const std::vector<int>&,const bool *, std::vector<std::vector<std::pair<int,int>>>& , const bool *);
     // output
     int unmerge_and_propagate(int uv);
     void clear_stack_and_output();
