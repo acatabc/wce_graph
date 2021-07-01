@@ -54,9 +54,9 @@ int main(){
             int uv = u*active_nodes_size - (u*(u-1))/2 + (v-u)-1 ;
             int vw = v*active_nodes_size - (v*(v-1))/2 + (w-v)-1 ;
             int uw = u*active_nodes_size - (u*(u-1))/2 + (w-u)-1 ;
-            c.add(1.0*var[u]+1.0*var[v]-1.0*var[w] <= 1.0);
-            c.add(1.0*var[u]-1.0*var[v]+1.0*var[w] <= 1.0);
-           c.add(-1.0*var[u]+1.0*var[v]+1.0*var[w] <= 1.0);
+            c.add(1.0*var[uv]+1.0*var[vw]-1.0*var[uw] <= 1.0);
+            c.add(1.0*var[uv]-1.0*var[vw]+1.0*var[uw] <= 1.0);
+           c.add(-1.0*var[uv]+1.0*var[vw]+1.0*var[uw] <= 1.0);
             
         }
       }
