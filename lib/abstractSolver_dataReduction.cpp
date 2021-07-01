@@ -460,6 +460,7 @@ int AbstractSolver::min_cut(const std::list<int>& neighbours) {
     }
 
 
+
     int min_cut_weight = INT32_MAX;
     while(active_nodes.size() > 1) {
         //calculate the cut_weight of a min_cut_phase

@@ -44,8 +44,10 @@ public:
     std::vector<int> active_nodes;
     std::vector<std::vector<int>> merge_map;
     int merge(int, int);
+    int merge_neighbourhood(int);
     void set_non_edge(int u, int v);
     void remove_clique(std::vector<int> &component);
+
     void reset_graph();
     void recover_graph(int prev_stack_size);
     void unmerge(int);

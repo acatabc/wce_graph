@@ -13,5 +13,5 @@ add_executable(
         lib/HeuristicSolver.h lib/HeuristicSolver.cpp
         lib/Solver.h lib/Solver.cpp
         lib/DeepSolver.h lib/DeepSolver.cpp
-        lib/abstractSolver_dataReduction.cpp lib/solver_P3Search.cpp
+        lib/abstractSolver_dataReduction.cpp lib/abstractSolver_P3Search.cpp
 )

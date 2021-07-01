@@ -13,7 +13,7 @@ void DeepSolver::solve() {
 
     int dataRed_cost = data_reduction_before_branching();
 
-    int k_heuristic =  get_upper_bound() + dataRed_cost; // TODO improvem upper bound, define search time
+    int k_heuristic =  get_upper_bound() + dataRed_cost;
     std::cout << "#heuristic k:     " << k_heuristic << std::endl;
 
     upperBound = k_heuristic;
@@ -42,7 +42,7 @@ int DeepSolver::branch(int c, int layer){
     else c += cost;
     int lower_bound = get_lower_bound();
 
-    if(c + lower_bound > upperBound || (c + lower_bound == upperBound && !best_solution_stack.empty())) {
+    if(c + lower_bound > upperBound) {
         g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (upper bound)");
         return upperBound;
@@ -72,6 +72,49 @@ int DeepSolver::branch(int c, int layer){
 
     return upperBound;
 }
+
+
+
+
+int DeepSolver::get_lower_bound(){
+//    int lb = std::get<1>(get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_IMPROVED));
+    int lb = get_lower_bound_cplex();
+    std::cout << "#lower bound:     " << lb<< std::endl;
+    return lb;
+}
+
+
+
+int DeepSolver::get_upper_bound(){
+    int stack_size = g->graph_mod_stack.size();
+
+    // compute heuristic solution
+    HeuristicSolver h = HeuristicSolver(g);
+    int k = h.compute_upper_bound();
+
+    // delete all edges in this graph that are supposed to be deleted
+    for(std::pair<int,int> edge: h.best_solution){
+        int u = g->active_nodes[edge.first];
+        int v = g->active_nodes[edge.second];
+        if(g->get_weight(u,v) > 0){ // (u,v) has been deleted
+            g->set_non_edge(u,v);
+        }
+    }
+
+    // add all remaining edges, such that we have a cluster graph -> merge all neighborhoods
+    restart:
+    for(int u : g->active_nodes){
+        int prev_neighbourhood_size  = g->merge_neighbourhood(u);
+        if(prev_neighbourhood_size > 1) goto restart;
+    }
+
+    // save solution and recover original graph
+    save_current_solution(g->graph_mod_stack);
+    g->recover_graph(stack_size);
+
+    return k;
+}
+
 
 
 
@@ -140,73 +183,6 @@ int DeepSolver::branch_edge_first_merge(int c, int u, int  v, int layer){
     upperBound = this->branch(c + weight_uv, layer + 1);
     g->recover_graph(stack_size_1);
     return upperBound;
-}
-
-
-int DeepSolver::get_lower_bound(){
-    unsigned int active_nodes_size = this->g->active_nodes.size();
-    //Model creation
-    IloEnv env;
-    IloModel model(env);
-    IloNumVarArray var(env);
-    IloRangeArray c(env);
-    IloExpr expr(env);
-
-    //adding variables e_uv to the model
-    unsigned int num_edges = 0;
-    std::vector<std::pair<int,int>> edge_table;
-    for(int u = 0; u < active_nodes_size; ++u){
-        for(int v = u+1; v < active_nodes_size; ++v){
-            int node_u = this->g->active_nodes.at(u);
-            int node_v = this->g->active_nodes.at(v);
-            var.add(IloNumVar(env, 0.0,1.0,ILOFLOAT));
-            ++num_edges;
-
-            //expression building: function to minimize
-            int weight = this->g->get_weight(node_u, node_v);
-            if(weight > 0){
-                expr += (1.0-var[num_edges-1])*weight;
-            }else{
-                if(weight == DO_NOT_ADD)
-                    expr += var[num_edges-1]*DO_NOT_DELETE;
-                else
-                    expr += var[num_edges-1]*abs(weight);
-            }
-        }
-    }
-
-    //adding constraints
-
-    for(int u = 0; u < active_nodes_size; ++u){
-        for(int v = u+1; v < active_nodes_size; ++v){
-            for(int w = v+1; w < active_nodes_size; ++w){
-                int uv = u*(active_nodes_size) - (u*(u+1))/2 + (v-u)-1 ;
-                int vw = v*(active_nodes_size)- (v*(v+1))/2 + (w-v)-1 ;
-                int uw = u*(active_nodes_size) - (u*(u+1))/2 + (w-u)-1 ;
-                c.add(1.0*var[uv]+1.0*var[vw]-1.0*var[uw] <= 1.0);
-                c.add(1.0*var[uv]-1.0*var[vw]+1.0*var[uw] <= 1.0);
-                c.add(-1.0*var[uv]+1.0*var[vw]+1.0*var[uw] <= 1.0);
-
-            }
-        }
-    }
-    model.add(IloMinimize(env, expr));
-    model.add(c);
-    IloCplex cplex(model);
-    cplex.setOut(env.getNullStream());
-    cplex.solve();
-    int lower_bound = cplex.getObjValue();
-    std::cout << "# lower bound" << lower_bound<< std::endl;
-
-    env.end();
-    return lower_bound;
-}
-
-
-
-int DeepSolver::get_upper_bound(){
-    HeuristicSolver h = HeuristicSolver(g);
-    return h.compute_upper_bound();
 }
 
 
@@ -325,3 +301,64 @@ DeepSolver::p3 DeepSolver::get_min_edge_p3(){
     return best_p3;
 }
 
+
+
+
+int DeepSolver::get_lower_bound_cplex(){
+    unsigned int active_nodes_size = this->g->active_nodes.size();
+    //Model creation
+    IloEnv env;
+    IloModel model(env);
+    IloNumVarArray var(env);
+    IloRangeArray c(env);
+    IloExpr expr(env);
+
+    //adding variables e_uv to the model
+    unsigned int num_edges = 0;
+    std::vector<std::pair<int,int>> edge_table;
+    for(int u = 0; u < active_nodes_size; ++u){
+        for(int v = u+1; v < active_nodes_size; ++v){
+            int node_u = this->g->active_nodes.at(u);
+            int node_v = this->g->active_nodes.at(v);
+            var.add(IloNumVar(env, 0.0,1.0,ILOFLOAT));
+            ++num_edges;
+
+            //expression building: function to minimize
+            int weight = this->g->get_weight(node_u, node_v);
+            if(weight > 0){
+                expr += (1.0-var[num_edges-1])*weight;
+            }else{
+                if(weight == DO_NOT_ADD)
+                    expr += var[num_edges-1]*DO_NOT_DELETE;
+                else
+                    expr += var[num_edges-1]*abs(weight);
+            }
+        }
+    }
+
+    //adding constraints
+
+    for(int u = 0; u < active_nodes_size; ++u){
+        for(int v = u+1; v < active_nodes_size; ++v){
+            for(int w = v+1; w < active_nodes_size; ++w){
+                int uv = u*(active_nodes_size) - (u*(u+1))/2 + (v-u)-1 ;
+                int vw = v*(active_nodes_size)- (v*(v+1))/2 + (w-v)-1 ;
+                int uw = u*(active_nodes_size) - (u*(u+1))/2 + (w-u)-1 ;
+                c.add(1.0*var[uv]+1.0*var[vw]-1.0*var[uw] <= 1.0);
+                c.add(1.0*var[uv]-1.0*var[vw]+1.0*var[uw] <= 1.0);
+                c.add(-1.0*var[uv]+1.0*var[vw]+1.0*var[uw] <= 1.0);
+
+            }
+        }
+    }
+    model.add(IloMinimize(env, expr));
+    model.add(c);
+    IloCplex cplex(model);
+    cplex.setOut(env.getNullStream());
+    cplex.solve();
+    int lower_bound = cplex.getObjValue();
+    std::cout << "# lower bound" << lower_bound<< std::endl;
+
+    env.end();
+    return lower_bound;
+}
