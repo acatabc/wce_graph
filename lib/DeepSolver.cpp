@@ -40,8 +40,9 @@ int DeepSolver::branch(int c, int layer){
         return upperBound;
     }
     else c += cost;
+    int lower_bound = get_lower_bound();
 
-    if(c + get_lower_bound() > upperBound || (c + get_lower_bound() == upperBound && !best_solution_stack.empty())) {
+    if(c + lower_bound > upperBound || (c + lower_bound == upperBound && !best_solution_stack.empty())) {
         g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (upper bound)");
         return upperBound;
