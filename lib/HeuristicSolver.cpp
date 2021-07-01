@@ -47,6 +47,7 @@ void HeuristicSolver::solve() {
 
 int HeuristicSolver::compute_upper_bound() {
     if(g->num_vertices == 0) return 0;
+    std::signal(SIGALRM, signal_handler);
 
     alarm(20);
 

@@ -14,6 +14,7 @@ void DeepSolver::solve() {
     int dataRed_cost = data_reduction_before_branching();
 
     int k_heuristic =  get_upper_bound() + dataRed_cost; // TODO improvem upper bound, define search time
+    std::cout << "#heuristic k:     " << k_heuristic << std::endl;
 
     upperBound = k_heuristic;
 
@@ -24,7 +25,6 @@ void DeepSolver::solve() {
     g->verify_cluster_graph();
 
     std::cout << "#recursive steps: " << rec_steps << std::endl;
-    std::cout << "#heuristic k:     " << k_heuristic << std::endl;
     std::cout << "#final k:         " << k << std::endl;
 }
 
@@ -196,7 +196,7 @@ int DeepSolver::get_lower_bound(){
     cplex.setOut(env.getNullStream());
     cplex.solve();
     int lower_bound = cplex.getObjValue();
-//    std::cout << "# lower bound" << lower_bound<< std::endl;
+    std::cout << "# lower bound" << lower_bound<< std::endl;
 
     env.end();
     return lower_bound;
