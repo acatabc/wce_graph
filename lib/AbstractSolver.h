@@ -11,6 +11,14 @@
 #define NONE (-1)
 #define CLUSTER_GRAPH (-2)
 
+
+#define MAX_SUM_P3 0
+#define MAX_MIN_EDGE_P3 1
+#define LOWER_BOUND_FAST 0
+#define LOWER_BOUND_IMPROVED 1
+
+
+
 class AbstractSolver {
 
 private:
@@ -30,6 +38,9 @@ public:
         int min_cost;
     };
     struct p3 generate_p3_struct(int,int,int);
+    p3 get_max_cost_p3();
+    std::tuple<p3, int> get_best_p3_and_lower_bound(int heuristic, int version);
+    std::vector<p3> find_all_p3();
 
     // data reduction
     int data_reduction(int k, int layer);

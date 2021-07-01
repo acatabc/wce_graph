@@ -24,6 +24,7 @@ public:
     int get_idx_min_edge(DeepSolver::p3 &p3);
 
     int get_lower_bound();
+    int get_lower_bound_cplex();
     int get_upper_bound();
 
     // output
