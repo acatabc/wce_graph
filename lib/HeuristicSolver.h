@@ -15,7 +15,6 @@ private:
     int local_search();
 
     int best_k = INT32_MAX;
-    std::vector<std::pair<int,int>> best_solution;
 
     void save_current_solution();
     void output_best_solution();
@@ -28,6 +27,8 @@ public:
 
     void solve();
     int compute_upper_bound();
+    std::vector<std::pair<int,int>> best_solution;
+    int get_best_solution();
 
 };
 

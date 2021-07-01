@@ -25,6 +25,7 @@ public:
 
     int get_lower_bound();
     int get_lower_bound_cplex();
+
     int get_upper_bound();
 
     // output

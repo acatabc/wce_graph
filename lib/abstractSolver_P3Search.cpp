@@ -1,7 +1,6 @@
 
 #include <tuple>
 #include <algorithm>
-#include <map>
 #include "AbstractSolver.h"
 #include "../include/utils.h"
 

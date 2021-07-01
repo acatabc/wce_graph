@@ -13,7 +13,7 @@ void DeepSolver::solve() {
 
     int dataRed_cost = data_reduction_before_branching();
 
-    int k_heuristic =  get_upper_bound() + dataRed_cost; // TODO improvem upper bound, define search time
+    int k_heuristic =  get_upper_bound() + dataRed_cost;
     std::cout << "#heuristic k:     " << k_heuristic << std::endl;
 
     upperBound = k_heuristic;
@@ -42,7 +42,7 @@ int DeepSolver::branch(int c, int layer){
     else c += cost;
     int lower_bound = get_lower_bound();
 
-    if(c + lower_bound > upperBound || (c + lower_bound == upperBound && !best_solution_stack.empty())) {
+    if(c + lower_bound > upperBound) {
         g->recover_graph(stack_size_0);
         printDebug("=== fail layer " + std::to_string(layer) + " (upper bound)");
         return upperBound;
@@ -77,15 +77,41 @@ int DeepSolver::branch(int c, int layer){
 
 
 int DeepSolver::get_lower_bound(){
-    return 0;
-
+    int lb = std::get<1>(get_best_p3_and_lower_bound(MAX_SUM_P3, LOWER_BOUND_IMPROVED));
+    std::cout << "#lower bound:     " << lb<< std::endl;
+    return lb;
 }
 
 
 
 int DeepSolver::get_upper_bound(){
+    int stack_size = g->graph_mod_stack.size();
+
+    // compute heuristic solution
     HeuristicSolver h = HeuristicSolver(g);
-    return h.compute_upper_bound();
+    int k = h.compute_upper_bound();
+
+    // delete all edges in this graph that are supposed to be deleted
+    for(std::pair<int,int> edge: h.best_solution){
+        int u = g->active_nodes[edge.first];
+        int v = g->active_nodes[edge.second];
+        if(g->get_weight(u,v) > 0){ // (u,v) has been deleted
+            g->set_non_edge(u,v);
+        }
+    }
+
+    // add all remaining edges, such that we have a cluster graph -> merge all neighborhoods
+    restart:
+    for(int u : g->active_nodes){
+        int prev_neighbourhood_size  = g->merge_neighbourhood(u);
+        if(prev_neighbourhood_size > 1) goto restart;
+    }
+
+    // save solution and recover original graph
+    save_current_solution(g->graph_mod_stack);
+    g->recover_graph(stack_size);
+
+    return k;
 }
 
 

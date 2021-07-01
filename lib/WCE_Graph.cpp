@@ -237,6 +237,36 @@ int WCE_Graph::merge(int u, int v) {
     return dk;
 }
 
+
+
+// merges all vertives in the neighborhood of u, returns number of merged vertices
+int WCE_Graph::merge_neighbourhood(int u) {
+    std::list<int> neighbours = closed_neighbourhood(u).first;
+    int num_neigh = neighbours.size();
+    if(num_neigh == 1) return 1;
+
+    int first = neighbours.front();
+    neighbours.pop_front();
+    int second = neighbours.front();
+    neighbours.pop_front();
+
+    int val = merge(first,second);
+    if(val == -1) throwError("This should not happen");
+
+    while(!neighbours.empty()){
+        int last_merged = active_nodes.back();
+        int next_from_neighbourhood = neighbours.front();
+        neighbours.pop_front();
+
+        int val = merge(last_merged, next_from_neighbourhood);
+        if(val == -1) throwError("This should not happen");
+    }
+
+    return num_neigh;
+}
+
+
+
 // unmerges vertex uv and removes uf from mofication stack
 // throws error if uv is not on top of modification stack
 void WCE_Graph::unmerge(int uv) {
