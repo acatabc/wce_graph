@@ -8,11 +8,11 @@ int main() {
 
     WCE_Graph *g = parse_and_build_graph();
 
-//    Solver *s = new Solver(g);
-    DeepSolver *d = new DeepSolver(g);
+    Solver *s = new Solver(g);
+//    DeepSolver *d = new DeepSolver(g);
 //    HeuristicSolver *h = new HeuristicSolver(g);
 
-    d->solve();
+    s->solve();
     return 0;
 }
 
