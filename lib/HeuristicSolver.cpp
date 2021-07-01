@@ -19,6 +19,8 @@ HeuristicSolver::HeuristicSolver(WCE_Graph *input_graph){
         }
 
     }
+
+    srand(time(NULL));
 }
 
 
@@ -28,7 +30,6 @@ void HeuristicSolver::solve() {
 
     alarm(1);
 
-    srand(time(NULL));
 
     while(!terminate){
         g->reset_graph();
@@ -47,11 +48,11 @@ void HeuristicSolver::solve() {
 int HeuristicSolver::compute_upper_bound() {
     if(g->num_vertices == 0) return 0;
 
-    srand(time(NULL));
+    alarm(20);
 
-    int num_iterations = 1;
+    int num_iterations = 10;
 
-    while(num_iterations > 0){
+    while(!terminate && num_iterations > 0){
         printDebug("start heuristic iteration... ");
         g->reset_graph();
         int k = greedy_cluster_graph();
